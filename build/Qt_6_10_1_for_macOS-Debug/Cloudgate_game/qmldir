@@ -1,8 +1,0 @@
-module Cloudgate_game
-typeinfo appCloudgate_game.qmltypes
-prefer :/qt/qml/Cloudgate_game/
-Main 254.0 Main.qml
-StyledButton 254.0 StyledButton.qml
-SecondPage 254.0 SecondPage.qml
-depends QtQuick
-

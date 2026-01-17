@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/Cloudgate_game/">
-    <file alias="Main.qml">/Users/jatinsaroay/Desktop/project1/Main.qml</file>
-    <file alias="StyledButton.qml">/Users/jatinsaroay/Desktop/project1/StyledButton.qml</file>
-    <file alias="SecondPage.qml">/Users/jatinsaroay/Desktop/project1/SecondPage.qml</file>
-  </qresource>
-</RCC>
-

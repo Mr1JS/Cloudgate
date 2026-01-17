@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/Cloudgate_game/">
-    <file alias="assets.qrc">/Users/jatinsaroay/Desktop/project1/assets.qrc</file>
-  </qresource>
-</RCC>
-
