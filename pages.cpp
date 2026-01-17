@@ -28,7 +28,7 @@ QString pages::getPageInfo(int page){
         pageInfo = "Play";
         break;
     case 1:
-        pageInfo = "Load";
+        pageInfo = "Editor";
         break;
     case 2:
         pageInfo = "Settings";

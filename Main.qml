@@ -4,8 +4,8 @@ import QtQuick.Controls.Basic
 
 Window {
     id: window
-    width: 640
-    height: 480
+    width: 800
+    height: 1024
     visible: true
     title: qsTr("Hello World")
 
@@ -42,9 +42,9 @@ Window {
                         }
                     }
                     StyledButton {
-                        text: "Resume"
+                        text: "LevelEditor"
                         onClicked: {
-                            stackView.push(Qt.resolvedUrl("SecondPage.qml"))
+                            stackView.push(Qt.resolvedUrl("LevelEditor.qml"))
 
                             myMain.page_value = 1
                         }
