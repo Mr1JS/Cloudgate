@@ -1,0 +1,26 @@
+{
+	"BUILD_DIR" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/appCloudgate_game_autogen",
+	"CMAKE_BINARY_DIR" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/Users/jatinsaroay/Desktop/project1",
+	"CMAKE_SOURCE_DIR" : "/Users/jatinsaroay/Desktop/project1",
+	"CROSS_CONFIG" : false,
+	"GENERATOR" : "Ninja",
+	"INCLUDE_DIR" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/appCloudgate_game_autogen/include",
+	"INPUTS" : 
+	[
+		"/Users/jatinsaroay/Desktop/project1/images/test_image.jpg",
+		"/Users/jatinsaroay/Desktop/project1/images/test_image.png"
+	],
+	"LOCK_FILE" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/CMakeFiles/appCloudgate_game_autogen.dir/AutoRcc_assets_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "--no-zstd", "-name", "assets" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_assets.cpp",
+	"RCC_EXECUTABLE" : "/Users/jatinsaroay/Qt/6.10.1/macos/libexec/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/CMakeFiles/appCloudgate_game_autogen.dir/AutoRcc_assets_EWIEGA46WW_Used.txt",
+	"SOURCE" : "/Users/jatinsaroay/Desktop/project1/assets.qrc",
+	"USE_BETTER_GRAPH" : true,
+	"VERBOSITY" : 0
+}

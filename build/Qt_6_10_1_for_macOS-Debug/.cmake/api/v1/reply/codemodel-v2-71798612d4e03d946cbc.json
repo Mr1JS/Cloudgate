@@ -1,0 +1,205 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-5b2b27fe74a6d3827e37.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "Cloudgate_game",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "all_aotstats::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_aotstats-Debug-9eefb57a6b3301266627.json",
+					"name" : "all_aotstats",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmllint::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmllint-Debug-bdae69e136637eea1222.json",
+					"name" : "all_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmllint_json::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmllint_json-Debug-98e783ad21612e2e2de9.json",
+					"name" : "all_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmllint_module::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmllint_module-Debug-187eb331c504c6840a74.json",
+					"name" : "all_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_qmltyperegistrations::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_qmltyperegistrations-Debug-de94cb4e791811c6c15b.json",
+					"name" : "all_qmltyperegistrations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game-Debug-71719c86b3b0173250ea.json",
+					"name" : "appCloudgate_game",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_autogen-Debug-d86083184350a2f24e2b.json",
+					"name" : "appCloudgate_game_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_autogen_timestamp_deps-Debug-68694232748871d9cc49.json",
+					"name" : "appCloudgate_game_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_copy_qml::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_copy_qml-Debug-c5dc5199b190547ce991.json",
+					"name" : "appCloudgate_game_copy_qml",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_copy_res::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_copy_res-Debug-04b8e47720344a1d33b4.json",
+					"name" : "appCloudgate_game_copy_res",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_qmlimportscan::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_qmlimportscan-Debug-4a2890b437c0861c7021.json",
+					"name" : "appCloudgate_game_qmlimportscan",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_qmllint::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_qmllint-Debug-9c80c229bea2a4c8e553.json",
+					"name" : "appCloudgate_game_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_qmllint_json::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_qmllint_json-Debug-99180e4162d371410d93.json",
+					"name" : "appCloudgate_game_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_qmllint_module::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_qmllint_module-Debug-5713c3a32680a7eb0afe.json",
+					"name" : "appCloudgate_game_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "appCloudgate_game_qmltyperegistration::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appCloudgate_game_qmltyperegistration-Debug-af6fa581d8703a229e3f.json",
+					"name" : "appCloudgate_game_qmltyperegistration",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "generate_qmlls_build_ini_file::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-generate_qmlls_build_ini_file-Debug-dd820887678c30f2d993.json",
+					"name" : "generate_qmlls_build_ini_file",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "module_appCloudgate_game_aotstats_target::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-module_appCloudgate_game_aotstats_target-Debug-a587583def91731dbabe.json",
+					"name" : "module_appCloudgate_game_aotstats_target",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug",
+		"source" : "/Users/jatinsaroay/Desktop/project1"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

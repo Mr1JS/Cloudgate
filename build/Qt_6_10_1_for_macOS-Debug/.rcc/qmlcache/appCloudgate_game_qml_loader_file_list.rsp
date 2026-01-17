@@ -1,0 +1,9 @@
+--resource
+/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/.qt/rcc/qmake_Cloudgate_game.qrc
+--resource
+/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/.qt/rcc/appCloudgate_game_raw_qml_0.qrc
+--resource
+/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/.qt/rcc/appCloudgate_game_raw_res_0.qrc
+/qt/qml/Cloudgate_game/Main.qml
+/qt/qml/Cloudgate_game/StyledButton.qml
+/qt/qml/Cloudgate_game/SecondPage.qml

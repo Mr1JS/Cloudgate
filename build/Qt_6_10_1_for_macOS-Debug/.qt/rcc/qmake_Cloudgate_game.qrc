@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qt/qml/Cloudgate_game">
+    <file alias="qmldir">/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/Cloudgate_game/qmldir</file>
+  </qresource>
+</RCC>
+

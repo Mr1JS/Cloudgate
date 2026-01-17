@@ -1,0 +1,95 @@
+{
+    "formatRevision": 1,
+    "modules": [
+        {
+            "moduleFiles": [
+                {
+                    "entries": [
+                        {
+                            "codegenResult": 0,
+                            "column": 22,
+                            "durationMicroseconds": 681,
+                            "functionName": "initialItem",
+                            "line": 15,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 23,
+                            "durationMicroseconds": 240,
+                            "functionName": "fill",
+                            "line": 14,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 31,
+                            "durationMicroseconds": 170,
+                            "functionName": "fill",
+                            "line": 22,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 31,
+                            "durationMicroseconds": 303,
+                            "functionName": "fillMode",
+                            "line": 27,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 35,
+                            "durationMicroseconds": 170,
+                            "functionName": "fill",
+                            "line": 25,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 37,
+                            "durationMicroseconds": 303,
+                            "functionName": "bottom",
+                            "line": 32,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 47,
+                            "durationMicroseconds": 251,
+                            "functionName": "horizontalCenter",
+                            "line": 34,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 2,
+                            "column": 36,
+                            "durationMicroseconds": 2272,
+                            "functionName": "onClicked",
+                            "line": 39,
+                            "message": "Cannot access value for name stackView"
+                        },
+                        {
+                            "codegenResult": 2,
+                            "column": 36,
+                            "durationMicroseconds": 1015,
+                            "functionName": "onClicked",
+                            "line": 46,
+                            "message": "Cannot access value for name stackView"
+                        },
+                        {
+                            "codegenResult": 2,
+                            "column": 36,
+                            "durationMicroseconds": 910,
+                            "functionName": "onClicked",
+                            "line": 54,
+                            "message": "Cannot access value for name stackView"
+                        }
+                    ],
+                    "filePath": "/Users/jatinsaroay/Desktop/project1/Main.qml"
+                }
+            ],
+            "moduleId": "Cloudgate_game(appCloudgate_game)"
+        }
+    ]
+}

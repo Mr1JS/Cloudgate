@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/Cloudgate_game">/Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/Cloudgate_game</file>
+
+  </qresource>
+</RCC>

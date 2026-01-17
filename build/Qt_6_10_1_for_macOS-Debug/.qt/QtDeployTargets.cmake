@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_appCloudgate_game_FILE /Users/jatinsaroay/Desktop/project1/build/Qt_6_10_1_for_macOS-Debug/appCloudgate_game.app/Contents/MacOS/appCloudgate_game)
+set(__QT_DEPLOY_TARGET_appCloudgate_game_TYPE EXECUTABLE)
