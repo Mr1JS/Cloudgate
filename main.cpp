@@ -4,7 +4,10 @@
 #include <QQmlContext>
 #include <QObject>
 #include <QDebug>
-#include <LevelEditor.hpp>
+#include "LevelEditorController.hpp"
+#include "TilesetPalette.hpp"
+#include "LevelCanvas.hpp"
+
 
 int main(int argc, char *argv[])
 {
@@ -14,8 +17,10 @@ int main(int argc, char *argv[])
 
     pages* myPage = new pages();
 
-    LevelEditor editor;
-    editor.loadTileset(":/resources/images/tileset.png");
+    // Register class for QML
+    qmlRegisterType<LevelEditorController>("Cloudgate_game", 1, 0, "LevelEditorController");
+    qmlRegisterType<TilesetPalette>("Cloudgate_game", 1, 0, "TilesetPalette");
+    qmlRegisterType<LevelCanvas>("Cloudgate_game", 1, 0, "LevelCanvas");
 
     QObject::connect(
         &engine,
@@ -25,8 +30,6 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     engine.rootContext()->setContextProperty("myMain", myPage); // the object will be available in QML with name "myGlobalObject"
-    engine.rootContext()->setContextProperty("levelEditor", &editor);
-    qmlRegisterType<LevelEditor>("Cloudgate_game", 1, 0, "LevelEditor");
     engine.loadFromModule("Cloudgate_game", "Main");
 
     QObject::connect(myPage, &pages::page_changed, [myPage]() {
