@@ -4,6 +4,7 @@
 #include <QQmlContext>
 #include <QObject>
 #include <QDebug>
+#include <QUrl>
 #include "LevelEditorController.hpp"
 #include "TilesetPalette.hpp"
 #include "LevelCanvas.hpp"
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     engine.rootContext()->setContextProperty("myMain", myPage); // the object will be available in QML with name "myGlobalObject"
-    engine.loadFromModule("Cloudgate_game", "Main");
+    engine.load(QUrl(QStringLiteral("qrc:/Cloudgate_game/Main.qml")));
 
     QObject::connect(myPage, &pages::page_changed, [myPage]() {
         qInfo() << "Page chnaged to " << myPage->getPageInfo(myPage->page_value()) << " value " << myPage->page_value() ;

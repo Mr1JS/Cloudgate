@@ -16,20 +16,23 @@ qt_add_executable(appCloudgate_game
 
 qt_add_qml_module(appCloudgate_game
     URI Cloudgate_game
+    VERSION 1.0
     QML_FILES
         Main.qml
-        SOURCES pages.h pages.cpp
-        QML_FILES StyledButton.qml
-        QML_FILES SecondPage.qml
-        RESOURCES assets.qrc
-        QML_FILES LevelEditor.qml
-        SOURCES LevelEditorController.cpp
-        SOURCES LevelEditorController.hpp
-        SOURCES
-        SOURCES
-        SOURCES
-        SOURCES TilesetPalette.hpp TilesetPalette.cpp
-        SOURCES LevelCanvas.hpp LevelCanvas.cpp
+        StyledButton.qml
+        SecondPage.qml
+        LevelEditor.qml
+    SOURCES
+        pages.h
+        pages.cpp
+        LevelEditorController.cpp
+        LevelEditorController.hpp
+        TilesetPalette.hpp
+        TilesetPalette.cpp
+        LevelCanvas.hpp
+        LevelCanvas.cpp
+    RESOURCES
+        assets.qrc
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
