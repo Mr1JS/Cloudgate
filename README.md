@@ -79,6 +79,17 @@ cd build
 cmake ..
 ```
 
+for macos
+```bash
+cmake -S .. -B . \
+  -DCMAKE_PREFIX_PATH="/Users/aslam/Qt/6.10.1/macos"
+```
+
+```bash
+mkdir build && cd build                                 
+/Users/aslam/Qt/6.10.1/macos/bin/qt-cmake -S .. -B .
+```
+
 ### 3. Kompilieren
 
 ```bash
