@@ -56,7 +56,7 @@ cd build
 cmake ..
 ```
 
-for macos
+#### For macos (Choose One)
 ```bash
 cmake -S .. -B . \
   -DCMAKE_PREFIX_PATH="~/Qt/6.10.1/macos"
