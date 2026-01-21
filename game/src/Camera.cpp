@@ -18,7 +18,7 @@ namespace jumper
 {
 
 Camera::Camera(int x, int y, int w, int h)
-    : m_position(x,y)
+    : m_position(x,y), m_scrollAccumulator(0.0)
 {
     m_actor = 0;
     m_height = h;
@@ -54,14 +54,36 @@ int Camera::x() const
 
 int Camera::y() const
 {
-    if(m_actor)
+    // Kamera scrollt automatisch nach oben, folgt nicht mehr dem Actor
+    return m_position.y();
+}
+
+void Camera::update(double dt)
+{
+    // Kamera scrollt langsam nach oben (Y-Position verringern)
+    // Geschwindigkeit: 20 Pixel pro Sekunde nach oben (langsam für besseres Gameplay)
+    double scrollSpeed = 20.0;  // Pixel pro Sekunde
+    
+    // Akkumuliere die Bewegung (für smooth scrolling bei kleinen Werten)
+    m_scrollAccumulator += scrollSpeed * dt;
+    
+    // Wenn wir mindestens 1 Pixel bewegt haben, wende die Bewegung an
+    if(m_scrollAccumulator >= 1.0)
     {
-        return m_actor->y();
+        int pixelsToMove = static_cast<int>(m_scrollAccumulator);
+        m_position.setY(m_position.y() - pixelsToMove);
+        m_scrollAccumulator -= pixelsToMove;  // Behalte den Rest für den nächsten Frame
     }
-    else
-    {
-        return m_position.y();
-    }
+}
+
+int Camera::width() const
+{
+    return m_width;
+}
+
+int Camera::height() const
+{
+    return m_height;
 }
 
 Camera::~Camera()

@@ -51,11 +51,20 @@ public:
     /// Returns the current y-position
     int y() const;
 
+    /// Returns the camera width
+    int width() const;
+
+    /// Returns the camera height
+    int height() const;
+
     /// Destructor
     virtual ~Camera();
 
     /// Sets an actor to follow
     void setFocus(MovingRenderable* actor);
+
+    /// Updates the camera (for automatic scrolling)
+    void update(double dt);
 
 private:
 
@@ -70,6 +79,9 @@ private:
 
     /// An actor to follow
     MovingRenderable* m_actor;
+    
+    /// Accumulator for smooth scrolling (stores fractional pixels)
+    double m_scrollAccumulator;
 };
 
 } /* namespace jumper */

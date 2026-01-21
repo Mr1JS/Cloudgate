@@ -250,6 +250,18 @@ void GameView::updateGame()
     // Update game with keyboard states
     m_gameWindow->update(keystates);
     
+    // Prüfe, ob Actor außerhalb des Kamera-Bereichs ist (Game Over)
+    // WICHTIG: Nur prüfen, wenn das Spiel läuft
+    if(m_running && m_gameWindow && m_gameWindow->level())
+    {
+        if(m_gameWindow->level()->isActorOutsideCamera())
+        {
+            // Game Over: Stoppe das Spiel
+            stopGame();
+            emit gameOver();
+        }
+    }
+    
     delete[] keystates;
     
     // Trigger repaint

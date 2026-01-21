@@ -39,6 +39,35 @@ void Physics::update()
     // Update player position and resolve collisions
     updateActorPosition(dt);
     resolveCollision();
+    
+    // FINALE ABSOLUTE PRÜFUNG: Stelle sicher, dass die Position nach allen Updates korrekt ist
+    // Diese Prüfung wird IMMER ausgeführt, auch wenn die Position bereits über der Grenze ist
+    if(m_level && m_actor)
+    {
+        const Camera& camera = m_level->getCamera();
+        int cameraX = camera.x();
+        int cameraWidth = camera.width();
+        int cameraRight = cameraX + cameraWidth;
+        Vector2f currentPos = m_actor->worldPosition();
+        int actorWidth = m_actor->w();
+        
+        // DEBUG: Ausgabe der Werte
+        if(currentPos.x() + actorWidth > cameraRight)
+        {
+            std::cout << "DEBUG: Camera X: " << cameraX << ", Width: " << cameraWidth << ", Right: " << cameraRight << std::endl;
+            std::cout << "DEBUG: Actor Pos X: " << currentPos.x() << ", Width: " << actorWidth << ", Right Edge: " << (currentPos.x() + actorWidth) << std::endl;
+            std::cout << "DEBUG: CORRECTING: Actor right edge " << (currentPos.x() + actorWidth) << " exceeds camera right " << cameraRight << std::endl;
+            m_actor->setWorldPosition(Vector2f(cameraRight - actorWidth, currentPos.y()));
+            m_actor->velocity().setX(0);
+        }
+        
+        // Prüfe linke Grenze
+        if(currentPos.x() < 0)
+        {
+            m_actor->setWorldPosition(Vector2f(0, currentPos.y()));
+            m_actor->velocity().setX(0);
+        }
+    }
 
     // Update clock
     m_lastTicks = SDL_GetTicks();
@@ -106,8 +135,57 @@ void Physics::updateActorPosition(double dt)
 
         //cout << "V: " << m_actor->velocity() << endl;
 
-        // Set new player position
-        m_actor->setWorldPosition(m_actor->worldPosition() + m_actor->velocity());
+        // Prüfe Kamera-Grenzen BEVOR die Position gesetzt wird
+        // Verhindere, dass die Position über die Grenze hinausgeht
+        if(m_level)
+        {
+            const Camera& camera = m_level->getCamera();
+            // Kamera X-Position (400) + Kamera-Breite (Fenster-Breite) = rechte Grenze in World-Koordinaten
+            // Die Kamera-Breite ist die Fenster-Breite, da die Kamera mit mainWindow->w() initialisiert wird
+            int cameraRight = camera.x() + camera.width();
+            Vector2f currentPos = m_actor->worldPosition();
+            Vector2f newPosition = currentPos + m_actor->velocity();
+            
+            // Prüfe rechte Grenze: Stoppe Geschwindigkeit, wenn Position über Grenze hinausgehen würde
+            // WICHTIG: Prüfe auch die aktuelle Position, falls sie bereits über der Grenze ist
+            int actorRightEdge = newPosition.x() + m_actor->w();
+            if(actorRightEdge > cameraRight)
+            {
+                // Setze Position auf Maximum und stoppe Geschwindigkeit
+                newPosition.setX(cameraRight - m_actor->w());
+                m_actor->velocity().setX(0);
+            }
+            
+            // Zusätzliche Prüfung: Falls aktuelle Position bereits über Grenze ist, korrigiere sofort
+            int currentRightEdge = currentPos.x() + m_actor->w();
+            if(currentRightEdge > cameraRight)
+            {
+                newPosition.setX(cameraRight - m_actor->w());
+                m_actor->velocity().setX(0);
+            }
+            
+            // Prüfe linke Grenze
+            if(newPosition.x() < 0)
+            {
+                newPosition.setX(0);
+                m_actor->velocity().setX(0);
+            }
+            
+            // Zusätzliche Prüfung: Falls aktuelle Position bereits unter 0 ist, korrigiere sofort
+            if(currentPos.x() < 0)
+            {
+                newPosition.setX(0);
+                m_actor->velocity().setX(0);
+            }
+            
+            // Set new player position (mit Grenzen-Prüfung)
+            m_actor->setWorldPosition(newPosition);
+        }
+        else
+        {
+            // Set new player position (ohne Grenzen-Prüfung, falls kein Level vorhanden)
+            m_actor->setWorldPosition(m_actor->worldPosition() + m_actor->velocity());
+        }
 
 
         // Stop jumping at maximum jumping height
@@ -175,6 +253,33 @@ void Physics::resolveCollision()
 
     // Set desired position to new position
     desiredPosition = global_pos;
+
+    // Prüfe Kamera-Grenzen VOR den Tile-Kollisionen, um sicherzustellen, dass die Position nicht über die Grenze hinausgeht
+    if(m_level)
+    {
+        const Camera& camera = m_level->getCamera();
+        int cameraRight = camera.x() + camera.width();
+        
+        // Begrenze desiredPosition auf Kamera-Grenze (rechts)
+        if(desiredPosition.x() + m_actor->w() > cameraRight)
+        {
+            desiredPosition.setX(cameraRight - m_actor->w());
+            if(m_actor->velocity().x() > 0)
+            {
+                m_actor->velocity().setX(0);
+            }
+        }
+        
+        // Begrenze desiredPosition auf Level-Grenze (links)
+        if(desiredPosition.x() < 0)
+        {
+            desiredPosition.setX(0);
+            if(m_actor->velocity().x() < 0)
+            {
+                m_actor->velocity().setX(0);
+            }
+        }
+    }
 
     // Check if sprite intersects with one of its surrounding tiles
     getSurroundingTiles(global_pos, surroundingTiles);
@@ -314,6 +419,12 @@ void Physics::resolveCollision()
                 	if(n == 4)
                 	{
                 		desiredPosition.setX(desiredPosition.x() - intersectionRect.w);
+                		// Prüfe sofort nach X-Änderung: Linke Grenze
+                		if(desiredPosition.x() < 0)
+                		{
+                			desiredPosition.setX(0);
+                			m_actor->velocity().setX(0);
+                		}
                 	}
                 	else if(n == 1)
                 	{
@@ -323,6 +434,17 @@ void Physics::resolveCollision()
                 	else if(n == 3)
                 	{
                 		desiredPosition.setX(desiredPosition.x() + intersectionRect.w);
+                		// Prüfe sofort nach X-Änderung: Rechte Kamera-Grenze
+                		if(m_level)
+                		{
+                			const Camera& camera = m_level->getCamera();
+                			int cameraRight = camera.x() + camera.width();
+                			if(desiredPosition.x() + m_actor->w() > cameraRight)
+                			{
+                				desiredPosition.setX(cameraRight - m_actor->w());
+                				m_actor->velocity().setX(0);
+                			}
+                		}
                 	}
                 	else if(n == 6)
                 	{
@@ -348,10 +470,27 @@ void Physics::resolveCollision()
                 				if( (n == 2) || (n == 7))
                 				{
                 					desiredPosition.setX(desiredPosition.x() - intersectionRect.w);
+                					// Prüfe sofort nach X-Änderung: Linke Grenze
+                					if(desiredPosition.x() < 0)
+                					{
+                						desiredPosition.setX(0);
+                						m_actor->velocity().setX(0);
+                					}
                 				}
                 				else
                 				{
                 					desiredPosition.setX(desiredPosition.x() + intersectionRect.w);
+                					// Prüfe sofort nach X-Änderung: Rechte Kamera-Grenze
+                					if(m_level)
+                					{
+                						const Camera& camera = m_level->getCamera();
+                						int cameraRight = camera.x() + camera.width();
+                						if(desiredPosition.x() + m_actor->w() > cameraRight)
+                						{
+                							desiredPosition.setX(cameraRight - m_actor->w());
+                							m_actor->velocity().setX(0);
+                						}
+                					}
                 				}
                 				if( (n == 0) || (n == 2) )
                 				{
@@ -366,16 +505,21 @@ void Physics::resolveCollision()
         }
     }
 
-    // Prüfe Level-Grenzen (links und rechts)
-    // Verhindere, dass der Spieler außerhalb des Levels läuft
-    if(m_tiles)
+    // Prüfe Level-Grenzen (links) und Kamera-Grenzen (rechts)
+    // Verhindere, dass der Spieler außerhalb des Levels (links) oder der Kamera (rechts) läuft
+    // WICHTIG: Diese Prüfung muss NACH allen Tile-Kollisionen sein, um sicherzustellen, dass die Position korrekt ist
+    if(m_level)
     {
-        // Berechne die Level-Grenzen in Welt-Koordinaten
-        // Level startet bei (0, 600) in Welt-Koordinaten (Y-Offset für weiter unten)
-        int levelLeft = 0;
-        int levelRight = m_tiles->width() * m_tiles->tileWidth();
+        // Hole Kamera vom Level für rechte Grenze
+        const Camera& camera = m_level->getCamera();
         
-        // Prüfe linke Grenze
+        // Berechne die Grenzen in Welt-Koordinaten
+        // Linke Grenze: Level-Start (0)
+        // Rechte Grenze: Kamera X-Position + Kamera Breite
+        int levelLeft = 0;
+        int cameraRight = camera.x() + camera.width();
+        
+        // Prüfe linke Grenze (Level-Grenze)
         if(desiredPosition.x() < levelLeft)
         {
             desiredPosition.setX(levelLeft);
@@ -386,19 +530,73 @@ void Physics::resolveCollision()
             }
         }
         
-        // Prüfe rechte Grenze (berücksichtige Sprite-Breite)
-        if(desiredPosition.x() + m_actor->w() > levelRight)
+        // Prüfe rechte Grenze (Kamera-Grenze, berücksichtige Sprite-Breite)
+        // Die rechte Kante des Sprites (desiredPosition.x() + m_actor->w()) darf nicht über cameraRight hinausgehen
+        if(desiredPosition.x() + m_actor->w() > cameraRight)
         {
-            desiredPosition.setX(levelRight - m_actor->w());
+            desiredPosition.setX(cameraRight - m_actor->w());
             // Stoppe horizontale Geschwindigkeit, wenn gegen rechte Wand
-            if(m_actor->velocity().x() > 0)
-            {
-                m_actor->velocity().setX(0);
-            }
+            m_actor->velocity().setX(0);
+        }
+        
+        // Zusätzliche Sicherheitsprüfung: Stelle sicher, dass die Position nicht negativ wird
+        if(desiredPosition.x() < 0)
+        {
+            desiredPosition.setX(0);
+            m_actor->velocity().setX(0);
+        }
+        
+        // FINALE PRÜFUNG: Stelle absolut sicher, dass die Position innerhalb der Grenzen ist
+        // Diese Prüfung wird direkt vor setWorldPosition ausgeführt
+        int finalCameraRight = camera.x() + camera.width();
+        if(desiredPosition.x() + m_actor->w() > finalCameraRight)
+        {
+            desiredPosition.setX(finalCameraRight - m_actor->w());
+            m_actor->velocity().setX(0);
+        }
+        if(desiredPosition.x() < 0)
+        {
+            desiredPosition.setX(0);
+            m_actor->velocity().setX(0);
         }
     }
 
+    // FINALE PRÜFUNG direkt vor setWorldPosition
+    if(m_level && m_actor)
+    {
+        const Camera& camera = m_level->getCamera();
+        int cameraRight = camera.x() + camera.width();
+        
+        // Stelle absolut sicher, dass die Position innerhalb der Grenzen ist
+        if(desiredPosition.x() + m_actor->w() > cameraRight)
+        {
+            desiredPosition.setX(cameraRight - m_actor->w());
+            m_actor->velocity().setX(0);
+            std::cout << "FINAL CHECK: Correcting position to " << desiredPosition.x() << " (max: " << (cameraRight - m_actor->w()) << ")" << std::endl;
+        }
+        if(desiredPosition.x() < 0)
+        {
+            desiredPosition.setX(0);
+            m_actor->velocity().setX(0);
+        }
+    }
+    
     m_actor->setWorldPosition(desiredPosition);
+    
+    // ABSOLUT LETZTE PRÜFUNG direkt nach setWorldPosition
+    if(m_level && m_actor)
+    {
+        const Camera& camera = m_level->getCamera();
+        int cameraRight = camera.x() + camera.width();
+        Vector2f posAfterSet = m_actor->worldPosition();
+        
+        if(posAfterSet.x() + m_actor->w() > cameraRight)
+        {
+            std::cout << "AFTER SET: Position still exceeds! Pos: " << posAfterSet.x() << ", Right: " << (posAfterSet.x() + m_actor->w()) << ", Max: " << cameraRight << std::endl;
+            m_actor->setWorldPosition(Vector2f(cameraRight - m_actor->w(), posAfterSet.y()));
+            m_actor->velocity().setX(0);
+        }
+    }
 }
 
 } // namespace jumper

@@ -58,6 +58,9 @@ public:
     TileSetRepresentation* tiles();
 
     const Camera& getCamera();
+    
+    /// Checks if actor is outside camera bounds (for game over)
+    bool isActorOutsideCamera() const;
 
     /// Adds a renderable on the given layer to the level.
     /// If the renderable is an actor, collisions will only

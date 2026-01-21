@@ -31,7 +31,7 @@ namespace jumper
 Level::Level(MainWindow* mainWindow, std::string filename)
     : StaticRenderable(mainWindow),
       m_mainWindow(mainWindow),
-      m_camera(400, 600, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und unten
+      m_camera(400, 800, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera)
 {
     m_physics   = 0;
@@ -40,6 +40,50 @@ Level::Level(MainWindow* mainWindow, std::string filename)
 
     // Setup level attributes from config file
     LevelParser p(filename, this, m_mainWindow);
+
+    // Füge Wand-Tiles links und rechts hinzu (als sichtbare Grenzen)
+    if(m_tiles && m_tiles->tiles())
+    {
+        TileSetRepresentation* tileRep = m_tiles->tiles();
+        int tileWidth = tileRep->tileWidth();
+        int levelHeight = tileRep->height();
+        int levelWidth = tileRep->width();
+        
+        // Berechne die Kamera-Grenzen in Tile-Koordinaten
+        int cameraX = m_camera.x();  // Kamera X in World-Koordinaten (400)
+        int cameraWidth = m_camera.width();  // Kamera Breite (800)
+        int cameraRight = cameraX + cameraWidth;  // Rechte Grenze in World-Koordinaten (1200)
+        
+        // Konvertiere World-Koordinaten zu Tile-Koordinaten
+        // Linke Wand: Bei Tile 0 (linker Rand des Levels)
+        int leftTileX = 0;
+        // Rechte Wand: Bei Kamera X + Breite (rechter Rand der Kamera)
+        int rightTileX = cameraRight / tileWidth;
+        
+        // Stelle sicher, dass die rechte Wand innerhalb der Level-Breite ist
+        if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
+        
+        // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
+        int wallTileId = 1;
+        
+        // Füge linke Wand hinzu (von unten nach oben)
+        if(leftTileX >= 0 && leftTileX < levelWidth)
+        {
+            for(int y = 0; y < levelHeight; y++)
+            {
+                tileRep->insert(leftTileX, y, wallTileId);
+            }
+        }
+        
+        // Füge rechte Wand hinzu (von unten nach oben)
+        if(rightTileX >= 0 && rightTileX < levelWidth)
+        {
+            for(int y = 0; y < levelHeight; y++)
+            {
+                tileRep->insert(rightTileX, y, wallTileId);
+            }
+        }
+    }
 
 //    m_actor = new Actor(mainWindow, "../res/actor.spr");
 //     m_actor->setFPS(10);
@@ -88,6 +132,11 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
 
 void Level::update(const Uint8* keystates)
 {
+    // Update camera (automatisches Scrollen nach oben)
+    // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
+    double dt = 1.0 / 60.0;
+    m_camera.update(dt);
+    
     if(m_physics)
     {
         // Update actor according to given key states
@@ -151,6 +200,46 @@ void Level::render()
 const Camera& Level::getCamera()
 {
     return m_camera;
+}
+
+bool Level::isActorOutsideCamera() const
+{
+    if(!m_actor)
+    {
+        return false;
+    }
+    
+    const Camera& camera = m_camera;
+    Vector<double> actorPos = m_actor->worldPosition();
+    int actorHeight = m_actor->h();
+    
+    // Kamera-Grenzen in World-Koordinaten
+    int cameraY = camera.y();
+    int cameraHeight = camera.height();
+    int cameraBottom = cameraY + cameraHeight;
+    
+    // Prüfe, ob der untere Rand des Spielers den unteren Rand der Kamera berührt oder überschreitet
+    // In SDL-Koordinaten: Y=0 ist oben, größere Y-Werte sind weiter unten
+    // actorPos.y() ist die obere Kante des Spielers
+    // actorPos.y() + actorHeight ist die untere Kante des Spielers
+    // cameraBottom ist die untere Kante der Kamera
+    
+    // Game Over: Wenn die untere Kante des Spielers sich dem unteren Rand der Kamera nähert
+    // Da die Kamera nach oben scrollt, wird der Spieler relativ zur Kamera nach unten "fallen"
+    double actorBottom = actorPos.y() + actorHeight;
+    
+    // Prüfe, ob der Spieler sich dem unteren Rand der Kamera nähert
+    // WICHTIG: Wir lösen Game Over aus, wenn der Spieler die HÄLFTE der Kamera-Höhe erreicht
+    // Das bedeutet: Game Over, wenn der Spieler in der unteren Hälfte der Kamera ist
+    // Dies sorgt dafür, dass Game Over sehr früh auslöst
+    int gameOverThreshold = cameraY + (cameraHeight / 2);  // Mitte der Kamera
+    
+    if(actorBottom >= gameOverThreshold)
+    {
+        return true;  // Unterer Rand des Spielers berührt oder überschreitet unteren Rand der Kamera
+    }
+    
+    return false;  // Spieler ist noch innerhalb des Kamera-Bereichs
 }
 
 Level::~Level()
