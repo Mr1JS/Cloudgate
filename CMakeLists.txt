@@ -35,33 +35,33 @@ include_directories(${SDL2_INCLUDE_DIR})
 include_directories(${SDL2_IMG_INCLUDE_DIR})
 
 # Add game source directory to include path
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/game)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/game)
 
 # Game source files from uebung10
 set(GAME_SOURCES
-    src/game/Actor.cpp
-    src/game/ActorForces.cpp
-    src/game/AnimatedRenderable.cpp
-    src/game/Camera.cpp
-    src/game/LayerManager.cpp
-    src/game/Level.cpp
-    src/game/LevelForces.cpp
-    src/game/LevelParser.cpp
-    src/game/MainWindow.cpp
-    src/game/MovingRenderable.cpp
-    src/game/Physics.cpp
-    src/game/SDLRenderable.cpp
-    src/game/TileArray.cpp
-    src/game/TileSet.cpp
-    src/game/Util.cpp
+    game/src/Actor.cpp
+    game/src/ActorForces.cpp
+    game/src/AnimatedRenderable.cpp
+    game/src/Camera.cpp
+    game/src/LayerManager.cpp
+    game/src/Level.cpp
+    game/src/LevelForces.cpp
+    game/src/LevelParser.cpp
+    game/src/MainWindow.cpp
+    game/src/MovingRenderable.cpp
+    game/src/Physics.cpp
+    game/src/SDLRenderable.cpp
+    game/src/TileArray.cpp
+    game/src/TileSet.cpp
+    game/src/Util.cpp
 )
 
 qt_add_executable(appCloudgate_game
-    main.cpp
-    GameController.cpp
-    GameController.hpp
-    GameView.cpp
-    GameView.hpp
+    src/main.cpp
+    src/GameController.cpp
+    include/GameController.hpp
+    src/GameView.cpp
+    include/GameView.hpp
     ${GAME_SOURCES}
 )
 
@@ -69,21 +69,21 @@ qt_add_qml_module(appCloudgate_game
     URI Cloudgate_game
     VERSION 1.0
     QML_FILES
-        Main.qml
-        StyledButton.qml
-        SecondPage.qml
-        LevelEditor.qml
+        qml/Main.qml
+        qml/StyledButton.qml
+        qml/SecondPage.qml
+        qml/LevelEditor.qml
     SOURCES
-        pages.h
-        pages.cpp
-        LevelEditorController.cpp
-        LevelEditorController.hpp
-        TilesetPalette.hpp
-        TilesetPalette.cpp
-        LevelCanvas.hpp
-        LevelCanvas.cpp
+        include/pages.h
+        src/pages.cpp
+        src/LevelEditorController.cpp
+        include/LevelEditorController.hpp
+        include/TilesetPalette.hpp
+        src/TilesetPalette.cpp
+        include/LevelCanvas.hpp
+        src/LevelCanvas.cpp
     RESOURCES
-        assets.qrc
+        res/assets.qrc
 )
 
 # Link libraries
