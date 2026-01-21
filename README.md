@@ -15,30 +15,7 @@ Dieses Projekt kombiniert eine moderne Qt/QML-Benutzeroberfläche mit der vollst
 
 ## Projektstruktur
 
-```
-project1/
-├── src/
-│   └── game/              # Spiel-Engine aus uebung10
-│       ├── Actor.*       # Spielfigur
-│       ├── Physics.*     # Physik-Engine
-│       ├── Level.*       # Level-Management
-│       ├── Camera.*      # Camera-System
-│       ├── TileSet.*     # Tile-Rendering
-│       ├── MainWindow.*  # SDL2-Fenster-Verwaltung (modifiziert)
-│       └── ...           # Weitere Engine-Komponenten
-├── ext/
-│   └── HighFive/         # HDF5-Bibliothek für Level-Laden
-├── res/
-│   ├── level.xml         # Level-Definition
-│   └── level.h5          # Level-Daten (HDF5)
-├── cmake/                # CMake-Module für SDL2
-├── GameView.*            # Qt-Klasse zum Einbetten von SDL2 in QML
-├── GameController.*      # Qt-Klasse zum Starten/Stoppen des Spiels (optional)
-├── main.cpp              # Hauptprogramm
-├── Main.qml              # Hauptmenü
-├── SecondPage.qml        # Spiel-Seite mit GameView
-└── CMakeLists.txt        # Build-Konfiguration
-```
+> Being edited, Comming Soon!
 
 ## Abhängigkeiten
 
