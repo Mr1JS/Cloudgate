@@ -82,12 +82,11 @@ cmake ..
 for macos
 ```bash
 cmake -S .. -B . \
-  -DCMAKE_PREFIX_PATH="/Users/aslam/Qt/6.10.1/macos"
+  -DCMAKE_PREFIX_PATH="~/Qt/6.10.1/macos"
 ```
 
 ```bash
-mkdir build && cd build                                 
-/Users/aslam/Qt/6.10.1/macos/bin/qt-cmake -S .. -B .
+~/Qt/6.10.1/macos/bin/qt-cmake -S . -B build -DCMAKE_PREFIX_PATH=~/Qt/6.10.1/macos
 ```
 
 ### 3. Kompilieren
