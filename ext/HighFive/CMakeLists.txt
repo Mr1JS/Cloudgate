@@ -1,5 +1,5 @@
 project(HighFive)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 enable_testing()
 
@@ -33,7 +33,7 @@ find_package(HDF5 QUIET REQUIRED)
 set(Boost_NO_BOOST_CMAKE TRUE)
 
 if(USE_BOOST)
-  find_package(Boost QUIET REQUIRED COMPONENTS system unit_test_framework)
+  find_package(Boost QUIET REQUIRED COMPONENTS unit_test_framework)
   add_definitions(-DH5_USE_BOOST )
   include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 endif()

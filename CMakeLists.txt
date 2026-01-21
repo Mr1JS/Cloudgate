@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.5)
 
 project(Cloudgate_game VERSION 0.1 LANGUAGES CXX)
 
@@ -27,7 +27,7 @@ find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 
 # Find required boost libraries
-find_package(Boost 1.54 COMPONENTS filesystem system REQUIRED)
+find_package(Boost 1.54 COMPONENTS filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Add SDL2 include directory to search path
