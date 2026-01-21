@@ -98,6 +98,10 @@ make
 ### 4. Ausführen
 
 ```bash
+# Copy resources to build directory
+cp -r ../res ./
+
+# Run the game
 ./appCloudgate_game
 ```
 
