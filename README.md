@@ -15,7 +15,7 @@ Dieses Projekt kombiniert eine moderne Qt/QML-Benutzeroberfläche mit der vollst
 
 ## Projektstruktur
 
-> Being edited, Comming Soon!
+> Wird gerade bearbeitet, bald verfügbar!
 
 ## Abhängigkeiten
 
@@ -56,7 +56,7 @@ cd build
 cmake ..
 ```
 
-#### For macos (Choose One)
+#### MacOS (Eine Option auswählen)
 ```bash
 cmake -S .. -B . \
   -DCMAKE_PREFIX_PATH="~/Qt/6.10.1/macos"
