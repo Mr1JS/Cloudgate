@@ -35,7 +35,12 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     engine.rootContext()->setContextProperty("myMain", myPage); // the object will be available in QML with name "myGlobalObject"
+    
+    #ifdef Q_OS_MAC
     engine.load(QUrl(QStringLiteral("qrc:/qt/qml/Cloudgate_game/Main.qml")));
+    #else
+    engine.load(QUrl(QStringLiteral("qrc:/Cloudgate_game/Main.qml")));
+    #endif
 
     QObject::connect(myPage, &pages::page_changed, [myPage]() {
         qInfo() << "Page chnaged to " << myPage->getPageInfo(myPage->page_value()) << " value " << myPage->page_value() ;
