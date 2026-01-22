@@ -154,8 +154,9 @@ void LevelCanvas::paint(QPainter* painter)
 
 void LevelCanvas::mousePressEvent(QMouseEvent* event)
 {
-    int gridX = event->x() / m_tileWidth;
-    int gridY = event->y() / m_tileHeight;
+    const QPointF pos = event->position();
+    int gridX = int(pos.x()) / m_tileWidth;
+    int gridY = int(pos.y()) / m_tileHeight;
 
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {

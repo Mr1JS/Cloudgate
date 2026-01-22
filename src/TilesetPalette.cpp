@@ -154,8 +154,9 @@ void TilesetPalette::mousePressEvent(QMouseEvent* event)
     int columns = qMax(1, (int)(width() / (m_tileWidth + m_spacing)));
 
     // Improved click detection
-    int clickX = event->x();
-    int clickY = event->y();
+    const QPointF pos = event->position();
+    int clickX = int(pos.x());
+    int clickY = int(pos.y());
 
     // Calculate which grid cell was clicked
     int cellX = clickX / (m_tileWidth + m_spacing);
