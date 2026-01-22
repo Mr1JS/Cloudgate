@@ -5,15 +5,60 @@
 #include <QImage>
 #include <QFile>
 #include <QDataStream>
+#include <QFileInfo>
+#include <QTextStream>
+#include <QRegularExpression>
+#include <QPair>
+#include <QMap>
+#include <QDebug>
 
-LevelCanvas::LevelCanvas(QQuickItem* parent)
-    : QQuickPaintedItem(parent)
-    , m_backgroundColor(92, 130, 161)
+#include <vector>
+#include <algorithm> // std::copy
+#include <exception> // std::exception
+
+#include "game/io/BaseHdf5IO.hpp"
+#include "game/io/TileSetIO.hpp"
+#include "game/io/TextureIO.hpp"
+
+static std::vector<int> collisionMapToFlat(
+    const QMap<QPair<int, int>, int> &collision,
+    int width, int height)
+{
+    std::vector<int> out(width * height, 0);
+    for (auto it = collision.begin(); it != collision.end(); ++it)
+    {
+        const int x = it.key().first;
+        const int y = it.key().second;
+        if (x >= 0 && x < width && y >= 0 && y < height)
+            out[y * width + x] = it.value();
+    }
+    return out;
+}
+
+static QMap<QPair<int, int>, int> flatToCollisionMap(
+    const std::vector<int> &flat,
+    int width, int height)
+{
+    QMap<QPair<int, int>, int> out;
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            int v = flat[y * width + x];
+            if (v != 0)
+                out.insert(qMakePair(x, y), v);
+        }
+    }
+    return out;
+}
+
+LevelCanvas::LevelCanvas(QQuickItem *parent)
+    : QQuickPaintedItem(parent), m_backgroundColor(92, 130, 161)
 {
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 }
 
-void LevelCanvas::setTileset(const QString& path, int tileW, int tileH, int offset)
+void LevelCanvas::setTileset(const QString &path, int tileW, int tileH, int offset)
 {
     QPixmap pix(path);
     if (pix.isNull())
@@ -78,7 +123,8 @@ void LevelCanvas::setTileset(const QString& path, int tileW, int tileH, int offs
             // But only inner pixels are visible
             t.sourceRect = QRect(x, y, totalTileWidth, totalTileHeight);
 
-            if (row == 0 && col < 4) {
+            if (row == 0 && col < 4)
+            {
                 qDebug() << "Canvas Tile" << t.index
                          << "-> sourceRect:" << t.sourceRect
                          << "(contains" << m_tileWidth << "x" << m_tileHeight << "+ spacing)";
@@ -105,7 +151,7 @@ void LevelCanvas::clearLevel()
     update();
 }
 
-void LevelCanvas::paint(QPainter* painter)
+void LevelCanvas::paint(QPainter *painter)
 {
     painter->setRenderHint(QPainter::Antialiasing, false);
     painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
@@ -132,7 +178,7 @@ void LevelCanvas::paint(QPainter* painter)
             QRect actualSourceRect = m_tiles[tileIndex].sourceRect;
             QRect croppedSource(actualSourceRect.x(),
                                 actualSourceRect.y(),
-                                m_tileWidth,  // Only 34px wide
+                                m_tileWidth,   // Only 34px wide
                                 m_tileHeight); // Only 34px tall
 
             painter->drawPixmap(targetRect, m_tiles[tileIndex].pixmap, croppedSource);
@@ -151,7 +197,7 @@ void LevelCanvas::paint(QPainter* painter)
     }
 }
 
-void LevelCanvas::mousePressEvent(QMouseEvent* event)
+void LevelCanvas::mousePressEvent(QMouseEvent *event)
 {
     int gridX = event->x() / m_tileWidth;
     int gridY = event->y() / m_tileHeight;
@@ -186,52 +232,119 @@ void LevelCanvas::mousePressEvent(QMouseEvent* event)
     }
 }
 
-void LevelCanvas::saveLevel(const QString& path)
+void LevelCanvas::saveLevel(const QString &xmlPath)
 {
-    QFile file(path);
-    if (!file.open(QIODevice::WriteOnly))
+    QFileInfo xmlInfo(xmlPath);
+    const QString dir = xmlInfo.absolutePath();
+    const QString h5FileName = "level.h5";
+    const QString h5Path = dir + "/" + h5FileName;
+
+    const int w = m_gridWidth;
+    const int h = m_gridHeight;
+
+    // Always produce a full grid (all zeros if empty)
+    std::vector<int> flat = collisionMapToFlat(m_collisionData, w, h);
+
+    // --- Save HDF5 collision ---
+    try
     {
-        qWarning() << "Cannot save level:" << path;
+        LevelHdf5IO io;
+        io.open(h5Path.toStdString());
+
+        std::vector<size_t> dim = {(size_t)h, (size_t)w};
+        // TODO: adjust chunk size? in this case small level so fixed 32x32 (minimal)
+        std::vector<hsize_t> chunkSize = {
+            std::min<hsize_t>(32, (hsize_t)h),
+            std::min<hsize_t>(32, (hsize_t)w)};
+
+        // BaseHdf5IO expects shared_array<T>
+        jumper::shared_array<int> arr(new int[flat.size()]);
+        std::copy(flat.begin(), flat.end(), arr.get());
+
+        io.save<int>("tiles", "collision_tiles", dim, chunkSize, arr);
+    }
+    catch (const std::exception &e)
+    {
+        qWarning() << "[saveLevel] HDF5 collision save failed:" << e.what();
         return;
     }
 
-    QDataStream out(&file);
-    out << m_gridWidth << m_gridHeight;
-    out << m_levelData.size();
-
-    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    // --- Save XML (always) ---
+    QFile file(xmlPath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
-        out << it.key().first << it.key().second << it.value();
+        qWarning() << "[saveLevel] Cannot write XML:" << xmlPath;
+        return;
     }
 
+    QTextStream ts(&file);
+    ts << "<?xml version=\"1.0\"?>\n";
+    ts << "<level resources=\"" << h5FileName << "\">\n";
+    ts << "  <collision_tiles tileset=\"default\" src=\"collision_tiles\"/>\n";
+    ts << "</level>\n";
     file.close();
-    qDebug() << "Level saved:" << path;
 }
 
-void LevelCanvas::loadLevel(const QString& path)
+void LevelCanvas::loadLevel(const QString &xmlPath)
 {
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
+    QFileInfo xmlInfo(xmlPath);
+    const QString dir = xmlInfo.absolutePath();
+
+    QString h5FileName = "level.h5";
+    QString collisionDataset = "collision_tiles";
+
+    // --- Load XML to get resources name (and optionally src=...) ---
     {
-        qWarning() << "Cannot load level:" << path;
-        return;
+        QFile file(xmlPath);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            qWarning() << "[loadLevel] Cannot read XML:" << xmlPath;
+            m_collisionData.clear();
+            return;
+        }
+        const QString xmlText = QString::fromUtf8(file.readAll());
+        file.close();
+
+        // resources="..."
+        QRegularExpression reRes("resources\\s*=\\s*\"([^\"]+)\"");
+        auto m = reRes.match(xmlText);
+        if (m.hasMatch())
+            h5FileName = m.captured(1);
+
+        // src="..."
+        QRegularExpression reSrc("<collision_tiles[^>]*src\\s*=\\s*\"([^\"]+)\"");
+        auto m2 = reSrc.match(xmlText);
+        if (m2.hasMatch())
+            collisionDataset = m2.captured(1);
     }
 
-    QDataStream in(&file);
-    in >> m_gridWidth >> m_gridHeight;
+    const QString h5Path = dir + "/" + h5FileName;
 
-    int count;
-    in >> count;
+    const int w = m_gridWidth;
+    const int h = m_gridHeight;
 
-    m_levelData.clear();
-    for (int i = 0; i < count; i++)
+    // --- Load collision from HDF5 (if missing => empty) ---
+    try
     {
-        int x, y, tileIndex;
-        in >> x >> y >> tileIndex;
-        m_levelData[QPair<int, int>(x, y)] = tileIndex;
+        LevelHdf5IO io;
+        io.open(h5Path.toStdString());
+
+        std::vector<size_t> dim = {(size_t)h, (size_t)w};
+
+        auto shared = io.loadArray<int>("tiles", collisionDataset.toStdString(), dim);
+
+        // Copy into vector<int>
+        std::vector<int> flat((size_t)w * (size_t)h, 0);
+        std::copy(shared.get(), shared.get() + flat.size(), flat.begin());
+
+        m_collisionData = flatToCollisionMap(flat, w, h);
+    }
+    catch (const std::exception &e)
+    {
+        // If file/dataset not found => empty collision level
+        qWarning() << "[loadLevel] collision missing => empty:" << e.what();
+        m_collisionData.clear();
     }
 
-    file.close();
     update();
-    qDebug() << "Level loaded:" << path;
 }

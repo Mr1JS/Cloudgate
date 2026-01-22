@@ -9,6 +9,11 @@
 #include <QColor>
 #include "TilesetPalette.hpp"
 
+
+#include "game/io/BaseHdf5IO.hpp"
+#include "game/io/TileSetIO.hpp"
+#include "game/io/TextureIO.hpp"
+
 // Level canvas for placing tiles
 class LevelCanvas : public QQuickPaintedItem
 {
@@ -17,6 +22,12 @@ class LevelCanvas : public QQuickPaintedItem
     Q_PROPERTY(int gridHeight READ gridHeight WRITE setGridHeight NOTIFY gridHeightChanged)
 
 public:
+
+    using LevelHdf5IO = jumper::BaseHdf5IO<
+    jumper::hdf5features::TextureIO,
+    jumper::hdf5features::TileSetIO>;
+
+
     explicit LevelCanvas(QQuickItem* parent = nullptr);
 
     Q_INVOKABLE void setTileset(const QString& path, int tileW = 34, int tileH = 34, int offset = 0);
@@ -43,6 +54,7 @@ protected:
 private:
     QList<Tile> m_tiles;
     QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
+    QMap<QPair<int,int>, int> m_collisionData;
 
     int m_tileWidth = 34;
     int m_tileHeight = 34;
