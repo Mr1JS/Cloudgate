@@ -31,9 +31,9 @@ public:
     Q_INVOKABLE void newLevel(int gridWidth = 20, int gridHeight = 25);
     Q_INVOKABLE void clearLevel();
 
-    // NEW: Parameterless functions for QML buttons
-    Q_INVOKABLE void saveLevel(); // Opens QFileDialog, then saves
-    Q_INVOKABLE void loadLevel(); // Opens QFileDialog, then loads
+    // Save/Load without parameters - opens QFileDialog internally
+    Q_INVOKABLE void saveLevel();
+    Q_INVOKABLE void loadLevel();
 
     Q_INVOKABLE void toggleExtraTileset(bool enabled);
 
@@ -64,11 +64,9 @@ private:
     int m_tileHeight = 32;
     int m_tileOffset = 4;
     int m_selectedTileIndex = -1;
-
     int m_gridWidth = 20;
     int m_gridHeight = 25;
-    int m_endIndex = 20;    // at which point do the tiles split up between normal Tiles and extraTiles
-    QString m_lastSavePath; // Remember last used path for convenience
+    int m_endIndex = 20; // at which point do the tiles split up between normal Tiles and extraTiles
 };
 
 #endif // LEVELEDITORCONTROLLER_HPP

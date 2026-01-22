@@ -61,7 +61,4 @@ Window {
             }
         }
     }
-    Component.onCompleted: {
-        console.log("Current style:", Qt.application.style)
-    }
 }

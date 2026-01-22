@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <include/pages.h>
 #include <QQmlContext>
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     // need for rednering with SDL2 and not OpenGL
     QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
 
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
 

@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 # Find SDL2
 find_package(SDL2 REQUIRED)
@@ -156,6 +157,7 @@ target_link_libraries(appCloudgate_game
     ${Boost_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${HDF5_HL_LIBRARIES}
+    Qt6::Widgets
 )
 
 # On Windows, copy SDL2.dll and SDL2_image.dll to output directory

@@ -9,12 +9,12 @@ Page {
     LevelEditorController {
         id: editorController
 
-        onLevelSaved: {
-            statusText.text = "Level saved successfully"
+        onLevelSaved: function (path) {
+            statusText.text = "Level saved: " + path
         }
 
-        onLevelLoaded: {
-            statusText.text = "Level loaded successfully"
+        onLevelLoaded: function (path) {
+            statusText.text = "Level loaded: " + path
         }
 
         onLevelCleared: {
@@ -68,12 +68,12 @@ Page {
 
                 Button {
                     text: "Save"
-                    onClicked: editorController.saveLevel() // No parameter!
+                    onClicked: editorController.saveLevel()
                 }
 
                 Button {
                     text: "Load"
-                    onClicked: editorController.loadLevel() // No parameter!
+                    onClicked: editorController.loadLevel()
                 }
 
                 Text {
@@ -110,13 +110,11 @@ Page {
                         }
                         MenuItem {
                             text: "Save"
-                            onTriggered: editorController.saveLevel(
-                                             ) // No parameter!
+                            onTriggered: editorController.saveLevel()
                         }
                         MenuItem {
                             text: "Load"
-                            onTriggered: editorController.loadLevel(
-                                             ) // No parameter!
+                            onTriggered: editorController.loadLevel()
                         }
                     }
                 }

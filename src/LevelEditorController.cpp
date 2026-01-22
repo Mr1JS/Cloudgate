@@ -3,15 +3,11 @@
 #include "include/LevelCanvas.hpp"
 #include <QDebug>
 #include <QFileDialog>
-#include <QStandardPaths>
 
 LevelEditorController::LevelEditorController(QObject *parent)
     : QObject(parent)
 {
     qDebug() << "LevelEditorController created";
-
-    // Initialize last save path to user's documents folder
-    m_lastSavePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 }
 
 void LevelEditorController::registerPalette(TilesetPalette *palette)
@@ -141,36 +137,40 @@ void LevelEditorController::saveLevel()
         return;
     }
 
-    // Open file dialog for saving
-    QString fileName = QFileDialog::getSaveFileName(
-        nullptr,                                 // parent widget
-        tr("Save Level"),                        // dialog title
-        m_lastSavePath + "/level.dat",           // default path
-        tr("Level Files (*.dat);;All Files (*)") // file filter
-    );
+    // Open QFileDialog to get save path
+    QString file_name = QFileDialog::getSaveFileName(
+        nullptr,
+        "Save Level",
+        "level.dat",
+        "Level Files (*.dat);;All Files (*)");
 
-    // If user cancelled the dialog
-    if (fileName.isEmpty())
+    // If user cancelled
+    if (file_name.isEmpty())
     {
         qDebug() << "Save cancelled by user";
         return;
     }
 
     // Ensure .dat extension
-    if (!fileName.endsWith(".dat", Qt::CaseInsensitive))
+    if (!file_name.endsWith(".dat", Qt::CaseInsensitive))
     {
-        fileName += ".dat";
+        file_name += ".dat";
     }
 
-    // Remember directory for next time
-    QFileInfo fileInfo(fileName);
-    m_lastSavePath = fileInfo.absolutePath();
+    // Open file for writing
+    QFile file(file_name);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        qWarning() << "Could not open file for writing:" << file_name;
+        return;
+    }
 
-    // Save the level
-    qDebug() << "Saving level to:" << fileName;
-    m_canvas->saveLevel(fileName);
-    emit levelSaved(fileName);
-    qDebug() << "Level saved successfully";
+    // Save level
+    m_canvas->saveLevel(file_name);
+    file.close();
+
+    emit levelSaved(file_name);
+    qDebug() << "Level saved to:" << file_name;
 }
 
 void LevelEditorController::loadLevel()
@@ -183,30 +183,34 @@ void LevelEditorController::loadLevel()
         return;
     }
 
-    // Open file dialog for loading
-    QString fileName = QFileDialog::getOpenFileName(
-        nullptr,                                 // parent widget
-        tr("Load Level"),                        // dialog title
-        m_lastSavePath,                          // starting directory
-        tr("Level Files (*.dat);;All Files (*)") // file filter
-    );
+    // Open QFileDialog to get load path
+    QString file_name = QFileDialog::getOpenFileName(
+        nullptr,
+        "Open Level",
+        "",
+        "Level Files (*.dat);;All Files (*)");
 
-    // If user cancelled the dialog
-    if (fileName.isEmpty())
+    // If user cancelled
+    if (file_name.isEmpty())
     {
         qDebug() << "Load cancelled by user";
         return;
     }
 
-    // Remember directory for next time
-    QFileInfo fileInfo(fileName);
-    m_lastSavePath = fileInfo.absolutePath();
+    // Open file for reading
+    QFile file(file_name);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        qWarning() << "Could not open file for reading:" << file_name;
+        return;
+    }
 
-    // Load the level
-    qDebug() << "Loading level from:" << fileName;
-    m_canvas->loadLevel(fileName);
-    emit levelLoaded(fileName);
-    qDebug() << "Level loaded successfully";
+    // Load level
+    m_canvas->loadLevel(file_name);
+    file.close();
+
+    emit levelLoaded(file_name);
+    qDebug() << "Level loaded from:" << file_name;
 }
 
 void LevelEditorController::selectTile(int tileIndex)
