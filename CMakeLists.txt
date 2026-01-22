@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.5)
 
 project(Cloudgate_game VERSION 0.1 LANGUAGES CXX)
 
@@ -17,7 +17,7 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_IMAGE REQUIRED)
 
 # Boost
-find_package(Boost 1.54 REQUIRED COMPONENTS filesystem system)
+find_package(Boost REQUIRED COMPONENTS filesystem)
 
 
 # Find HDF5
