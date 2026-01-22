@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QImage>
 #include <QFile>
+#include <QDir>
 #include <QDataStream>
 #include <QFileInfo>
 #include <QTextStream>
@@ -15,10 +16,6 @@
 #include <vector>
 #include <algorithm> // std::copy
 #include <exception> // std::exception
-
-#include "game/io/BaseHdf5IO.hpp"
-#include "game/io/TileSetIO.hpp"
-#include "game/io/TextureIO.hpp"
 
 static std::vector<int> collisionMapToFlat(
     const QMap<QPair<int, int>, int> &collision,
@@ -199,8 +196,8 @@ void LevelCanvas::paint(QPainter *painter)
 
 void LevelCanvas::mousePressEvent(QMouseEvent *event)
 {
-    int gridX = event->x() / m_tileWidth;
-    int gridY = event->y() / m_tileHeight;
+    int gridX = event->position().x() / m_tileWidth;
+    int gridY = event->position().y() / m_tileHeight;
 
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {
@@ -234,9 +231,15 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 
 void LevelCanvas::saveLevel(const QString &xmlPath)
 {
-    QFileInfo xmlInfo(xmlPath);
+    QString p = xmlPath;
+
+    // Expand "~" to home directory
+    if (p.startsWith("~/"))
+        p.replace(0, 1, QDir::homePath());
+        
+    QFileInfo xmlInfo(p);
     const QString dir = xmlInfo.absolutePath();
-    const QString h5FileName = "level.h5";
+    const QString h5FileName = "level_trial.h5";
     const QString h5Path = dir + "/" + h5FileName;
 
     const int w = m_gridWidth;
@@ -262,6 +265,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         std::copy(flat.begin(), flat.end(), arr.get());
 
         io.save<int>("tiles", "collision_tiles", dim, chunkSize, arr);
+        qDebug() << "[saveLevel] HDF5 collision saved:" << h5Path;
     }
     catch (const std::exception &e)
     {
@@ -270,12 +274,13 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     }
 
     // --- Save XML (always) ---
-    QFile file(xmlPath);
+    QFile file(p);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
         qWarning() << "[saveLevel] Cannot write XML:" << xmlPath;
         return;
     }
+    qDebug() << "[saveLevel] Writing XML:" << xmlPath;
 
     QTextStream ts(&file);
     ts << "<?xml version=\"1.0\"?>\n";
@@ -287,7 +292,13 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
 void LevelCanvas::loadLevel(const QString &xmlPath)
 {
-    QFileInfo xmlInfo(xmlPath);
+    QString p = xmlPath;
+
+    // Expand "~" to home directory
+    if (p.startsWith("~/"))
+        p.replace(0, 1, QDir::homePath());
+
+    QFileInfo xmlInfo(p);
     const QString dir = xmlInfo.absolutePath();
 
     QString h5FileName = "level.h5";
@@ -295,13 +306,14 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 
     // --- Load XML to get resources name (and optionally src=...) ---
     {
-        QFile file(xmlPath);
+        QFile file(xmlInfo.absoluteFilePath());
         if (!file.open(QIODevice::ReadOnly))
         {
             qWarning() << "[loadLevel] Cannot read XML:" << xmlPath;
             m_collisionData.clear();
             return;
         }
+        qDebug() << "[loadLevel] Reading XML:" << xmlPath;
         const QString xmlText = QString::fromUtf8(file.readAll());
         file.close();
 
@@ -312,7 +324,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             h5FileName = m.captured(1);
 
         // src="..."
-        QRegularExpression reSrc("<collision_tiles[^>]*src\\s*=\\s*\"([^\"]+)\"");
+        QRegularExpression reSrc("<collision_tiles[^>]*tiles\\s*=\\s*\"([^\"]+)\"");
         auto m2 = reSrc.match(xmlText);
         if (m2.hasMatch())
             collisionDataset = m2.captured(1);
@@ -323,12 +335,14 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     const int w = m_gridWidth;
     const int h = m_gridHeight;
 
+    qDebug() << "[loadLevel] Loading level from HDF5:" << h5Path;
     // --- Load collision from HDF5 (if missing => empty) ---
     try
     {
         LevelHdf5IO io;
         io.open(h5Path.toStdString());
 
+        qDebug() << "[loadLevel] Loading collision dataset:" << collisionDataset;
         std::vector<size_t> dim = {(size_t)h, (size_t)w};
 
         auto shared = io.loadArray<int>("tiles", collisionDataset.toStdString(), dim);
@@ -337,13 +351,14 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         std::vector<int> flat((size_t)w * (size_t)h, 0);
         std::copy(shared.get(), shared.get() + flat.size(), flat.begin());
 
-        m_collisionData = flatToCollisionMap(flat, w, h);
+        m_levelData = flatToCollisionMap(flat, w, h);
+        qDebug() << "[loadLevel] collision loaded with" << m_levelData.size() << "tiles";
     }
     catch (const std::exception &e)
     {
         // If file/dataset not found => empty collision level
         qWarning() << "[loadLevel] collision missing => empty:" << e.what();
-        m_collisionData.clear();
+        m_levelData.clear();
     }
 
     update();

@@ -127,33 +127,33 @@ void LevelEditorController::clearLevel()
 
 void LevelEditorController::saveLevel(const QString& path)
 {
-    qDebug() << "Saving level to:" << path;
+    qDebug() << "[LevelEditorController] Saving level to:" << path;
 
     if (m_canvas)
     {
         m_canvas->saveLevel(path);
         emit levelSaved(path);
-        qDebug() << "Level saved successfully";
+        qDebug() << "[LevelEditorController] Level saved successfully";
     }
     else
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
     }
 }
 
 void LevelEditorController::loadLevel(const QString& path)
 {
-    qDebug() << "Loading level from:" << path;
+    qDebug() << "[LevelEditorController] Loading level from:" << path;
 
     if (m_canvas)
     {
         m_canvas->loadLevel(path);
         emit levelLoaded(path);
-        qDebug() << "Level loaded successfully";
+        qDebug() << "[LevelEditorController] Level loaded successfully";
     }
     else
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
     }
 }
 
