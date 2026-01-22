@@ -21,25 +21,28 @@ class LevelEditorController : public QObject
     Q_PROPERTY(int selectedTileIndex READ selectedTileIndex NOTIFY selectedTileChanged)
 
 public:
-    explicit LevelEditorController(QObject* parent = nullptr);
+    explicit LevelEditorController(QObject *parent = nullptr);
 
     // Tileset management
-    Q_INVOKABLE void loadTileset(const QString& path, int tileWidth = 32, int tileHeight = 32, int offset = 4, int endIndex = 20);
+    Q_INVOKABLE void loadTileset(const QString &path, int tileWidth = 32, int tileHeight = 32, int offset = 4, int endIndex = 20);
     Q_INVOKABLE void setTileDimensions(int width, int height);
 
     // Level management
     Q_INVOKABLE void newLevel(int gridWidth = 20, int gridHeight = 25);
     Q_INVOKABLE void clearLevel();
-    Q_INVOKABLE void saveLevel(const QString& path);
-    Q_INVOKABLE void loadLevel(const QString& path);
+
+    // NEW: Parameterless functions for QML buttons
+    Q_INVOKABLE void saveLevel(); // Opens QFileDialog, then saves
+    Q_INVOKABLE void loadLevel(); // Opens QFileDialog, then loads
+
     Q_INVOKABLE void toggleExtraTileset(bool enabled);
 
     // Tile selection
     Q_INVOKABLE void selectTile(int tileIndex);
 
     // Registration methods for components
-    Q_INVOKABLE void registerPalette(TilesetPalette* palette);
-    Q_INVOKABLE void registerCanvas(LevelCanvas* canvas);
+    Q_INVOKABLE void registerPalette(TilesetPalette *palette);
+    Q_INVOKABLE void registerCanvas(LevelCanvas *canvas);
 
     // Property getters
     QString currentTilesetPath() const { return m_tilesetPath; }
@@ -49,12 +52,13 @@ signals:
     void tilesetPathChanged();
     void selectedTileChanged();
     void levelCleared();
-    void levelSaved(const QString& path);
-    void levelLoaded(const QString& path);
+    void levelSaved(const QString &path);
+    void levelLoaded(const QString &path);
 
 private:
-    TilesetPalette* m_palette = nullptr;
-    LevelCanvas* m_canvas = nullptr;
+    TilesetPalette *m_palette = nullptr;
+    LevelCanvas *m_canvas = nullptr;
+
     QString m_tilesetPath;
     int m_tileWidth = 32;
     int m_tileHeight = 32;
@@ -63,7 +67,8 @@ private:
 
     int m_gridWidth = 20;
     int m_gridHeight = 25;
-    int m_endIndex = 20; // at which point do the tiles split up between normal Tiles and extraTiles
+    int m_endIndex = 20;    // at which point do the tiles split up between normal Tiles and extraTiles
+    QString m_lastSavePath; // Remember last used path for convenience
 };
 
 #endif // LEVELEDITORCONTROLLER_HPP

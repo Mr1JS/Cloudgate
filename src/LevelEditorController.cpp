@@ -2,14 +2,19 @@
 #include "include/TilesetPalette.hpp"
 #include "include/LevelCanvas.hpp"
 #include <QDebug>
+#include <QFileDialog>
+#include <QStandardPaths>
 
-LevelEditorController::LevelEditorController(QObject* parent)
+LevelEditorController::LevelEditorController(QObject *parent)
     : QObject(parent)
 {
     qDebug() << "LevelEditorController created";
+
+    // Initialize last save path to user's documents folder
+    m_lastSavePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 }
 
-void LevelEditorController::registerPalette(TilesetPalette* palette)
+void LevelEditorController::registerPalette(TilesetPalette *palette)
 {
     if (m_palette != nullptr)
     {
@@ -27,7 +32,7 @@ void LevelEditorController::registerPalette(TilesetPalette* palette)
     }
 }
 
-void LevelEditorController::registerCanvas(LevelCanvas* canvas)
+void LevelEditorController::registerCanvas(LevelCanvas *canvas)
 {
     if (m_canvas != nullptr)
     {
@@ -38,7 +43,7 @@ void LevelEditorController::registerCanvas(LevelCanvas* canvas)
     qDebug() << "LevelCanvas registered with controller";
 }
 
-void LevelEditorController::loadTileset(const QString& path, int tileWidth, int tileHeight, int offset, int endIndex)
+void LevelEditorController::loadTileset(const QString &path, int tileWidth, int tileHeight, int offset, int endIndex)
 {
     m_tilesetPath = path;
     m_tileWidth = tileWidth;
@@ -126,36 +131,82 @@ void LevelEditorController::clearLevel()
     }
 }
 
-void LevelEditorController::saveLevel(const QString& path)
+void LevelEditorController::saveLevel()
 {
-    qDebug() << "Saving level to:" << path;
+    qDebug() << "Opening save dialog...";
 
-    if (m_canvas)
-    {
-        m_canvas->saveLevel(path);
-        emit levelSaved(path);
-        qDebug() << "Level saved successfully";
-    }
-    else
+    if (!m_canvas)
     {
         qWarning() << "Canvas not registered!";
+        return;
     }
+
+    // Open file dialog for saving
+    QString fileName = QFileDialog::getSaveFileName(
+        nullptr,                                 // parent widget
+        tr("Save Level"),                        // dialog title
+        m_lastSavePath + "/level.dat",           // default path
+        tr("Level Files (*.dat);;All Files (*)") // file filter
+    );
+
+    // If user cancelled the dialog
+    if (fileName.isEmpty())
+    {
+        qDebug() << "Save cancelled by user";
+        return;
+    }
+
+    // Ensure .dat extension
+    if (!fileName.endsWith(".dat", Qt::CaseInsensitive))
+    {
+        fileName += ".dat";
+    }
+
+    // Remember directory for next time
+    QFileInfo fileInfo(fileName);
+    m_lastSavePath = fileInfo.absolutePath();
+
+    // Save the level
+    qDebug() << "Saving level to:" << fileName;
+    m_canvas->saveLevel(fileName);
+    emit levelSaved(fileName);
+    qDebug() << "Level saved successfully";
 }
 
-void LevelEditorController::loadLevel(const QString& path)
+void LevelEditorController::loadLevel()
 {
-    qDebug() << "Loading level from:" << path;
+    qDebug() << "Opening load dialog...";
 
-    if (m_canvas)
-    {
-        m_canvas->loadLevel(path);
-        emit levelLoaded(path);
-        qDebug() << "Level loaded successfully";
-    }
-    else
+    if (!m_canvas)
     {
         qWarning() << "Canvas not registered!";
+        return;
     }
+
+    // Open file dialog for loading
+    QString fileName = QFileDialog::getOpenFileName(
+        nullptr,                                 // parent widget
+        tr("Load Level"),                        // dialog title
+        m_lastSavePath,                          // starting directory
+        tr("Level Files (*.dat);;All Files (*)") // file filter
+    );
+
+    // If user cancelled the dialog
+    if (fileName.isEmpty())
+    {
+        qDebug() << "Load cancelled by user";
+        return;
+    }
+
+    // Remember directory for next time
+    QFileInfo fileInfo(fileName);
+    m_lastSavePath = fileInfo.absolutePath();
+
+    // Load the level
+    qDebug() << "Loading level from:" << fileName;
+    m_canvas->loadLevel(fileName);
+    emit levelLoaded(fileName);
+    qDebug() << "Level loaded successfully";
 }
 
 void LevelEditorController::selectTile(int tileIndex)
@@ -178,7 +229,7 @@ void LevelEditorController::selectTile(int tileIndex)
 }
 
 // switched to extra Tiles / 1x2 Tiles
-void LevelEditorController::toggleExtraTileset(bool enabled) 
+void LevelEditorController::toggleExtraTileset(bool enabled)
 {
     if (!m_palette || !m_canvas)
     {
@@ -187,4 +238,3 @@ void LevelEditorController::toggleExtraTileset(bool enabled)
     m_palette->setExtraTiles(enabled);
     m_canvas->setExtraTiles(enabled);
 }
-
