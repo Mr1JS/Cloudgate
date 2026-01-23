@@ -4,6 +4,10 @@ project(Cloudgate_game VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set Qt6_DIR to use the installed Qt 6.10.1
+# This ensures CMake finds the correct Qt version
+set(Qt6_DIR "$ENV{HOME}/Qt/6.10.1/gcc_64/lib/cmake/Qt6" CACHE PATH "Qt6 directory")
+
 # OPTIONAL: Setup C++ compiler flags for debug mode
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
 
