@@ -9,7 +9,6 @@
 #include <QColor>
 #include "TilesetPalette.hpp"
 
-
 #include "game/io/BaseHdf5IO.hpp"
 #include "game/io/TileSetIO.hpp"
 #include "game/io/TextureIO.hpp"
@@ -22,46 +21,62 @@ class LevelCanvas : public QQuickPaintedItem
     Q_PROPERTY(int gridHeight READ gridHeight WRITE setGridHeight NOTIFY gridHeightChanged)
 
 public:
-
     using LevelHdf5IO = jumper::BaseHdf5IO<
-    jumper::hdf5features::TextureIO,
-    jumper::hdf5features::TileSetIO>;
+        jumper::hdf5features::TextureIO,
+        jumper::hdf5features::TileSetIO>;
 
+    explicit LevelCanvas(QQuickItem *parent = nullptr);
 
-    explicit LevelCanvas(QQuickItem* parent = nullptr);
-
-    Q_INVOKABLE void setTileset(const QString& path, int tileW = 34, int tileH = 34, int offset = 0);
+    Q_INVOKABLE void setTileset(const QString &path, int tileW = 34, int tileH = 34, int offset = 0);
     Q_INVOKABLE void placeTile(int tileIndex);
     Q_INVOKABLE void clearLevel();
-    Q_INVOKABLE void saveLevel(const QString& path);
-    Q_INVOKABLE void loadLevel(const QString& path);
+    Q_INVOKABLE void saveLevel(const QString &path);
+    Q_INVOKABLE void loadLevel(const QString &path);
 
     int gridWidth() const { return m_gridWidth; }
-    void setGridWidth(int w) { m_gridWidth = w; emit gridWidthChanged(); update(); }
+    void setGridWidth(int w)
+    {
+        m_gridWidth = w;
+        emit gridWidthChanged();
+        update();
+    }
 
     int gridHeight() const { return m_gridHeight; }
-    void setGridHeight(int h) { m_gridHeight = h; emit gridHeightChanged(); update(); }
+    void setGridHeight(int h)
+    {
+        m_gridHeight = h;
+        emit gridHeightChanged();
+        update();
+    }
 
-    void paint(QPainter* painter) override;
+    void paint(QPainter *painter) override;
 
 signals:
     void gridWidthChanged();
     void gridHeightChanged();
 
 protected:
-    void mousePressEvent(QMouseEvent* event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QList<Tile> m_tiles;
     QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
-    QMap<QPair<int,int>, int> m_collisionData;
+    QMap<QPair<int, int>, int> m_collisionData;
 
     int m_tileWidth = 34;
     int m_tileHeight = 34;
     int m_gridWidth = 20;
     int m_gridHeight = 25;
     int m_currentTileIndex = -1;
+    int m_tileOffset = 1;
     QColor m_backgroundColor;
+
+    // ---- Tileset meta ----
+    QString m_tilesetPath;        // e.g. "res/tileset1.png"
+    QString m_tilesetTextureName; // e.g. "tileset1"
+
+    // Image member
+    QImage m_tilesetImage;
 };
 
 #endif // LEVELCANVAS_HPP

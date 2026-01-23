@@ -69,14 +69,14 @@ Page {
                 Button {
                     text: "Save"
                     onClicked: {
-                        editorController.saveLevel("level.dat")
+                        editorController.saveLevel("~/project1_c++/res/level_trial.xml")
                     }
                 }
 
                 Button {
                     text: "Load"
                     onClicked: {
-                        editorController.loadLevel("level.dat")
+                        editorController.loadLevel("~/project1_c++/res/level_trial.xml")
                     }
                 }
 
