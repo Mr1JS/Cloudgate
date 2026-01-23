@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
+import Cloudgate_game 1.0
 
 Window {
     id: window
@@ -23,7 +24,7 @@ Window {
 
                 Image {
                     anchors.fill: parent
-                    source: "/resources/images/test_image.jpg"
+                    source: "qrc:/resources/images/test_image.jpg"
                     fillMode: Image.PreserveAspectCrop
                     smooth: true
                 }
@@ -37,6 +38,7 @@ Window {
                     StyledButton {
                         text: "Start"
                         onClicked: {
+                            // Wechsle zur Spiel-Seite
                             stackView.push(Qt.resolvedUrl("SecondPage.qml"))
                             myMain.page_value = 0
                         }
@@ -45,7 +47,6 @@ Window {
                         text: "LevelEditor"
                         onClicked: {
                             stackView.push(Qt.resolvedUrl("LevelEditor.qml"))
-
                             myMain.page_value = 1
                         }
                     }
@@ -53,7 +54,6 @@ Window {
                         text: "Setting"
                         onClicked: {
                             stackView.push(Qt.resolvedUrl("SecondPage.qml"))
-
                             myMain.page_value = 2
                         }
                     }

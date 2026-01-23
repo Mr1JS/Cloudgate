@@ -141,8 +141,8 @@ void LevelEditorController::saveLevel()
     QString file_name = QFileDialog::getSaveFileName(
         nullptr,
         "Save Level",
-        "level.dat",
-        "Level Files (*.dat);;All Files (*)");
+        "level_master.xml",
+        "Level Files (*.xml)");
 
     // If user cancelled
     if (file_name.isEmpty())
@@ -151,10 +151,10 @@ void LevelEditorController::saveLevel()
         return;
     }
 
-    // Ensure .dat extension
-    if (!file_name.endsWith(".dat", Qt::CaseInsensitive))
+        // Ensure .xml extension
+        if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
     {
-        file_name += ".dat";
+        file_name += ".xml";
     }
 
     // Open file for writing
@@ -188,7 +188,7 @@ void LevelEditorController::loadLevel()
         nullptr,
         "Open Level",
         "",
-        "Level Files (*.dat);;All Files (*)");
+        "Level Files (*.xml)");
 
     // If user cancelled
     if (file_name.isEmpty())

@@ -100,6 +100,51 @@ set(CMAKE_AUTOMOC ON) # added
 set(CMAKE_AUTORCC ON) # added
 qt_standard_project_setup(REQUIRES 6.8)
 
+# Add CMake module path for SDL2
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+# Find SDL2 libraries
+find_package(SDL2 REQUIRED)
+find_package(SDL2_IMAGE REQUIRED)
+
+# Find and add HighFive
+set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
+set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
+add_subdirectory(ext/HighFive)
+include_directories("ext/HighFive/include")
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+include_directories(${HDF5_INCLUDE_DIRS})
+
+# Find required boost libraries
+find_package(Boost 1.54 COMPONENTS filesystem REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# Add SDL2 include directory to search path
+include_directories(${SDL2_INCLUDE_DIR})
+include_directories(${SDL2_IMG_INCLUDE_DIR})
+
+# Add game source directory to include path
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/game)
+
+# Game source files from uebung10
+set(GAME_SOURCES
+    game/src/Actor.cpp
+    game/src/ActorForces.cpp
+    game/src/AnimatedRenderable.cpp
+    game/src/Camera.cpp
+    game/src/LayerManager.cpp
+    game/src/Level.cpp
+    game/src/LevelForces.cpp
+    game/src/LevelParser.cpp
+    game/src/MainWindow.cpp
+    game/src/MovingRenderable.cpp
+    game/src/Physics.cpp
+    game/src/SDLRenderable.cpp
+    game/src/TileArray.cpp
+    game/src/TileSet.cpp
+    game/src/Util.cpp
+)
+
 qt_add_executable(appCloudgate_game
     src/main.cpp
     res/assets.qrc
@@ -135,7 +180,6 @@ qt_add_qml_module(appCloudgate_game
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 set_target_properties(appCloudgate_game PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appCloudgate_game
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
