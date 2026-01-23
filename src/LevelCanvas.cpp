@@ -512,7 +512,10 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     // keep minimal forces block (expand if you want)
     ts << "  <level_forces>\n";
-    ts << "    <gravity x=\"0\" y=\"9.81\"/>\n";
+    ts << "    <gravity_x>0</gravity_x>\n";
+    ts << "    <gravity_y>400</gravity_y>\n";
+    ts << "    <damping_x>0.7</damping_x>\n";
+    ts << "    <damping_y>1.0</damping_y>\n";
     ts << "  </level_forces>\n";
 
     ts << "</level>\n";
