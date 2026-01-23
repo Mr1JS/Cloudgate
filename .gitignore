@@ -1,5 +1,6 @@
 # Ignore build files and IDE settings
 .vscode/
+.idea/
 
 # Build output
 build/
