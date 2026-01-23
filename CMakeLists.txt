@@ -4,15 +4,18 @@ project(Cloudgate_game VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set Qt6_DIR to use the installed Qt 6.10.1
-# This ensures CMake finds the correct Qt version
-set(Qt6_DIR "$ENV{HOME}/Qt/6.10.1/gcc_64/lib/cmake/Qt6" CACHE PATH "Qt6 directory")
-
 # OPTIONAL: Setup C++ compiler flags for debug mode
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
 
+# Set CMake policies to suppress warnings
+cmake_policy(SET CMP0071 NEW)  # Let AUTOMOC and AUTOUIC process GENERATED files
+
 # Add cmake modules path for finding SDL2
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# Enable Qt's auto features
+set(CMAKE_AUTOMOC ON) # added
+set(CMAKE_AUTORCC ON) # added
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
@@ -28,7 +31,9 @@ find_package(Boost REQUIRED COMPONENTS filesystem)
 # Find HDF5
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 # Add HighFive (header-only library)
-include_directories(/ext/HighFive/include)
+set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
+set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
+add_subdirectory(ext/HighFive)
 
 
 # Print SDL2 information for debugging
@@ -55,9 +60,6 @@ if(HDF5_FOUND)
     message(STATUS "HDF5 include dirs: ${HDF5_INCLUDE_DIRS}")
     message(STATUS "HDF5 libraries: ${HDF5_LIBRARIES}")
 endif()
-
-# Add game source directory to include path
-include_directories(/game/)
 
 # Game source files from uebung10 - INCLUDE ACTUAL .CPP FILES
 set(GAME_SOURCES
@@ -100,54 +102,7 @@ set(GAME_SOURCES
     game/src/Util.cpp
 )
 
-set(CMAKE_AUTOMOC ON) # added
-set(CMAKE_AUTORCC ON) # added
 qt_standard_project_setup(REQUIRES 6.8)
-
-# Add CMake module path for SDL2
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-
-# Find SDL2 libraries
-find_package(SDL2 REQUIRED)
-find_package(SDL2_IMAGE REQUIRED)
-
-# Find and add HighFive
-set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
-set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
-add_subdirectory(ext/HighFive)
-include_directories("ext/HighFive/include")
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-include_directories(${HDF5_INCLUDE_DIRS})
-
-# Find required boost libraries
-find_package(Boost 1.54 COMPONENTS filesystem REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
-# Add SDL2 include directory to search path
-include_directories(${SDL2_INCLUDE_DIR})
-include_directories(${SDL2_IMG_INCLUDE_DIR})
-
-# Add game source directory to include path
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/game)
-
-# Game source files from uebung10
-set(GAME_SOURCES
-    game/src/Actor.cpp
-    game/src/ActorForces.cpp
-    game/src/AnimatedRenderable.cpp
-    game/src/Camera.cpp
-    game/src/LayerManager.cpp
-    game/src/Level.cpp
-    game/src/LevelForces.cpp
-    game/src/LevelParser.cpp
-    game/src/MainWindow.cpp
-    game/src/MovingRenderable.cpp
-    game/src/Physics.cpp
-    game/src/SDLRenderable.cpp
-    game/src/TileArray.cpp
-    game/src/TileSet.cpp
-    game/src/Util.cpp
-)
 
 qt_add_executable(appCloudgate_game
     src/main.cpp
@@ -190,25 +145,28 @@ set_target_properties(appCloudgate_game PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-# Include SDL2 directories
+# Include directories - use the actual variable names from the Find modules
 target_include_directories(appCloudgate_game PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/game
     ${SDL2_INCLUDE_DIR}
     ${SDL2_IMG_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${HDF5_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include
 )
 
-target_link_libraries(appCloudgate_game
-    PRIVATE Qt6::Quick
+# Link libraries - use the actual variable names from the Find modules
+target_link_libraries(appCloudgate_game PRIVATE
+    Qt6::Quick
+    Qt6::Widgets
     ${SDL2_LIBRARY}
     ${SDL2_IMG_LIBRARY}
     ${Boost_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${HDF5_HL_LIBRARIES}
-    Qt6::Widgets
 )
 
-# On Windows, copy SDL2.dll and SDL2_image.dll to output directory
+# Windows DLL copying
 if(WIN32)
     # Find SDL2.dll
     get_filename_component(SDL2_LIB_DIR ${SDL2_LIBRARY} DIRECTORY)
@@ -218,8 +176,8 @@ if(WIN32)
         NO_DEFAULT_PATH
     )
 
-    # Find SDL2_image.dll
-    get_filename_component(SDL2_IMAGE_LIB_DIR ${SDL2_IMAGE_LIBRARY} DIRECTORY)
+    # Find SDL2_image.dll - use SDL2_IMG_LIBRARY variable
+    get_filename_component(SDL2_IMAGE_LIB_DIR ${SDL2_IMG_LIBRARY} DIRECTORY)
     find_file(SDL2_IMAGE_DLL
         NAMES SDL2_image.dll
         HINTS ${SDL2_IMAGE_LIB_DIR}/../bin ${SDL2_IMAGE_LIB_DIR}

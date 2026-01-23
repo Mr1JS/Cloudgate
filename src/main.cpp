@@ -51,8 +51,9 @@ int main(int argc, char *argv[])
 
     qDebug() << "Qt Version:" << QT_VERSION_STR;
     qDebug() << "Loading QML from:" << mainQmlUrl;
+    engine.load(mainQmlUrl);
+    //
 
-    engine.loadFromModule("Cloudgate_game", "Main");
     QObject::connect(myPage, &pages::page_changed, [myPage]() {
         qInfo() << "Page chnaged to " << myPage->getPageInfo(myPage->page_value()) << " value " << myPage->page_value() ;
     });
