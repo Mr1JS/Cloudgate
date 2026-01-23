@@ -8,5 +8,6 @@
     <file>images/test_image.png</file>
     <file>images/tileset.png</file>
     <file>images/mario1.png</file>
+    <file>images/heart1.png</file>
   </qresource>
 </RCC>
