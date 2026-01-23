@@ -1,0 +1,21 @@
+<level resources="level.h5">
+  <background_tiles texture="tileset" tiles="level2">
+    <tileWidth>32</tileWidth>
+    <tileHeight>32</tileHeight>
+    <tilesPerRow>20</tilesPerRow>
+    <numRows>13</numRows>
+    <tileOffset>4</tileOffset>
+    <layer>0</layer>
+  </background_tiles>
+  <collision_tiles texture="tileset" tiles="level1">
+    <tileWidth>32</tileWidth>
+    <tileHeight>32</tileHeight>
+    <tilesPerRow>20</tilesPerRow>
+    <numRows>13</numRows>
+    <tileOffset>4</tileOffset>
+    <layer>1</layer>
+  </collision_tiles>
+  <level_forces>
+    <gravity x="0" y="9.81"/>
+  </level_forces>
+</level>

@@ -1,0 +1,13 @@
+# Ignore build files and IDE settings
+.vscode/
+.idea/
+
+# Build output
+build/
+
+# Qt Creator user files
+*.user
+
+# macOS app bundles
+*.app
+.DS_Store
