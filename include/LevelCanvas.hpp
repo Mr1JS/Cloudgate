@@ -63,7 +63,6 @@ protected:
 private:
     QList<Tile> m_tiles;
     QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
-    QMap<QPair<int, int>, int> m_collisionData;
 
     int m_tileWidth = 34;
     int m_tileHeight = 34;

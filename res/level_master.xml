@@ -1,10 +1,5 @@
 <level resources="level_master.h5">
-  <background_tiles texture="tileset" tiles="level2">
-    <tileWidth>32</tileWidth>
-    <tileHeight>32</tileHeight>
-    <tilesPerRow>20</tilesPerRow>
-    <numRows>13</numRows>
-    <tileOffset>4</tileOffset>
+  <background_tiles texture="clouds2">
     <layer>0</layer>
   </background_tiles>
   <collision_tiles texture="tileset" tiles="level1">
@@ -15,7 +10,24 @@
     <tileOffset>4</tileOffset>
     <layer>1</layer>
   </collision_tiles>
+  <actor texture="mario1">
+    <num_frames>2</num_frames>
+    <frame_width>18</frame_width>
+    <frame_height>32</frame_height>
+    <position_x>100</position_x>
+    <position_y>600</position_y>
+    <jump_force_y>-540.0</jump_force_y>
+    <move_force_x>800.0</move_force_x>
+    <max_run_velocity>122.0</max_run_velocity>
+    <max_fall_velocity>250.0</max_fall_velocity>
+    <max_jump_height>90</max_jump_height>
+    <fps>12</fps>
+    <layer>2</layer>
+  </actor>
   <level_forces>
-    <gravity x="0" y="9.81"/>
+    <gravity_x>0</gravity_x>
+    <gravity_y>400</gravity_y>
+    <damping_x>0.7</damping_x>
+    <damping_y>1.0</damping_y>
   </level_forces>
 </level>

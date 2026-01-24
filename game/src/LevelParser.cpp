@@ -75,6 +75,9 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             int numRows                = v.second.get("numRows", 0);
             int tileOffset             = v.second.get("tileOffset", 0);
 
+            std::cout << "[LevelParser] Loading background texture: " << tilesetDataset << " ; with tileset: "
+                      << tilesDataset << std::endl;
+
             // Create and setup tile set
             TileSet* ts = new TileSet(m_mainWindow,
                                       io,
@@ -110,6 +113,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float maxVelFall    = v.second.get<float>("max_fall_velocity", 0.0);
             float maxJumpHeight = v.second.get<float>("max_jump_height", 0.0);
 
+            // TODO Jation & Pascal: the textureDataSet muust be changed. it must be dependent on the
             // Create new actor
             SDL_Surface* surface = io.TextureIO::load("textures", textureDataset);
             if (surface == nullptr)

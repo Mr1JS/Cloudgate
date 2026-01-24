@@ -279,6 +279,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 }
             }
             m_levelData[pos] = m_currentTileIndex;
+
             update();
             qDebug() << "Tile placed at (" << gridX << "," << gridY << ") with index" << m_currentTileIndex;
         }
@@ -394,34 +395,58 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         p.replace(0, 1, QDir::homePath());
 
     QFileInfo xmlInfo(p);
-    const QString outDir = xmlInfo.absolutePath();
+    const QString outDir   = xmlInfo.absolutePath();
     const QString baseName = xmlInfo.completeBaseName(); // level_trial
-    const QString h5Name = baseName + ".h5";
-    const QString h5Path = outDir + "/" + h5Name;
+    const QString h5Name   = baseName + ".h5";
+    const QString h5Path   = outDir + "/" + h5Name;
 
     // Your reference h5 has {32,73}
     const int gridH = 32;
     const int gridW = 73;
 
-    // background_tiles = m_levelData -> /tiles/level2
     // collision_tiles  = m_collisionData -> /tiles/level1
-    std::vector<int> flatBackground = flattenTileMap(m_levelData, gridW, gridH, 0);
-    std::vector<int> flatCollision = flattenTileMap(m_collisionData, gridW, gridH, 0);
+    std::vector<int> flatCollision = flattenTileMap(m_levelData, gridW, gridH, 0);
 
-    std::vector<size_t> tileDim = {(size_t)gridH, (size_t)gridW};
-    std::vector<size_t> tileChunk = {32, 73};
+    std::vector<size_t> tileDim = { (size_t)gridH, (size_t)gridW };
 
     // save tileset into /textures/<tilesetTextureName>
-    // ensure we have a texture name
     if (m_tilesetTextureName.isEmpty() && !m_tilesetPath.isEmpty())
         m_tilesetTextureName = QFileInfo(m_tilesetPath).baseName();
 
-    // ensure we have image data
     if (m_tilesetImage.isNull() && !m_tilesetPath.isEmpty())
     {
         QImage loaded(m_tilesetPath);
         if (!loaded.isNull())
             m_tilesetImage = loaded.convertToFormat(QImage::Format_RGBA8888);
+    }
+
+    // ---- NEW: Load background image from Qt resources and store into H5 like tileset ----
+    const QString bgResourcePath = ":/resources/images/clouds2.png";
+    const QString bgTextureName  = "clouds2";  // dataset name under /textures
+
+    QImage bgImg(bgResourcePath);
+    if (bgImg.isNull())
+    {
+        qWarning() << "[LevelCanvas] Background PNG not found in qrc:" << bgResourcePath;
+        // we continue saving the level anyway (tiles + tileset)
+    }
+    else
+    {
+        bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
+    }
+
+    // ---- NEW: Load actor image from Qt resources and store into H5 like tileset ----
+    const QString actorResourcePath = ":/resources/images/mario1.png";
+    const QString actorTextureName  = "mario1";  // dataset name under /textures
+    QImage actorImg(actorResourcePath);
+    if (actorImg.isNull())
+    {
+        qWarning() << "[LevelCanvas] Actor PNG not found in qrc:" << actorResourcePath;
+        // we continue saving the level anyway (tiles + tileset)
+    }
+    else
+    {
+        actorImg = actorImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
     // ---- H5 SAVE using CRTP BaseHdf5IO ----
@@ -434,7 +459,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         IO io;
         io.open(h5Path.toStdString());
 
-        // ---- texture ----
+        // ---- tileset texture ----
         if (!m_tilesetImage.isNull() && !m_tilesetTextureName.isEmpty())
         {
             std::vector<unsigned char> texBytes;
@@ -442,7 +467,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
             if (imageToRgbaBytes(m_tilesetImage, texBytes, texH, texW))
             {
-                std::vector<size_t> texDim = {(size_t)texH, (size_t)texW, (size_t)4};
+                std::vector<size_t> texDim = { (size_t)texH, (size_t)texW, (size_t)4 };
                 auto texArr = makeSharedArrayCopy(texBytes);
 
                 io.save<unsigned char>("textures",
@@ -452,19 +477,51 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
             }
         }
 
+        // ---- NEW: background png saved as texture ----
+        if (!bgImg.isNull())
+        {
+            std::vector<unsigned char> bgBytes;
+            int bgH = 0, bgW = 0;
+
+            if (imageToRgbaBytes(bgImg, bgBytes, bgH, bgW))
+            {
+                std::vector<size_t> bgDim = { (size_t)bgH, (size_t)bgW, (size_t)4 };
+                auto bgTexArr = makeSharedArrayCopy(bgBytes);
+
+                io.save<unsigned char>("textures",
+                                       bgTextureName.toStdString(),
+                                       bgDim,
+                                       bgTexArr);
+
+                qDebug() << "[LevelCanvas] Saved background texture to H5: /textures/" << bgTextureName
+                         << "dim=" << bgH << "x" << bgW << "x4";
+            }
+        }
+
+        // ---- NEW: Save actor image as texture ----
+        if (!actorImg.isNull())
+        {
+            std::vector<unsigned char> actorBytes;
+            int actorH = 0, actorW = 0;
+
+            if (imageToRgbaBytes(actorImg, actorBytes, actorH, actorW))
+            {
+                std::vector<size_t> actorDim = { (size_t)actorH, (size_t)actorW, (size_t)4 };
+                auto actorTexArr = makeSharedArrayCopy(actorBytes);
+
+                io.save<unsigned char>("textures",
+                                       actorTextureName.toStdString(),
+                                       actorDim,
+                                       actorTexArr);
+
+                qDebug() << "[LevelCanvas] Saved actor texture to H5: /textures/" << actorTextureName
+                         << "dim=" << actorH << "x" << actorW << "x4";
+            }
+        }
+
         // ---- tiles ----
-        std::vector<size_t> tileDim = {(size_t)gridH, (size_t)gridW};
-
         auto colArr = makeSharedArrayCopy(flatCollision);
-        auto bgArr = makeSharedArrayCopy(flatBackground);
-
         io.save<int>("tiles", "level1", tileDim, colArr); // collision
-        io.save<int>("tiles", "level2", tileDim, bgArr);  // background
-
-        // ---- version ----
-        // jumper::shared_array<int> ver(new int[1]);
-        // ver.get()[0] = 1;
-        // io.save<int>("", "version", (size_t)1, ver);
     }
     catch (const std::exception &e)
     {
@@ -472,7 +529,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         return;
     }
 
-    // ---- XML SAVE in correct format (like level.xml) ----
+    // ---- XML SAVE ----
     QFile f(p);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
     {
@@ -487,17 +544,14 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     if (!m_tilesetImage.isNull() && m_tileWidth > 0 && m_tileHeight > 0)
     {
         tilesPerRow = m_tilesetImage.width() / m_tileWidth;
-        numRows = m_tilesetImage.height() / m_tileHeight;
+        numRows     = m_tilesetImage.height() / m_tileHeight;
     }
 
     ts << "<level resources=\"" << h5Name << "\">\n";
 
-    ts << "  <background_tiles texture=\"" << m_tilesetTextureName << "\" tiles=\"level2\">\n";
-    ts << "    <tileWidth>" << m_tileWidth << "</tileWidth>\n";
-    ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
-    ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
-    ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
+    // background still references the tileset for tilemap usage
+    // (If you want XML to reference the PNG instead, tell me and I adapt)
+    ts << "  <background_tiles texture=\"" << bgTextureName << "\">\n";
     ts << "    <layer>0</layer>\n";
     ts << "  </background_tiles>\n";
 
@@ -510,9 +564,29 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
 
-    // keep minimal forces block (expand if you want)
+    // Actor block (Dummy values for now) //TODO: if there are actor settings to save
+    // then this should be adapted and changed accordingly
+    ts << "  <actor texture=\"" << actorTextureName << "\">\n";
+    ts << "    <num_frames>2</num_frames>\n";
+    ts << "    <frame_width>18</frame_width>\n";
+    ts << "    <frame_height>32</frame_height>\n";
+    ts << "    <position_x>100</position_x>\n";
+    ts << "    <position_y>600</position_y>\n";
+    ts << "    <jump_force_y>-540.0</jump_force_y>\n";
+    ts << "    <move_force_x>800.0</move_force_x>\n";
+    ts << "    <max_run_velocity>122.0</max_run_velocity>\n";
+    ts << "    <max_fall_velocity>250.0</max_fall_velocity>\n";
+    ts << "    <max_jump_height>90</max_jump_height>\n";
+    ts << "    <fps>12</fps>\n";
+    ts << "    <layer>2</layer>\n";
+    ts << "  </actor>\n";
+
+    // keep forces block
     ts << "  <level_forces>\n";
-    ts << "    <gravity x=\"0\" y=\"9.81\"/>\n";
+    ts << "    <gravity_x>0</gravity_x>\n";
+    ts << "    <gravity_y>400</gravity_y>\n";
+    ts << "    <damping_x>0.7</damping_x>\n";
+    ts << "    <damping_y>1.0</damping_y>\n";
     ts << "  </level_forces>\n";
 
     ts << "</level>\n";
@@ -548,7 +622,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 
     QString h5FileName;
     QString bgTextureName;
-    QString bgTilesDataset;
     QString colTextureName;
     QString colTilesDataset;
 
@@ -572,7 +645,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         else if (line.startsWith("<background_tiles"))
         {
             bgTextureName = extractAttr(line, "texture");
-            bgTilesDataset = extractAttr(line, "tiles");
         }
         else if (line.startsWith("<collision_tiles"))
         {
@@ -612,8 +684,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     // Prefer collision texture name, otherwise background texture name
     m_tilesetTextureName = !colTextureName.isEmpty() ? colTextureName : bgTextureName;
 
-    if (bgTilesDataset.isEmpty())
-        bgTilesDataset = "level2";
     if (colTilesDataset.isEmpty())
         colTilesDataset = "level1";
 
@@ -646,17 +716,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         std::vector<int> colFlat(colN);
         std::copy(colArr.get(), colArr.get() + colN, colFlat.begin());
 
-        // -> background tiles
-        std::vector<size_t> bgDim;
-        auto bgArr = io.loadArray<int>("tiles", bgTilesDataset.toStdString(), bgDim);
-
-        size_t bgN = 1;
-        for (size_t d : bgDim)
-            bgN *= d;
-
-        std::vector<int> bgFlat(bgN);
-        std::copy(bgArr.get(), bgArr.get() + bgN, bgFlat.begin());
-
         // Grid size from dataset dims
         int gridH = 32;
         int gridW = 73;
@@ -664,11 +723,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         {
             gridH = (int)colDim[0];
             gridW = (int)colDim[1];
-        }
-        else if (bgDim.size() >= 2)
-        {
-            gridH = (int)bgDim[0];
-            gridW = (int)bgDim[1];
         }
 
         // IMPORTANT: these are grid dims, NOT tile pixel width/height!
@@ -679,8 +733,8 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         m_gridWidth = gridW;
 
         // rebuild maps
-        m_collisionData = unflattenTileMap(colFlat, gridW, gridH, 0);
-        m_levelData = unflattenTileMap(bgFlat, gridW, gridH, 0);
+        // m_collisionData = unflattenTileMap(colFlat, gridW, gridH, 0); // does not exist anymore, since m_levelData holds both
+        m_levelData = unflattenTileMap(colFlat, gridW, gridH, 0);
 
         // ---- texture ----
         if (!m_tilesetTextureName.isEmpty())

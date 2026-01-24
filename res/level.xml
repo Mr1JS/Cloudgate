@@ -1,5 +1,5 @@
 <level resources="level.h5">
-  <background_tiles texture="tileset" tiles="level2">
+  <background_tiles texture="tileset" tiles="">
     <tileWidth>32</tileWidth>
     <tileHeight>32</tileHeight>
     <tilesPerRow>20</tilesPerRow>
