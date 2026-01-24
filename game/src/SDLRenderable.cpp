@@ -37,6 +37,15 @@ void SDLRenderable::computeSourceRect()
         Uint32 format;
         int access, w, h;
         SDL_QueryTexture(m_texture, &format, &access, &w, &h);
+
+        std::cout << "[SDLRenderable] Texture format = "
+            << SDL_GetPixelFormatName(format)
+            << " (" << format << ")"
+            << " access=" << access
+            << " size=" << w << "x" << h
+            << std::endl;
+
+
         m_sourceRect.w = w;
         m_sourceRect.h = h;
 
