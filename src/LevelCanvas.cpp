@@ -31,109 +31,17 @@ LevelCanvas::LevelCanvas(QQuickItem *parent)
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 }
 
-void LevelCanvas::setTileset(const QString &path, int tileW, int tileH, int offset, int endIndex)
+
+void LevelCanvas::setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex)
 {
-    qDebug() << "[LevelCanvas] setTileset:" << path
-             << "tileW=" << tileW
-             << "tileH=" << tileH
-             << "offset=" << offset;
-
-    // remember meta for saving
-    m_tilesetPath = path;
-    m_tilesetTextureName = QFileInfo(path).baseName(); // "tileset1"
-
-    QPixmap pix(path);
-    if (pix.isNull())
-    {
-        qWarning() << "Tileset not found:" << path;
-        return;
-    }
-
-    m_tileWidth = tileW;
+    m_tiles      = tiles;
+    m_tileWidth  = tileW;
     m_tileHeight = tileH;
-    m_endIndex = endIndex;
-    m_tileOffset = offset;
-
-    // load tileset image (used for palette AND for saving into H5)
-    QImage img(path);
-    if (img.isNull())
-    {
-        qWarning() << "[LevelCanvas] Could not load tileset image:" << path;
-        m_tilesetImage = QImage();
-        return;
-    }
-
-    // enforce RGBA (so H5 export is stable)
-    m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
-
-    // Load tiles with transparency - EXACTLY like palette
-    m_tiles.clear();
-    img = pix.toImage().convertToFormat(QImage::Format_ARGB32);
-
-    int tolerance = 10;
-
-    for (int y = 0; y < img.height(); y++)
-    {
-        for (int x = 0; x < img.width(); x++)
-        {
-            QRgb pixel = img.pixel(x, y);
-            int r = qRed(pixel);
-            int g = qGreen(pixel);
-            int b = qBlue(pixel);
-
-            if (qAbs(r - 92) <= tolerance &&
-                qAbs(g - 130) <= tolerance &&
-                qAbs(b - 161) <= tolerance)
-            {
-                img.setPixel(x, y, qRgba(0, 0, 0, 0));
-            }
-        }
-    }
-
-    QPixmap processedPixmap = QPixmap::fromImage(img);
-
-    // EXACTLY same calculation as palette
-    int totalTileWidth = m_tileWidth + offset;
-    int totalTileHeight = m_tileHeight + offset;
-
-    int cols = (pix.width() + offset) / totalTileWidth;
-    int rows = (pix.height() + offset) / totalTileHeight;
-
-    qDebug() << "=== CANVAS TILESET LOADING ===";
-    qDebug() << "Tile size (usable):" << m_tileWidth << "x" << m_tileHeight;
-    qDebug() << "Tile size (with spacing):" << totalTileWidth << "x" << totalTileHeight;
-
-    int idx = 0;
-    for (int row = 0; row < rows; row++)
-    {
-        for (int col = 0; col < cols; col++)
-        {
-            Tile t;
-            t.index = idx++;
-            t.pixmap = processedPixmap;
-
-            int x = offset + (col * totalTileWidth);
-            int y = offset + (row * totalTileHeight);
-
-            // IMPORTANT: Cut out FULL tile size (incl. spacing)
-            // But only inner pixels are visible
-            t.sourceRect = QRect(x, y, totalTileWidth, totalTileHeight);
-
-            if (row == 0 && col < 4)
-            {
-                qDebug() << "Canvas Tile" << t.index
-                         << "-> sourceRect:" << t.sourceRect
-                         << "(contains" << m_tileWidth << "x" << m_tileHeight << "+ spacing)";
-            }
-
-            m_tiles.append(t);
-        }
-    }
+    m_endIndex   = endIndex;
 
     update();
-    qDebug() << "Canvas tileset loaded:" << m_tiles.size() << "tiles";
-    qDebug() << "==============================";
 }
+
 
 void LevelCanvas::placeTile(int tileIndex)
 {

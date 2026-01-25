@@ -8,5 +8,7 @@
     <file>images/test_image.png</file>
     <file>images/tileset.png</file>
     <file>images/mario1.png</file>
+    <file>level_master.xml</file>
+    <file>level_master.h5</file>
   </qresource>
 </RCC>

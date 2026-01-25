@@ -347,7 +347,7 @@ Page {
         editorController.registerCanvas(levelCanvas)
 
         // Load tileset through controller
-        editorController.loadTileset(":/resources/images/tileset.png", 32,
+        editorController.loadTileset("../res/level_master.xml", 32,
                                      32, 4, 105)
     }
 }

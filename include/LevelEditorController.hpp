@@ -2,7 +2,10 @@
 #define LEVELEDITORCONTROLLER_HPP
 
 #include <QObject>
+#include <QList>
 #include <QString>
+#include "Tile.hpp"
+
 
 // Forward declarations
 class TilesetPalette;
@@ -54,6 +57,7 @@ signals:
     void levelCleared();
     void levelSaved(const QString &path);
     void levelLoaded(const QString &path);
+    void tilesetReady(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
 
 private:
     TilesetPalette *m_palette = nullptr;

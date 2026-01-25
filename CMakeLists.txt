@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(Cloudgate_game VERSION 0.1 LANGUAGES CXX)
+project(Cloudgate_game VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -121,6 +121,7 @@ qt_add_qml_module(appCloudgate_game
         qml/LevelEditor.qml
 
     SOURCES
+        include/Tile.hpp
         include/pages.h
         src/pages.cpp
         src/LevelEditorController.cpp
