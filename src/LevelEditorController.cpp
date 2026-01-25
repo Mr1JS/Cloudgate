@@ -2,6 +2,7 @@
 #include "include/TilesetPalette.hpp"
 #include "include/LevelCanvas.hpp"
 #include <QDebug>
+<<<<<<< HEAD
 #include <QFileDialog>
 #include "game/io/BaseHdf5IO.hpp"
 #include "game/io/TileSetIO.hpp"
@@ -13,12 +14,20 @@
 using LevelHdf5IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
 
 LevelEditorController::LevelEditorController(QObject *parent)
+=======
+
+LevelEditorController::LevelEditorController(QObject* parent)
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
     : QObject(parent)
 {
     qDebug() << "LevelEditorController created";
 }
 
+<<<<<<< HEAD
 void LevelEditorController::registerPalette(TilesetPalette *palette)
+=======
+void LevelEditorController::registerPalette(TilesetPalette* palette)
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
 {
     if (m_palette != nullptr)
     {
@@ -26,6 +35,7 @@ void LevelEditorController::registerPalette(TilesetPalette *palette)
     }
 
     m_palette = palette;
+<<<<<<< HEAD
     // connect signals for selection
     connect(m_palette, &TilesetPalette::tileSelected,
             this, &LevelEditorController::selectTile);
@@ -38,6 +48,19 @@ void LevelEditorController::registerPalette(TilesetPalette *palette)
 }
 
 void LevelEditorController::registerCanvas(LevelCanvas *canvas)
+=======
+    qDebug() << "TilesetPalette registered with controller";
+
+    // Connect palette signals
+    if (m_palette)
+    {
+        connect(m_palette, &TilesetPalette::tileSelected,
+                this, &LevelEditorController::selectTile);
+    }
+}
+
+void LevelEditorController::registerCanvas(LevelCanvas* canvas)
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
 {
     if (m_canvas != nullptr)
     {
@@ -45,6 +68,7 @@ void LevelEditorController::registerCanvas(LevelCanvas *canvas)
     }
 
     m_canvas = canvas;
+<<<<<<< HEAD
 
     // connect signal tileset loading
     connect(this, &LevelEditorController::tilesetReady,
@@ -172,6 +196,49 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
 
 
 
+=======
+    qDebug() << "LevelCanvas registered with controller";
+}
+
+void LevelEditorController::loadTileset(const QString& path, int tileWidth, int tileHeight, int offset, int endIndex)
+{
+    m_tilesetPath = path;
+    m_tileWidth = tileWidth;
+    m_tileHeight = tileHeight;
+    m_tileOffset = offset;
+    m_endIndex = endIndex;
+
+    qDebug() << "=== CONTROLLER: Loading Tileset ===";
+    qDebug() << "Path:" << path;
+    qDebug() << "Tile size:" << tileWidth << "x" << tileHeight;
+    qDebug() << "Offset:" << offset;
+
+    // Load tileset into both palette and canvas
+    if (m_palette)
+    {
+        m_palette->loadTileset(path, tileWidth, tileHeight, offset, endIndex);
+        qDebug() << "Tileset loaded into palette";
+    }
+    else
+    {
+        qWarning() << "Palette not registered!";
+    }
+
+    if (m_canvas)
+    {
+        m_canvas->setTileset(path, tileWidth, tileHeight, offset, endIndex);
+        qDebug() << "Tileset loaded into canvas";
+    }
+    else
+    {
+        qWarning() << "Canvas not registered!";
+    }
+
+    emit tilesetPathChanged();
+    qDebug() << "===================================";
+}
+
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
 void LevelEditorController::setTileDimensions(int width, int height)
 {
     m_tileWidth = width;
@@ -222,6 +289,7 @@ void LevelEditorController::clearLevel()
     }
 }
 
+<<<<<<< HEAD
 void LevelEditorController::saveLevel()
 {
     qDebug() << "Opening save dialog...";
@@ -306,6 +374,38 @@ void LevelEditorController::loadLevel()
 
     emit levelLoaded(file_name);
     qDebug() << "Level loaded from:" << file_name;
+=======
+void LevelEditorController::saveLevel(const QString& path)
+{
+    qDebug() << "Saving level to:" << path;
+
+    if (m_canvas)
+    {
+        m_canvas->saveLevel(path);
+        emit levelSaved(path);
+        qDebug() << "Level saved successfully";
+    }
+    else
+    {
+        qWarning() << "Canvas not registered!";
+    }
+}
+
+void LevelEditorController::loadLevel(const QString& path)
+{
+    qDebug() << "Loading level from:" << path;
+
+    if (m_canvas)
+    {
+        m_canvas->loadLevel(path);
+        emit levelLoaded(path);
+        qDebug() << "Level loaded successfully";
+    }
+    else
+    {
+        qWarning() << "Canvas not registered!";
+    }
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
 }
 
 void LevelEditorController::selectTile(int tileIndex)
@@ -328,7 +428,11 @@ void LevelEditorController::selectTile(int tileIndex)
 }
 
 // switched to extra Tiles / 1x2 Tiles
+<<<<<<< HEAD
 void LevelEditorController::toggleExtraTileset(bool enabled)
+=======
+void LevelEditorController::toggleExtraTileset(bool enabled) 
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
 {
     if (!m_palette || !m_canvas)
     {
@@ -337,3 +441,7 @@ void LevelEditorController::toggleExtraTileset(bool enabled)
     m_palette->setExtraTiles(enabled);
     m_canvas->setExtraTiles(enabled);
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557

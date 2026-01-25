@@ -181,7 +181,13 @@ Page {
                                         height: parent.height - 4
                                         radius: width / 2
                                         y: 2
+<<<<<<< HEAD
                                         x: toggleTileSets.checked ? parent.width - width - 2 : 2
+=======
+                                        x: toggleTileSets.checked
+                                           ? parent.width - width - 2
+                                           : 2
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
                                         color: "#f5f5f5"
 
                                         Behavior on x {
@@ -195,8 +201,12 @@ Page {
 
                                 onCheckedChanged: {
                                     editorController.toggleExtraTileset(checked)
+<<<<<<< HEAD
                                     console.log("Tileset switched:",
                                                 checked ? "2x1" : "1x1")
+=======
+                                    console.log("Tileset switched:", checked ? "2x1" : "1x1")
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
                                 }
                             }
                         }
@@ -207,8 +217,14 @@ Page {
                             anchors.margins: 5
                             clip: true
                             width: parent.width
+<<<<<<< HEAD
                             height: parent.height - (toggleTileSets.implicitHeight
                                                      + 2) - parent.spacing
+=======
+                            height: parent.height
+                                    - (toggleTileSets.implicitHeight + 2)
+                                    - parent.spacing
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
                             contentWidth: tilesetPalette.width
                             contentHeight: tilesetPalette.calculatedHeight
 
@@ -347,7 +363,12 @@ Page {
         editorController.registerCanvas(levelCanvas)
 
         // Load tileset through controller
+<<<<<<< HEAD
         editorController.loadTileset("../res/level_master.xml", 32,
                                      32, 4, 105)
+=======
+        editorController.loadTileset(":/resources/images/tileset.png",
+                                     32, 32, 4, 105)
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
     }
 }

@@ -27,17 +27,26 @@ public:
     explicit LevelEditorController(QObject *parent = nullptr);
 
     // Tileset management
+<<<<<<< HEAD
     Q_INVOKABLE void loadTileset(const QString &path, int tileWidth = 32, int tileHeight = 32, int offset = 4, int endIndex = 20);
+=======
+    Q_INVOKABLE void loadTileset(const QString& path, int tileWidth = 32, int tileHeight = 32, int offset = 4, int endIndex = 20);
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
     Q_INVOKABLE void setTileDimensions(int width, int height);
 
     // Level management
     Q_INVOKABLE void newLevel(int gridWidth = 20, int gridHeight = 25);
     Q_INVOKABLE void clearLevel();
+<<<<<<< HEAD
 
     // Save/Load without parameters - opens QFileDialog internally
     Q_INVOKABLE void saveLevel();
     Q_INVOKABLE void loadLevel();
 
+=======
+    Q_INVOKABLE void saveLevel(const QString& path);
+    Q_INVOKABLE void loadLevel(const QString& path);
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
     Q_INVOKABLE void toggleExtraTileset(bool enabled);
 
     // Tile selection
@@ -60,9 +69,14 @@ signals:
     void tilesetReady(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
 
 private:
+<<<<<<< HEAD
     TilesetPalette *m_palette = nullptr;
     LevelCanvas *m_canvas = nullptr;
 
+=======
+    TilesetPalette* m_palette = nullptr;
+    LevelCanvas* m_canvas = nullptr;
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
     QString m_tilesetPath;
     int m_tileWidth = 32;
     int m_tileHeight = 32;

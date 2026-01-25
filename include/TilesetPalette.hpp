@@ -18,9 +18,13 @@ class TilesetPalette : public QQuickPaintedItem
 public:
     explicit TilesetPalette(QQuickItem* parent = nullptr);
 
+<<<<<<< HEAD
     //Q_INVOKABLE void loadTileset(const QImage& path, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
     Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
 
+=======
+    Q_INVOKABLE void loadTileset(const QString& path, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
 
     int tileCount() const { return m_tiles.size(); }
 
@@ -35,6 +39,10 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 private:
+<<<<<<< HEAD
+=======
+    void extractTilesWithTransparency(const QPixmap& pixmap, int offset);
+>>>>>>> 746825d15eebc7077e26ef8a65aa5e78b625d557
     QList<Tile> m_tiles;
     int m_tileWidth = 32;
     int m_tileHeight = 32;
