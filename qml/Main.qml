@@ -53,7 +53,7 @@ Window {
                     StyledButton {
                         text: "Setting"
                         onClicked: {
-                            stackView.push(Qt.resolvedUrl("SecondPage.qml"))
+                            stackView.push(Qt.resolvedUrl("SettingsPage.qml"))
                             myMain.page_value = 2
                         }
                     }
