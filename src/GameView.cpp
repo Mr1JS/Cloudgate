@@ -250,6 +250,8 @@ void GameView::updateGame()
     // Update game with keyboard states
     m_gameWindow->update(keystates);
 
+    // TODO: GameController should be implemented somewhere here
+
     // Prüfe, ob Actor außerhalb des Kamera-Bereichs ist (Game Over)
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
     if(m_running && m_gameWindow && m_gameWindow->level())

@@ -61,9 +61,10 @@ void StateController::updateGameTime()
     }
 
     if (m_runtime % 100 == 1) {
-        std::cout << "Current time: " << m_runtime          <<  "ms" << std::endl;
-        std::cout << "Current time: " << m_runtime/1000     << "sec" << std::endl;
-        std::cout << "Current time: " << m_runtime/1000/60  << "min" << std::endl;
+        int min = m_runtime/1000/60;
+        int sec = m_runtime/1000 - min*60;
+        int ms = m_runtime - sec*1000;
+        std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
     }
 }
 
@@ -80,6 +81,19 @@ void StateController::decrementHp(int number)
 
 void StateController::render()
 {
+    nextFrame();
+    SDL_Rect target;
+    SDL_Rect sourceRect;
+    sourceRect.x = 0;
+    sourceRect.y = 0;
+    sourceRect.w = 15;
+    sourceRect.h = 15
+
+    target.x = 100;
+    target.y =  20;
+    target.w = 32;
+    target.h = 32;
+    SDL_RenderCopy( m_mainWindow->renderer(), m_heartTexture, &sourceRect, &target, 0, NULL);
 
     for (int i = 0; i < m_playerHp; i++)
     {

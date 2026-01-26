@@ -15,6 +15,14 @@
     <tileOffset>4</tileOffset>
     <layer>1</layer>
   </collision_tiles>
+  <numbers texture="numbers">
+    <tileWidth>10</tileWidth>
+    <tileHeight>9</tileHeight>
+    <tilesPerRow>10</tilesPerRow>
+    <numRows>1</numRows>
+    <tileOffset>0</tileOffset>
+    <layer>3</layer>
+  </numbers>
   <level_forces>
     <gravity x="0" y="9.81"/>
   </level_forces>

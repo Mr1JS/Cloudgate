@@ -93,6 +93,33 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             m_level->addRenderable(ts, layer);
         }
 
+        if (v.first == "numbers")
+        {
+            // Parse attributes
+            std::string tilesDataset   = v.second.get("<xmlattr>.tiles", "");
+            std::string tilesetDataset = v.second.get("<xmlattr>.texture", "");
+            int layer                  = v.second.get<int>("layer", 0);
+            int tileWidth              = v.second.get("tileWidth", 0);
+            int tileHeight             = v.second.get("tileHeight", 0);
+            int tilesPerRow            = v.second.get("tilesPerRow", 0);
+            int numRows                = v.second.get("numRows", 0);
+            int tileOffset             = v.second.get("tileOffset", 0);
+
+            // Create and setup tile set
+            TileSet* ts = new TileSet(m_mainWindow,
+                                      io,
+                                      tilesDataset,
+                                      tilesetDataset,
+                                      tileWidth,
+                                      tileHeight,
+                                      tilesPerRow,
+                                      numRows,
+                                      tileOffset);
+
+            // Add tile set to level
+            m_level->addRenderable(ts, layer);
+        }
+
         if (v.first == "actor")
         {
             // Parse attributes
