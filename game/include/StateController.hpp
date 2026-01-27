@@ -8,9 +8,12 @@
 #define SRC_STATE_CONTROLLER_HPP_
 
 #include "MainWindow.hpp"
+#include "SDLRenderable.hpp"
 
 #include <SDL.h>
 #include <QElapsedTimer>
+
+#define MAX_HEARTS 3
 
 namespace jumper
 {
@@ -61,6 +64,8 @@ private:
     std::string m_heartFileName;
 
     SDL_Texture* m_heartTexture;
+
+    SDLRenderable* m_hearts;
 
     MainWindow* m_mainWindow;
 };
