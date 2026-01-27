@@ -121,6 +121,7 @@ qt_add_qml_module(appCloudgate_game
         qml/StyledButton.qml
         qml/SecondPage.qml
         qml/LevelEditor.qml
+        qml/SettingsPage.qml
 
     SOURCES
         include/pages.h

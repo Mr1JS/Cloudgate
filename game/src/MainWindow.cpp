@@ -139,13 +139,18 @@ namespace jumper
         else
         {
 
-            // Create renderer for the SDL main window
-            // Use software renderer for SDL_RenderReadPixels compatibility
-            m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
+            // Try hardware renderer, fallback to software if not available
+            m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            
+            if (m_renderer == NULL)
+            {
+                std::cout << "Hardware renderer not available, using software renderer: " << SDL_GetError() << std::endl;
+                m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
+            }
 
             if (m_renderer == NULL)
             {
-                std::cout << "SDL could not generate renderer: " << SDL_GetError() << std::endl;
+                std::cout << "Failed to create SDL renderer: " << SDL_GetError() << std::endl;
             }
             else
             {

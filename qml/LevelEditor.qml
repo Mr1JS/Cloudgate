@@ -5,6 +5,18 @@ import Cloudgate_game 1.0
 Page {
     id: levelEditorPage
 
+    // Enable focus for keyboard input
+    focus: true
+
+    // ESC key handler
+    Keys.onPressed: function (event) {
+        if (event.key === Qt.Key_Escape) {
+            console.log("ESC pressed - LevelEditor")
+            stackView.pop()
+            event.accepted = true
+        }
+    }
+
     // The "brain" - Controller coordinates everything
     LevelEditorController {
         id: editorController
@@ -349,5 +361,8 @@ Page {
         // Load tileset through controller
         editorController.loadTileset(":/resources/images/tileset.png", 32,
                                      32, 4, 105)
+
+        // Set focus when page loads
+        levelEditorPage.forceActiveFocus()
     }
 }

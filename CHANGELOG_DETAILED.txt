@@ -1,0 +1,1259 @@
+================================================================================
+DETAILLIERTE DOKUMENTATION ALLER ÄNDERUNGEN - PROJECT1
+================================================================================
+
+Diese Dokumentation beschreibt jeden einzelnen Schritt und alle Code-Änderungen,
+die während der Entwicklung des Projekts vorgenommen wurden.
+
+================================================================================
+TEIL 0: INTEGRATION VON UEBUNG10 IN PROJECT1
+================================================================================
+
+Dieser Abschnitt beschreibt, wie die Spiel-Engine aus uebung10 in das Qt/QML-Projekt
+integriert wurde, welche Dateien übernommen wurden und welche Anpassungen vorgenommen
+wurden.
+
+================================================================================
+0.1 ÜBERNAHME DER SPIEL-ENGINE AUS UEBUNG10
+================================================================================
+
+QUELLE:
+- Alle Dateien aus: gruppe7/uebung10/src/game/
+- Ziel: project1/src/game/
+
+ÜBERNOMMENE DATEIEN (1:1 Kopie):
+
+1. Actor.cpp / Actor.hpp
+   - Spielfigur mit Sprung- und Bewegungslogik
+   - Animierte Renderable
+   - Physikalische Eigenschaften (Kräfte, Geschwindigkeiten)
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+2. ActorForces.cpp / ActorForces.hpp
+   - Verwaltung der Kräfte für den Actor
+   - Sprungkraft, Bewegungskraft, Geschwindigkeitsbegrenzungen
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+3. AnimatedRenderable.cpp / AnimatedRenderable.hpp
+   - Basis-Klasse für animierte Objekte
+   - Frame-Verwaltung und Animation
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+4. Camera.cpp / Camera.hpp
+   - Kamera-System für Level-Scrolling
+   - Folgt dem Actor
+   - ÄNDERUNGEN: x() Methode angepasst (feste X-Position)
+
+5. LayerManager.cpp / LayerManager.hpp
+   - Verwaltung der Rendering-Reihenfolge
+   - Layer-basiertes Rendering
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+6. Level.cpp / Level.hpp
+   - Level-Management
+   - Lädt Level aus XML/HDF5
+   - Verwaltet Actor, Tiles, Physics
+   - ÄNDERUNGEN: Kamera-Initialisierung angepasst
+
+7. LevelForces.cpp / LevelForces.hpp
+   - Level-spezifische Kräfte (Gravitation, Dämpfung)
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+8. LevelParser.cpp / LevelParser.hpp
+   - XML-Parser für Level-Definitionen
+   - HDF5-Integration für Level-Daten
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+9. MovingRenderable.cpp / MovingRenderable.hpp
+   - Basis-Klasse für bewegliche Objekte
+   - Welt-Koordinaten-Verwaltung
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+10. Physics.cpp / Physics.hpp
+    - Physik-Engine
+    - Kollisionserkennung mit Tiles
+    - Gravitation und Dämpfung
+    - ÄNDERUNGEN: Grenzprüfungen hinzugefügt, Level-Grenzen als Kollisionsflächen
+
+11. SDLRenderable.cpp / SDLRenderable.hpp
+    - Basis-Klasse für SDL-Rendering
+    - Koordinaten-Transformation
+    - KEINE ÄNDERUNGEN - vollständig übernommen
+
+12. TileArray.cpp / TileArray.hpp
+    - Array-basierte Tile-Repräsentation
+    - ÄNDERUNGEN: Grenzprüfungen für negative Indizes
+
+13. TileSet.cpp / TileSet.hpp
+    - Tile-Rendering
+    - Verwaltung von Tile-Maps
+    - ÄNDERUNGEN: Y-Offset beim Rendering hinzugefügt
+
+14. TileSetRepresentation.hpp
+    - Interface für Tile-Repräsentationen
+    - KEINE ÄNDERUNGEN - vollständig übernommen
+
+15. TileTree.tcc / TileTree.hpp
+    - Baum-basierte Tile-Repräsentation (optimiert)
+    - ÄNDERUNGEN: Grenzprüfungen für negative Indizes
+
+16. Util.cpp / Util.hpp
+    - Hilfsfunktionen (z.B. Texture-Laden)
+    - KEINE ÄNDERUNGEN - vollständig übernommen
+
+17. io/ Verzeichnis
+    - HDF5-IO-Implementierungen
+    - TextureIO, TileSetIO, BaseHdf5IO
+    - KEINE ÄNDERUNGEN - vollständig übernommen
+
+================================================================================
+0.2 ANPASSUNGEN AN MAINWINDOW
+================================================================================
+
+PROBLEM:
+- MainWindow aus uebung10 erstellt ein sichtbares SDL-Fenster
+- Für Qt/QML-Integration benötigen wir ein verstecktes Fenster
+- Game-Loop muss extern steuerbar sein
+
+ÄNDERUNGEN:
+
+Datei: project1/src/game/MainWindow.cpp
+Zeile: 134-145
+
+VORHER (uebung10):
+    m_window = SDL_CreateWindow(
+        "Jumper Main Window",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        m_width,
+        m_height,
+        SDL_WINDOW_SHOWN  // Sichtbares Fenster
+    );
+    
+    m_renderer = SDL_CreateRenderer(m_window, -1, 0);
+
+NACHHER (project1):
+    m_window = SDL_CreateWindow(
+        "Jumper Main Window",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        m_width,
+        m_height,
+        SDL_WINDOW_HIDDEN  // Verstecktes Fenster!
+    );
+    
+    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
+
+BESCHREIBUNG:
+- SDL_WINDOW_SHOWN → SDL_WINDOW_HIDDEN: Fenster wird nicht angezeigt
+- SDL_RENDERER_SOFTWARE: Software-Renderer für bessere SDL_RenderReadPixels-Kompatibilität
+
+Datei: project1/src/game/MainWindow.hpp
+Zeile: Neue Methoden hinzugefügt
+
+VORHER (uebung10):
+    void run();  // Haupt-Game-Loop
+
+NACHHER (project1):
+    void run();  // Haupt-Game-Loop (wird nicht mehr verwendet)
+    void update(const Uint8* keystates);  // Externes Update
+    void render();  // Externes Rendering
+    SDL_Renderer* renderer();  // Zugriff auf Renderer
+    Level* level();  // Zugriff auf Level
+
+BESCHREIBUNG:
+- run() existiert noch, wird aber nicht mehr verwendet
+- update() und render() ermöglichen externe Steuerung
+- renderer() gibt Renderer für Pixel-Kopie zurück
+- level() gibt Level-Zugriff für GameView
+
+Datei: project1/src/game/MainWindow.cpp
+Zeile: 92-107
+
+HINZUGEFÜGT:
+void MainWindow::update(const Uint8* keystates)
+{
+    if(m_level)
+    {
+        m_level->update(keystates);
+    }
+}
+
+void MainWindow::render()
+{
+    if(m_level)
+    {
+        SDL_RenderClear(m_renderer);
+        m_level->render();
+        SDL_RenderPresent(m_renderer);
+    }
+}
+
+SDL_Renderer* MainWindow::renderer()
+{
+    return m_renderer;
+}
+
+Level* MainWindow::level()
+{
+    return m_level;
+}
+
+BESCHREIBUNG:
+- update(): Ruft Level::update() mit Tastatur-Zuständen auf
+- render(): Rendert Level und präsentiert auf Renderer
+- renderer(): Gibt Renderer für Pixel-Kopie zurück
+- level(): Gibt Level-Zugriff zurück
+
+================================================================================
+0.3 CMakeLists.txt ANPASSUNGEN
+================================================================================
+
+PROBLEM:
+- Qt6-Integration hinzufügen
+- Game-Sources aus uebung10 einbinden
+- SDL2, HDF5, Boost finden und linken
+
+ÄNDERUNGEN:
+
+Datei: project1/CMakeLists.txt
+
+HINZUGEFÜGT:
+# Qt6-Integration
+find_package(Qt6 REQUIRED COMPONENTS Quick)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+qt_standard_project_setup(REQUIRES 6.8)
+
+# SDL2 (wie in uebung10)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+find_package(SDL2 REQUIRED)
+find_package(SDL2_IMAGE REQUIRED)
+
+# HDF5 (wie in uebung10)
+add_subdirectory(ext/HighFive)
+include_directories("ext/HighFive/include")
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+include_directories(${HDF5_INCLUDE_DIRS})
+
+# Boost (wie in uebung10)
+find_package(Boost 1.54 COMPONENTS filesystem system REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+# Game-Sources aus uebung10
+set(GAME_SOURCES
+    src/game/Actor.cpp
+    src/game/ActorForces.cpp
+    src/game/AnimatedRenderable.cpp
+    src/game/Camera.cpp
+    src/game/LayerManager.cpp
+    src/game/Level.cpp
+    src/game/LevelForces.cpp
+    src/game/LevelParser.cpp
+    src/game/MainWindow.cpp
+    src/game/MovingRenderable.cpp
+    src/game/Physics.cpp
+    src/game/SDLRenderable.cpp
+    src/game/TileArray.cpp
+    src/game/TileSet.cpp
+    src/game/Util.cpp
+)
+
+# Qt-Executable mit Game-Sources
+qt_add_executable(appCloudgate_game
+    main.cpp
+    GameView.cpp
+    GameView.hpp
+    ${GAME_SOURCES}
+)
+
+# Link libraries
+target_link_libraries(appCloudgate_game
+    PRIVATE Qt6::Quick
+    ${SDL2_LIBRARY}
+    ${SDL2_IMG_LIBRARY}
+    m
+    ${HDF5_LIBRARIES}
+    ${HDF5_HL_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
+
+BESCHREIBUNG:
+- Qt6-Integration hinzugefügt
+- Alle Game-Sources aus uebung10 eingebunden
+- SDL2, HDF5, Boost wie in uebung10 konfiguriert
+- GameView.cpp/hpp für Qt/QML-Integration hinzugefügt
+
+================================================================================
+0.4 NEUE DATEIEN FÜR QT/QML-INTEGRATION
+================================================================================
+
+NEU ERSTELLT:
+
+1. GameView.hpp / GameView.cpp
+   - QQuickPaintedItem für SDL2-Einbettung in QML
+   - SDL2-Initialisierung mit verstecktem Fenster
+   - Pixel-Kopie vom SDL-Renderer zu QImage
+   - Tastatur-Event-Konvertierung (Qt → SDL)
+   - Update-Loop über QTimer (60 FPS)
+
+2. main.cpp
+   - Qt6 QGuiApplication
+   - QML-Engine-Setup
+   - GameView-Registrierung für QML
+   - QML-Datei-Laden (Main.qml)
+
+3. Main.qml
+   - Hauptmenü mit drei Buttons
+   - Navigation zu verschiedenen Seiten
+
+4. SecondPage.qml
+   - Spiel-Seite mit GameView
+   - ESC-Handler für Rückkehr zum Hauptmenü
+
+================================================================================
+0.5 RESSOURCEN ÜBERNAHME
+================================================================================
+
+ÜBERNOMMEN AUS UEBUNG10:
+
+1. res/level.xml
+   - Level-Definition (Tiles, Actor, Kräfte)
+   - ÄNDERUNGEN: Actor Y-Position angepasst (600 statt 100)
+
+2. res/level.h5
+   - HDF5-Datei mit Level-Daten (Texturen, Tile-Maps)
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+3. ext/HighFive/
+   - HDF5-Bibliothek
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+4. cmake/FindSDL2.cmake
+   - CMake-Modul für SDL2
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+5. cmake/FindSDL2_IMAGE.cmake
+   - CMake-Modul für SDL2_image
+   - KEINE ÄNDERUNGEN - vollständig übernommen
+
+================================================================================
+0.6 ZUSAMMENFASSUNG: ÜBERNAHME VS. ANPASSUNGEN
+================================================================================
+
+VOLLSTÄNDIG ÜBERNOMMEN (ohne Änderungen):
+- Actor.cpp/hpp
+- ActorForces.cpp/hpp
+- AnimatedRenderable.cpp/hpp
+- LayerManager.cpp/hpp
+- LevelForces.cpp/hpp
+- LevelParser.cpp/hpp
+- MovingRenderable.cpp/hpp
+- SDLRenderable.cpp/hpp
+- TileSetRepresentation.hpp
+- Util.cpp/hpp
+- io/ Verzeichnis (alle HDF5-IO-Dateien)
+- res/level.h5
+- ext/HighFive/
+- cmake/ Module
+
+MIT ANPASSUNGEN ÜBERNOMMEN:
+- Camera.cpp/hpp: x() Methode angepasst (feste X-Position)
+- Level.cpp/hpp: Kamera-Initialisierung angepasst
+- MainWindow.cpp/hpp: Verstecktes Fenster, neue Methoden (update, render, renderer, level)
+- Physics.cpp/hpp: Grenzprüfungen, Level-Grenzen
+- TileArray.cpp/hpp: Grenzprüfungen
+- TileSet.cpp/hpp: Y-Offset beim Rendering
+- TileTree.tcc/hpp: Grenzprüfungen
+- res/level.xml: Actor Y-Position angepasst
+
+NEU ERSTELLT:
+- GameView.cpp/hpp: Qt/QML-Integration
+- main.cpp: Qt6-Application
+- Main.qml: Hauptmenü
+- SecondPage.qml: Spiel-Seite
+- CMakeLists.txt: Qt6 + Game-Integration
+
+================================================================================
+0.7 GAMEVIEW: BRÜCKE ZWISCHEN QT/QML UND SDL2
+================================================================================
+
+PROBLEM:
+- SDL2-Spiel muss in Qt/QML eingebettet werden
+- Rendering muss von SDL2 zu Qt/QML konvertiert werden
+- Tastatur-Events müssen von Qt zu SDL konvertiert werden
+
+LÖSUNG: GameView-Klasse
+
+Datei: project1/GameView.hpp / GameView.cpp
+
+FUNKTIONALITÄT:
+
+1. SDL2-Initialisierung:
+   - Initialisiert SDL2 mit verstecktem Fenster
+   - Erstellt MainWindow-Instanz (aus uebung10)
+   - Software-Renderer für Pixel-Kopie
+
+2. Rendering-Pipeline:
+   - MainWindow::render() → SDL-Renderer
+   - SDL_RenderReadPixels() → SDL_Surface
+   - SDL_Surface → QImage
+   - QImage → QPainter (in paint())
+
+3. Tastatur-Event-Konvertierung:
+   - Qt KeyEvents → SDL Events
+   - Qt KeyCodes → SDL Keycodes/Scancodes
+   - Manuelle Key-State-Verwaltung (QMap)
+
+4. Update-Loop:
+   - QTimer mit 60 FPS (16ms Intervall)
+   - Ruft MainWindow::update() auf
+   - Triggert paint() für Rendering
+
+WICHTIGE METHODEN:
+
+- startGame(): Erstellt MainWindow, startet Timer
+- stopGame(): Stoppt Timer, löscht MainWindow
+- updateGame(): Update-Loop (SDL_PumpEvents, MainWindow::update)
+- paint(): Rendering (SDL → QImage → QPainter)
+- keyPressEvent/keyReleaseEvent: Qt → SDL Event-Konvertierung
+
+================================================================================
+0.8 TASTATUR-EVENT-KONVERTIERUNG
+================================================================================
+
+PROBLEM:
+- Qt verwendet andere KeyCodes als SDL2
+- SDL2 benötigt Scancodes für SDL_GetKeyboardState()
+- Events müssen manuell konvertiert werden
+
+LÖSUNG:
+
+Datei: project1/GameView.cpp
+Zeile: convertQtKeyToSDL() und convertQtKeyToSDLScancode()
+
+IMPLEMENTIERUNG:
+- Qt::Key_Left → SDLK_LEFT / SDL_SCANCODE_LEFT
+- Qt::Key_Right → SDLK_RIGHT / SDL_SCANCODE_RIGHT
+- Qt::Key_Space → SDLK_SPACE / SDL_SCANCODE_SPACE
+- Qt::Key_A → SDLK_a / SDL_SCANCODE_A
+- Qt::Key_D → SDLK_d / SDL_SCANCODE_D
+
+KEY-STATE-VERWALTUNG:
+- QMap<int, bool> m_keyStates: Trackt Qt-Key-Zustände
+- Wird in keyPressEvent/keyReleaseEvent aktualisiert
+- Wird in updateGame() zu SDL-Format konvertiert
+
+================================================================================
+0.9 RENDERING-PIPELINE IM DETAIL
+================================================================================
+
+SCHRITT 1: SDL2-Rendering
+-------------------------
+MainWindow::render() wird aufgerufen:
+  - SDL_RenderClear()
+  - Level::render() → LayerManager::render()
+  - LayerManager setzt Camera-Offset für alle Renderables
+  - Alle Renderables rendern relativ zur Kamera
+  - SDL_RenderPresent()
+
+SCHRITT 2: Pixel-Kopie
+----------------------
+SDL_RenderReadPixels() kopiert Pixel vom Renderer:
+  - SDL_Surface wird erstellt (ARGB8888 Format)
+  - Pixel werden vom Renderer in Surface kopiert
+  - Surface enthält das komplette gerenderte Bild
+
+SCHRITT 3: QImage-Konvertierung
+--------------------------------
+SDL_Surface → QImage:
+  - QImage wird aus Surface-Pixeln erstellt
+  - Format: QImage::Format_ARGB32
+  - Tiefe Kopie (copy()), da Surface-Speicher freigegeben wird
+
+SCHRITT 4: QML-Darstellung
+--------------------------
+QPainter::drawImage():
+  - QImage wird in boundingRect() gezeichnet
+  - QPainter rendert in QML-Kontext
+  - Antialiasing deaktiviert für pixel-perfekte Darstellung
+
+================================================================================
+0.10 ABHÄNGIGKEITEN ÜBERNAHME
+================================================================================
+
+AUS UEBUNG10 ÜBERNOMMEN:
+
+1. SDL2 / SDL2_image
+   - Gleiche Version wie in uebung10
+   - Gleiche CMake-Module (FindSDL2.cmake, FindSDL2_IMAGE.cmake)
+
+2. HDF5
+   - Gleiche Komponenten (C, CXX, HL)
+   - HighFive-Bibliothek aus ext/HighFive/
+
+3. Boost
+   - Gleiche Version (1.54)
+   - Gleiche Komponenten (filesystem, system)
+
+HINZUGEFÜGT:
+
+4. Qt6
+   - Quick-Modul für QML
+   - QGuiApplication statt QApplication
+   - QML-Engine für UI
+
+================================================================================
+0.11 DATEI-STRUKTUR VERGLEICH
+================================================================================
+
+UEBUNG10:
+---------
+uebung10/
+├── src/
+│   └── game/          # Alle Game-Sources
+│       ├── Actor.*
+│       ├── Physics.*
+│       ├── Level.*
+│       └── ...
+├── res/
+│   ├── level.xml
+│   └── level.h5
+├── ext/HighFive/
+├── cmake/              # SDL2 Module
+└── CMakeLists.txt    # SDL2-only Build
+
+PROJECT1:
+---------
+project1/
+├── src/
+│   └── game/          # ÜBERNOMMEN aus uebung10
+│       ├── Actor.*     # 1:1 Kopie
+│       ├── Physics.*   # Mit Anpassungen
+│       ├── Level.*     # Mit Anpassungen
+│       ├── MainWindow.* # MIT ANPASSUNGEN (verstecktes Fenster)
+│       └── ...
+├── res/               # ÜBERNOMMEN aus uebung10
+│   ├── level.xml      # Mit Anpassungen (Y-Position)
+│   └── level.h5       # 1:1 Kopie
+├── ext/HighFive/      # ÜBERNOMMEN aus uebung10
+├── cmake/             # ÜBERNOMMEN aus uebung10
+├── GameView.*         # NEU: Qt/QML-Integration
+├── main.cpp           # NEU: Qt6-Application
+├── Main.qml           # NEU: Hauptmenü
+├── SecondPage.qml     # NEU: Spiel-Seite
+└── CMakeLists.txt     # ERWEITERT: Qt6 + Game-Integration
+
+================================================================================
+0.12 WICHTIGE ARCHITEKTUR-ENTSCHEIDUNGEN
+================================================================================
+
+1. VERSTECKTES SDL-FENSTER:
+   - SDL2 benötigt ein Fenster für den Renderer
+   - Lösung: Verstecktes Fenster (SDL_WINDOW_HIDDEN)
+   - Renderer wird für Pixel-Kopie verwendet
+
+2. SOFTWARE-RENDERER:
+   - SDL_RenderReadPixels() funktioniert besser mit Software-Renderer
+   - Hardware-Renderer könnte Probleme bei Pixel-Kopie haben
+   - Lösung: SDL_RENDERER_SOFTWARE Flag
+
+3. EXTERNE GAME-LOOP:
+   - uebung10: MainWindow::run() (interne Loop)
+   - project1: GameView::updateGame() (externe Loop über QTimer)
+   - Ermöglicht Qt/QML-Integration
+
+4. PIXEL-KOPIE STATT TEXTUR-SHARING:
+   - SDL2-Texturen können nicht direkt in Qt verwendet werden
+   - Lösung: Pixel-Kopie bei jedem Frame
+   - Trade-off: Performance vs. Einfachheit
+
+5. MANUELLE KEY-STATE-VERWALTUNG:
+   - SDL_GetKeyboardState() benötigt SDL_PumpEvents()
+   - Qt-Events müssen manuell zu SDL-Events konvertiert werden
+   - Lösung: QMap für Key-States + SDL_Event-Pushing
+
+================================================================================
+ENDE TEIL 0: INTEGRATION VON UEBUNG10
+================================================================================
+
+================================================================================
+1. ESC-TASTE: DIREKT ZURÜCK ZUM HAUPTMENÜ
+================================================================================
+
+PROBLEM:
+- ESC-Taste sollte direkt zurück zum Hauptmenü führen
+- Kein Pause-Menü mehr nötig
+
+ÄNDERUNGEN:
+
+Datei: project1/SecondPage.qml
+Zeile: 30-35
+
+VORHER:
+    Keys.onPressed: {
+        // ESC-Taste zum Anzeigen/Verstecken des Menüs
+        if (event.key === Qt.Key_Escape) {
+            pauseMenu.visible = !pauseMenu.visible;
+        }
+    }
+
+NACHHER:
+    Keys.onPressed: function(event) {
+        // ESC-Taste führt direkt zurück zum Hauptmenü
+        if (event.key === Qt.Key_Escape) {
+            gameView.stopGame();
+            stackView.pop();
+            myMain.page_value = -1;
+        }
+    }
+
+BESCHREIBUNG:
+- ESC-Handler geändert, um direkt zum Hauptmenü zurückzukehren
+- Pause-Menü wurde komplett entfernt
+- Spiel wird gestoppt und StackView wird zurückgesetzt
+
+WEITERE ÄNDERUNGEN:
+- Pause-Menü Rectangle wurde komplett aus SecondPage.qml entfernt
+- GameView::paused Property und setPaused() Methode wurden entfernt (nicht mehr benötigt)
+
+================================================================================
+2. KAMERA: FESTE BREITE, NUR VERTIKALES SCROLLING
+================================================================================
+
+PROBLEM:
+- Kamera sollte nur vertikal scrollen (oben/unten)
+- Horizontales Scrolling sollte deaktiviert werden
+
+ÄNDERUNGEN:
+
+Datei: project1/src/game/Camera.cpp
+Zeile: 48-54
+
+VORHER:
+int Camera::x() const
+{
+    if(m_actor)
+    {
+        return m_actor->x();
+    }
+    else
+    {
+        return m_position.x();
+    }
+}
+
+NACHHER:
+int Camera::x() const
+{
+    // Feste X-Position: Kamera scrollt nur vertikal, nicht horizontal
+    // Verwende die initiale X-Position aus m_position
+    return m_position.x();
+}
+
+BESCHREIBUNG:
+- Kamera X-Position ist jetzt fest (verwendet m_position.x())
+- Kamera folgt dem Actor nicht mehr in X-Richtung
+- Kamera scrollt nur vertikal (Y-Position folgt dem Actor)
+
+WEITERE ÄNDERUNGEN:
+- Kamera wird in Level.cpp mit initialer X-Position initialisiert
+- Y-Position folgt weiterhin dem Actor (siehe Camera::y())
+
+================================================================================
+3. KAMERA-POSITION ANPASSEN
+================================================================================
+
+PROBLEM:
+- Kamera sollte weiter rechts starten
+- Y-Position sollte angepasst werden können
+
+ÄNDERUNGEN:
+
+Datei: project1/src/game/Level.cpp
+Zeile: 34
+
+VORHER:
+      m_camera(0, 0, mainWindow->w(), mainWindow->h()),
+
+NACHHER:
+      m_camera(400, 600, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und unten
+
+BESCHREIBUNG:
+- X-Position: 400 (weiter rechts)
+- Y-Position: 600 (weiter unten)
+- Kamera startet jetzt bei Position (400, 600)
+
+Datei: project1/src/game/Camera.cpp
+Zeile: 48-54
+
+VORHER:
+int Camera::x() const
+{
+    // Feste X-Position: Kamera scrollt nur vertikal, nicht horizontal
+    return 0;
+}
+
+NACHHER:
+int Camera::x() const
+{
+    // Feste X-Position: Kamera scrollt nur vertikal, nicht horizontal
+    // Verwende die initiale X-Position aus m_position
+    return m_position.x();
+}
+
+BESCHREIBUNG:
+- x() gibt jetzt m_position.x() zurück (statt immer 0)
+- Ermöglicht es, die initiale X-Position zu verwenden
+
+================================================================================
+4. SICHERHEITS-FIXES: GRENZPRÜFUNGEN FÜR TILE-ZUGRIFFE
+================================================================================
+
+PROBLEM:
+- Speicherzugriffsfehler, wenn Spieler links außerhalb der Kamera läuft
+- Negative Tile-Koordinaten wurden nicht geprüft
+
+ÄNDERUNGEN:
+
+Datei: project1/src/game/TileArray.cpp
+Zeile: 38-48
+
+VORHER:
+int TileArray::get(int x, int y) const
+{
+    if(x < m_w && y < m_h)
+    {
+        return m_tiles[x][y];
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+NACHHER:
+int TileArray::get(int x, int y) const
+{
+    // Prüfe Grenzen: x und y müssen >= 0 und < width/height sein
+    if(x >= 0 && x < m_w && y >= 0 && y < m_h)
+    {
+        return m_tiles[x][y];
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+BESCHREIBUNG:
+- Prüft jetzt auch auf negative Werte (x >= 0 && y >= 0)
+- Verhindert Speicherzugriffsfehler bei negativen Indizes
+
+Datei: project1/src/game/TileTree.tcc
+Zeile: 107-136
+
+VORHER:
+        else
+        {
+            if(m_tiles != 0)
+            {
+                return m_tiles[pos];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+    else
+    {
+        if(m_sub2)
+        {
+            return m_sub2->get(x, y);
+        }
+        else
+        {
+            if(m_tiles != 0)
+            {
+                return m_tiles[pos];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
+NACHHER:
+        else
+        {
+            if(m_tiles != 0 && pos >= 0 && pos < m_numTiles)
+            {
+                return m_tiles[pos];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+    else
+    {
+        if(m_sub2)
+        {
+            return m_sub2->get(x, y);
+        }
+        else
+        {
+            if(m_tiles != 0 && pos >= 0 && pos < m_numTiles)
+            {
+                return m_tiles[pos];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
+BESCHREIBUNG:
+- Prüft jetzt auch auf negative pos Werte (pos >= 0 && pos < m_numTiles)
+- Verhindert Speicherzugriffsfehler bei negativen Array-Indizes
+
+Datei: project1/src/game/Physics.cpp
+Zeile: 197-212
+
+VORHER:
+    if(f_y < m_tiles->height() && f_x < m_tiles->width())
+    {
+        if(m_tiles->get(f_x, f_y) > 0)
+        {
+            m_actor->setOnGround(true);
+        }
+    }
+
+
+    if(d_y < m_tiles->height() && d_x < m_tiles->width() )
+    {
+        if(m_tiles->get(d_x, d_y) > 0)
+        {
+            m_actor->setOnGround(true);
+        }
+    }
+
+NACHHER:
+    // Prüfe Grenzen für f_x und f_y (auch negative Werte)
+    if(f_y >= 0 && f_y < m_tiles->height() && f_x >= 0 && f_x < m_tiles->width())
+    {
+        if(m_tiles->get(f_x, f_y) > 0)
+        {
+            m_actor->setOnGround(true);
+        }
+    }
+
+
+    // Prüfe Grenzen für d_x und d_y (auch negative Werte)
+    if(d_y >= 0 && d_y < m_tiles->height() && d_x >= 0 && d_x < m_tiles->width() )
+    {
+        if(m_tiles->get(d_x, d_y) > 0)
+        {
+            m_actor->setOnGround(true);
+        }
+    }
+
+BESCHREIBUNG:
+- Prüft jetzt auch auf negative Werte (f_x >= 0, f_y >= 0, d_x >= 0, d_y >= 0)
+- Verhindert Speicherzugriffsfehler bei negativen Tile-Koordinaten
+
+================================================================================
+5. LEVEL-GRENZEN ALS KOLLISIONSFLÄCHEN
+================================================================================
+
+PROBLEM:
+- Spieler kann links und rechts aus dem Level laufen
+- Keine Kollisionserkennung an den Level-Rändern
+
+ÄNDERUNGEN:
+
+Datei: project1/src/game/Physics.cpp
+Zeile: 365-400
+
+HINZUGEFÜGT:
+    // Prüfe Level-Grenzen (links und rechts)
+    // Verhindere, dass der Spieler außerhalb des Levels läuft
+    if(m_tiles)
+    {
+        // Berechne die Level-Grenzen in Welt-Koordinaten
+        // Level startet bei (0, 600) in Welt-Koordinaten (Y-Offset für weiter unten)
+        int levelLeft = 0;
+        int levelRight = m_tiles->width() * m_tiles->tileWidth();
+        
+        // Prüfe linke Grenze
+        if(desiredPosition.x() < levelLeft)
+        {
+            desiredPosition.setX(levelLeft);
+            // Stoppe horizontale Geschwindigkeit, wenn gegen linke Wand
+            if(m_actor->velocity().x() < 0)
+            {
+                m_actor->velocity().setX(0);
+            }
+        }
+        
+        // Prüfe rechte Grenze (berücksichtige Sprite-Breite)
+        if(desiredPosition.x() + m_actor->w() > levelRight)
+        {
+            desiredPosition.setX(levelRight - m_actor->w());
+            // Stoppe horizontale Geschwindigkeit, wenn gegen rechte Wand
+            if(m_actor->velocity().x() > 0)
+            {
+                m_actor->velocity().setX(0);
+            }
+        }
+    }
+
+BESCHREIBUNG:
+- Prüft linke Grenze: X < 0 wird auf X = 0 gesetzt
+- Prüft rechte Grenze: X + Sprite-Breite > Level-Breite wird korrigiert
+- Stoppt horizontale Geschwindigkeit, wenn gegen Wand gelaufen wird
+- Wird in resolveCollision() nach allen Tile-Kollisionen ausgeführt
+
+================================================================================
+6. Y-POSITION ANPASSUNGEN (KAMERA, SPIELER, KARTE)
+================================================================================
+
+PROBLEM:
+- Alles soll weiter unten positioniert werden
+- Kamera, Spieler und Karte müssen synchronisiert werden
+
+ÄNDERUNGEN:
+
+Datei: project1/src/game/Level.cpp
+Zeile: 34
+
+VORHER:
+      m_camera(400, 400, mainWindow->w(), mainWindow->h()),
+
+NACHHER:
+      m_camera(400, 600, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und unten
+
+BESCHREIBUNG:
+- Kamera Y-Position von 400 auf 600 erhöht
+
+Datei: project1/res/level.xml
+Zeile: 23
+
+VORHER:
+    <position_y>100</position_y>
+
+NACHHER:
+    <position_y>600</position_y>
+
+BESCHREIBUNG:
+- Spieler Y-Position von 100 auf 600 erhöht
+
+Datei: project1/src/game/TileSet.cpp
+Zeile: 163-164
+
+VORHER:
+                    /* Compute the position of the target on the screen */
+                    target.x = j * m_tileWidth - m_offset.x() + m_windowOffset.x();
+                    target.y = i * m_tileHeight - m_offset.y() + m_windowOffset.y();
+
+NACHHER:
+                    /* Compute the position of the target on the screen */
+                    // Y-Offset von 600, damit die Karte weiter unten startet
+                    target.x = j * m_tileWidth - m_offset.x() + m_windowOffset.x();
+                    target.y = i * m_tileHeight - m_offset.y() + m_windowOffset.y() + 600;
+
+BESCHREIBUNG:
+- Y-Offset von +600 beim Tile-Rendering hinzugefügt
+- Karte wird jetzt 600 Pixel weiter unten gerendert
+
+Datei: project1/src/game/Physics.cpp
+Zeile: 127-129
+
+VORHER:
+    /* Determine x and y position of the sprite within the grid */
+    Vector<int> gridPos(
+                floor((pos.x() + 0.5 * m_actor->w()) /  m_tiles->tileWidth()),
+                floor((pos.y() + 0.5 * m_actor->h()) / m_tiles->tileHeight()));
+
+NACHHER:
+    /* Determine x and y position of the sprite within the grid */
+    // Berücksichtige den Y-Offset der Tiles (600), damit die Kollisionserkennung korrekt funktioniert
+    // Die Tiles werden mit Y-Offset 600 gerendert, also müssen wir das bei der Kollisionserkennung berücksichtigen
+    Vector<int> gridPos(
+                floor((pos.x() + 0.5 * m_actor->w()) /  m_tiles->tileWidth()),
+                floor((pos.y() - 600 + 0.5 * m_actor->h()) / m_tiles->tileHeight()));
+
+BESCHREIBUNG:
+- Y-Position wird um 600 reduziert, bevor Tile-Koordinaten berechnet werden
+- Kompensiert den Y-Offset beim Rendering
+
+Datei: project1/src/game/Physics.cpp
+Zeile: 229-232
+
+VORHER:
+                // Get SDL rect for current tile and sprite and check intersection
+                tileRect.y = y * m_tiles->tileHeight();
+                tileRect.x = x * m_tiles->tileWidth();
+
+NACHHER:
+                // Get SDL rect for current tile and sprite and check intersection
+                // Berücksichtige den Y-Offset der Tiles (600)
+                tileRect.y = y * m_tiles->tileHeight() + 600;
+                tileRect.x = x * m_tiles->tileWidth();
+
+BESCHREIBUNG:
+- tileRect.y wird um 600 erhöht, um den Y-Offset zu berücksichtigen
+- Kollisionserkennung funktioniert jetzt korrekt mit dem verschobenen Level
+
+Datei: project1/src/game/Camera.cpp
+Zeile: 56-65
+
+VORHER:
+int Camera::y() const
+{
+    if(m_actor)
+    {
+        return m_actor->y();
+    }
+    else
+    {
+        return m_position.y();
+    }
+}
+
+NACHHER:
+int Camera::y() const
+{
+    if(m_actor)
+    {
+        return m_actor->y();
+    }
+    else
+    {
+        return m_position.y();
+    }
+}
+
+BESCHREIBUNG:
+- Kamera folgt weiterhin dem Actor in Y-Richtung
+- Keine Änderung nötig, da Actor Y-Position bereits angepasst wurde
+
+================================================================================
+7. QML WARNUNG BEHEBEN
+================================================================================
+
+PROBLEM:
+- QML-Warnung: "Parameter 'event' is not declared. Injection of parameters into signal handlers is deprecated."
+
+ÄNDERUNGEN:
+
+Datei: project1/SecondPage.qml
+Zeile: 30
+
+VORHER:
+        Keys.onPressed: {
+            // ESC-Taste zum Anzeigen/Verstecken des Menüs
+            if (event.key === Qt.Key_Escape) {
+                pauseMenu.visible = !pauseMenu.visible;
+            }
+        }
+
+NACHHER:
+        Keys.onPressed: function(event) {
+            // ESC-Taste führt direkt zurück zum Hauptmenü
+            if (event.key === Qt.Key_Escape) {
+                gameView.stopGame();
+                stackView.pop();
+                myMain.page_value = -1;
+            }
+        }
+
+BESCHREIBUNG:
+- JavaScript-Funktion mit formalem Parameter verwendet
+- Entspricht den Qt6-QML-Best Practices
+
+================================================================================
+ZUSAMMENFASSUNG ALLER GEÄNDERTEN DATEIEN
+================================================================================
+
+1. project1/SecondPage.qml
+   - ESC-Handler geändert (direkt zum Hauptmenü)
+   - Pause-Menü entfernt
+   - QML-Warnung behoben (function(event))
+
+2. project1/src/game/Camera.cpp
+   - x() gibt jetzt m_position.x() zurück (feste X-Position)
+   - y() bleibt unverändert (folgt Actor)
+
+3. project1/src/game/Level.cpp
+   - Kamera-Initialisierung: (400, 600, ...) statt (0, 0, ...)
+
+4. project1/res/level.xml
+   - Actor Y-Position: 600 statt 100
+
+5. project1/src/game/TileSet.cpp
+   - Tile-Rendering: +600 Y-Offset hinzugefügt
+
+6. project1/src/game/Physics.cpp
+   - Grenzprüfungen für negative Tile-Koordinaten
+   - Level-Grenzen als Kollisionsflächen (links/rechts)
+   - Y-Offset-Berücksichtigung in Kollisionserkennung
+
+7. project1/src/game/TileArray.cpp
+   - Grenzprüfungen für negative Indizes
+
+8. project1/src/game/TileTree.tcc
+   - Grenzprüfungen für negative pos Werte
+
+9. project1/src/game/io/TileSetIO.tcc
+   - Keine Änderung (Tile-Position bleibt bei (0, 0), Offset wird im Rendering verwendet)
+
+================================================================================
+WICHTIGE HINWEISE
+================================================================================
+
+1. Y-OFFSET SYNCHRONISATION:
+   - Alle Y-Positionen müssen synchronisiert sein:
+     * Kamera Y: 600
+     * Actor Y: 600
+     * Tile Y-Offset: +600 (beim Rendering)
+   - Kollisionserkennung berücksichtigt den Y-Offset automatisch
+
+2. KAMERA X-POSITION:
+   - Kamera X-Position ist fest (400)
+   - Wird in Camera::x() zurückgegeben
+   - Kamera scrollt nicht horizontal
+
+3. LEVEL-GRENZEN:
+   - Linke Grenze: X = 0
+   - Rechte Grenze: X = Level-Breite (width * tileWidth)
+   - Geschwindigkeit wird gestoppt, wenn gegen Wand gelaufen wird
+
+4. SICHERHEITS-FIXES:
+   - Alle Tile-Zugriffe prüfen jetzt auf negative Werte
+   - Verhindert Speicherzugriffsfehler bei ungültigen Koordinaten
+
+================================================================================
+ZUSAMMENFASSUNG: ÜBERNAHME VS. ANPASSUNGEN
+================================================================================
+
+VOLLSTÄNDIG ÜBERNOMMEN (ohne Änderungen):
+------------------------------------------
+✓ Actor.cpp/hpp
+✓ ActorForces.cpp/hpp
+✓ AnimatedRenderable.cpp/hpp
+✓ LayerManager.cpp/hpp
+✓ LevelForces.cpp/hpp
+✓ LevelParser.cpp/hpp
+✓ MovingRenderable.cpp/hpp
+✓ SDLRenderable.cpp/hpp
+✓ TileSetRepresentation.hpp
+✓ Util.cpp/hpp
+✓ io/ Verzeichnis (alle HDF5-IO-Dateien)
+✓ res/level.h5
+✓ ext/HighFive/
+✓ cmake/ Module (FindSDL2.cmake, FindSDL2_IMAGE.cmake)
+✓ Vector.hpp/tcc
+✓ SharedArray.hpp
+✓ Renderable.hpp
+✓ StaticRenderable.hpp
+✓ JumperTypes.hpp
+
+MIT ANPASSUNGEN ÜBERNOMMEN:
+----------------------------
+✓ Camera.cpp/hpp
+  - x() Methode: Feste X-Position (m_position.x()) statt Actor-Folge
+  
+✓ Level.cpp/hpp
+  - Kamera-Initialisierung: (400, 600, ...) statt (0, 0, ...)
+  
+✓ MainWindow.cpp/hpp
+  - SDL_WINDOW_HIDDEN statt SDL_WINDOW_SHOWN
+  - SDL_RENDERER_SOFTWARE Flag
+  - Neue Methoden: update(), render(), renderer(), level()
+  
+✓ Physics.cpp/hpp
+  - Grenzprüfungen für negative Tile-Koordinaten
+  - Level-Grenzen als Kollisionsflächen (links/rechts)
+  - Y-Offset-Berücksichtigung in Kollisionserkennung
+  
+✓ TileArray.cpp/hpp
+  - Grenzprüfungen für negative Indizes (x >= 0 && y >= 0)
+  
+✓ TileSet.cpp/hpp
+  - Y-Offset (+600) beim Tile-Rendering
+  
+✓ TileTree.tcc/hpp
+  - Grenzprüfungen für negative pos Werte (pos >= 0 && pos < m_numTiles)
+  
+✓ res/level.xml
+  - Actor Y-Position: 600 statt 100
+
+NEU ERSTELLT:
+-------------
+✓ GameView.cpp/hpp
+  - Qt/QML-Integration für SDL2
+  - Rendering-Pipeline (SDL → QImage → QPainter)
+  - Tastatur-Event-Konvertierung (Qt → SDL)
+  
+✓ main.cpp
+  - Qt6 QGuiApplication
+  - QML-Engine-Setup
+  - GameView-Registrierung
+  
+✓ Main.qml
+  - Hauptmenü mit Navigation
+  
+✓ SecondPage.qml
+  - Spiel-Seite mit GameView
+  - ESC-Handler
+  
+✓ CMakeLists.txt
+  - Qt6-Integration
+  - Game-Sources-Einbindung
+  - Alle Abhängigkeiten (SDL2, HDF5, Boost, Qt6)
+
+================================================================================
+ARCHITEKTUR-ÜBERSICHT
+================================================================================
+
+UEBUNG10 ARCHITEKTUR:
+---------------------
+Main.cpp
+  └─> MainWindow::run() [Game-Loop]
+       └─> Level::update()
+       └─> Level::render()
+            └─> LayerManager::render()
+                 └─> Alle Renderables rendern
+
+PROJECT1 ARCHITEKTUR:
+---------------------
+main.cpp (Qt6)
+  └─> QML-Engine
+       └─> Main.qml
+            └─> SecondPage.qml
+                 └─> GameView (QQuickPaintedItem)
+                      └─> QTimer (60 FPS)
+                           └─> GameView::updateGame()
+                                └─> MainWindow::update()
+                                └─> GameView::paint()
+                                     └─> MainWindow::render()
+                                          └─> Level::render()
+                                               └─> SDL_RenderReadPixels()
+                                                    └─> QImage
+                                                         └─> QPainter
+
+WICHTIGE UNTERSCHIEDE:
+----------------------
+1. Game-Loop: Extern (QTimer) statt intern (while-Schleife)
+2. Rendering: SDL → QImage → QPainter statt direkt SDL
+3. Fenster: Versteckt statt sichtbar
+4. Events: Qt → SDL Konvertierung statt direkte SDL-Events
+
+================================================================================
+ENDE DER DOKUMENTATION
+================================================================================
