@@ -56,6 +56,8 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
     if (m_palette)
     {
         m_palette->loadTileset(path, tileWidth, tileHeight, offset, endIndex);
+        // Load the Tile-names from the XML file
+        m_palette->loadTileNames("res/RulesTiles.xml");
         qDebug() << "Tileset loaded into palette";
     }
     else
@@ -151,8 +153,8 @@ void LevelEditorController::saveLevel()
         return;
     }
 
-        // Ensure .xml extension
-        if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
+    // Ensure .xml extension
+    if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
     {
         file_name += ".xml";
     }

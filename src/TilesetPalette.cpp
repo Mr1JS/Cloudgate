@@ -3,15 +3,18 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QImage>
+#include <QFile>
+#include <QXmlStreamReader>
+#include <QDir>
+#include <QCoreApplication>
 
-TilesetPalette::TilesetPalette(QQuickItem* parent)
-    : QQuickPaintedItem(parent)
-    , m_backgroundColor(92, 130, 161)
+TilesetPalette::TilesetPalette(QQuickItem *parent)
+    : QQuickPaintedItem(parent), m_backgroundColor(92, 130, 161)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-void TilesetPalette::loadTileset(const QString& path, int tileW, int tileH, int offset, int endIndex)
+void TilesetPalette::loadTileset(const QString &path, int tileW, int tileH, int offset, int endIndex)
 {
     QPixmap pix(path);
     if (pix.isNull())
@@ -31,7 +34,62 @@ void TilesetPalette::loadTileset(const QString& path, int tileW, int tileH, int 
     qDebug() << "Tiles loaded:" << m_tiles.size();
 }
 
-void TilesetPalette::extractTilesWithTransparency(const QPixmap& pixmap, int offset)
+void TilesetPalette::loadTileNames(const QString &xmlPath)
+{
+    m_tileNames.clear();
+
+    // Try to find the XML file
+    QString absolutePath = xmlPath;
+    if (!QFile::exists(absolutePath))
+    {
+        // Try relative to application directory
+        QDir appDir(QCoreApplication::applicationDirPath());
+        appDir.cdUp();
+        absolutePath = appDir.absoluteFilePath(xmlPath);
+
+        if (!QFile::exists(absolutePath))
+        {
+            // Try from current directory
+            absolutePath = QDir::current().absoluteFilePath(xmlPath);
+        }
+    }
+
+    QFile file(absolutePath);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        qWarning() << "Could not open RulesTiles.xml:" << absolutePath;
+        return;
+    }
+
+    QXmlStreamReader xml(&file);
+
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+
+        if (xml.isStartElement() && xml.name() == QString("tile"))
+        {
+            QXmlStreamAttributes attributes = xml.attributes();
+
+            if (attributes.hasAttribute("id") && attributes.hasAttribute("name"))
+            {
+                int id = attributes.value("id").toInt();
+                QString name = attributes.value("name").toString();
+                m_tileNames[id] = name;
+            }
+        }
+    }
+
+    if (xml.hasError())
+    {
+        qWarning() << "XML parsing error:" << xml.errorString();
+    }
+
+    file.close();
+    qDebug() << "Loaded" << m_tileNames.size() << "tile names from" << absolutePath;
+}
+
+void TilesetPalette::extractTilesWithTransparency(const QPixmap &pixmap, int offset)
 {
     m_tiles.clear();
 
@@ -86,10 +144,11 @@ void TilesetPalette::extractTilesWithTransparency(const QPixmap& pixmap, int off
             int y = offset + (row * totalTileHeight);
 
             // IMPORTANT: Cut out FULL tile size incl. spacing      // IMPORTANT: CHANGED TO OT CUT FULL
-            t.sourceRect = QRect(x, y, totalTileWidth-offset, totalTileHeight-offset);
+            t.sourceRect = QRect(x, y, totalTileWidth - offset, totalTileHeight - offset);
 
-            if (idx <= 3) {
-                qDebug() << "Palette Tile" << idx-1 << "sourceRect:" << t.sourceRect
+            if (idx <= 3)
+            {
+                qDebug() << "Palette Tile" << idx - 1 << "sourceRect:" << t.sourceRect
                          << "(full size with spacing)";
             }
 
@@ -101,7 +160,7 @@ void TilesetPalette::extractTilesWithTransparency(const QPixmap& pixmap, int off
     emit tileCountChanged();
 }
 
-void TilesetPalette::paint(QPainter* painter)
+void TilesetPalette::paint(QPainter *painter)
 {
     if (m_tiles.isEmpty())
     {
@@ -149,7 +208,7 @@ void TilesetPalette::setExtraTiles(bool mode)
     m_extraTiles = mode;
     update();
 }
-void TilesetPalette::mousePressEvent(QMouseEvent* event)
+void TilesetPalette::mousePressEvent(QMouseEvent *event)
 {
     int columns = qMax(1, (int)(width() / (m_tileWidth + m_spacing)));
 
@@ -181,7 +240,10 @@ void TilesetPalette::mousePressEvent(QMouseEvent* event)
             m_selectedIndex = idx;
             update();
             emit tileSelected(idx);
-            qDebug() << "Tile selected:" << idx;
+
+            // Zeige ID und Name aus XML
+            QString tileName = m_tileNames.value(idx + 1, "Unbekannt"); // idx+1 weil XML bei ID=1 startet
+            qDebug() << "Tile selected - ID:" << (idx + 1) << "Name:" << tileName;
         }
     }
 }
