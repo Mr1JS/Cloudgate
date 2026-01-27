@@ -133,6 +133,11 @@ void LevelCanvas::setTileset(const QString &path, int tileW, int tileH, int offs
     update();
     qDebug() << "Canvas tileset loaded:" << m_tiles.size() << "tiles";
     qDebug() << "==============================";
+
+    // Initialize frame after tileset is loaded (only if empty)
+    if (m_levelData.isEmpty()) {
+        clearLevel(); // Creates the frame
+    }
 }
 
 void LevelCanvas::placeTile(int tileIndex)
@@ -143,7 +148,26 @@ void LevelCanvas::placeTile(int tileIndex)
 
 void LevelCanvas::clearLevel()
 {
-    m_levelData.clear();
+    // Only remove inner tiles, keep frame
+    QList<QPair<int, int>> toRemove;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it) {
+        if (!isFrameTile(it.key().first, it.key().second)) {
+            toRemove.append(it.key());
+        }
+    }
+    for (const auto& key : toRemove) {
+        m_levelData.remove(key);
+    }
+
+    // Create frame on first call only
+    if (m_levelData.isEmpty()) {
+        for (int x = 1; x < m_gridWidth-1; x++)
+            m_levelData[QPair<int, int>(x, m_gridHeight - 1)] = 1;
+        for (int y = 0; y < m_gridHeight; y++) {
+            m_levelData[QPair<int, int>(0, y)] = 55;
+            m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 55;
+        }
+    }
     update();
 }
 
@@ -200,6 +224,11 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {
+        // Protect frame tiles
+        if (isFrameTile(gridX, gridY) && event->button() == Qt::RightButton) {
+            return; // Can't delete frame tiles
+        }
+
         QPair<int, int> pos(gridX, gridY);
 
         if (m_levelData.contains(pos))

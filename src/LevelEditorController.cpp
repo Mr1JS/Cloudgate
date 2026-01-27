@@ -219,7 +219,7 @@ void LevelEditorController::selectTile(int tileIndex)
 {
     m_selectedTileIndex = tileIndex;
 
-    qDebug() << "Controller: Tile" << tileIndex << "selected";
+    // qDebug() << "Controller: Tile" << tileIndex << "selected";
 
     // Update canvas with selected tile
     if (m_canvas)

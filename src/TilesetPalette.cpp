@@ -241,8 +241,8 @@ void TilesetPalette::mousePressEvent(QMouseEvent *event)
             update();
             emit tileSelected(idx);
 
-            // Zeige ID und Name aus XML
-            QString tileName = m_tileNames.value(idx + 1, "Unbekannt"); // idx+1 weil XML bei ID=1 startet
+            // Show ID and name from XML
+            QString tileName = m_tileNames.value(idx + 1, "Unknown"); // idx+1 due to XML starts at ID=1
             qDebug() << "Tile selected - ID:" << (idx + 1) << "Name:" << tileName;
         }
     }
