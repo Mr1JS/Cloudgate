@@ -31,7 +31,7 @@ namespace jumper
 Level::Level(MainWindow* mainWindow, std::string filename)
     : StaticRenderable(mainWindow),
       m_mainWindow(mainWindow),
-      m_camera(400, 800, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
+      m_camera(400, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera)
 {
     m_physics   = 0;
@@ -40,50 +40,6 @@ Level::Level(MainWindow* mainWindow, std::string filename)
 
     // Setup level attributes from config file
     LevelParser p(filename, this, m_mainWindow);
-
-    // Füge Wand-Tiles links und rechts hinzu (als sichtbare Grenzen)
-    if(m_tiles && m_tiles->tiles())
-    {
-        TileSetRepresentation* tileRep = m_tiles->tiles();
-        int tileWidth = tileRep->tileWidth();
-        int levelHeight = tileRep->height();
-        int levelWidth = tileRep->width();
-        
-        // Berechne die Kamera-Grenzen in Tile-Koordinaten
-        int cameraX = m_camera.x();  // Kamera X in World-Koordinaten (400)
-        int cameraWidth = m_camera.width();  // Kamera Breite (800)
-        int cameraRight = cameraX + cameraWidth;  // Rechte Grenze in World-Koordinaten (1200)
-        
-        // Konvertiere World-Koordinaten zu Tile-Koordinaten
-        // Linke Wand: Bei Tile 0 (linker Rand des Levels)
-        int leftTileX = 0;
-        // Rechte Wand: Bei Kamera X + Breite (rechter Rand der Kamera)
-        int rightTileX = cameraRight / tileWidth;
-        
-        // Stelle sicher, dass die rechte Wand innerhalb der Level-Breite ist
-        if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
-        
-        // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
-        int wallTileId = 1;
-        
-        // Füge linke Wand hinzu (von unten nach oben)
-        if(leftTileX >= 0 && leftTileX < levelWidth)
-        {
-            for(int y = 0; y < levelHeight; y++)
-            {
-                tileRep->insert(leftTileX, y, wallTileId);
-            }
-        }
-        
-        // Füge rechte Wand hinzu (von unten nach oben)
-        if(rightTileX >= 0 && rightTileX < levelWidth)
-        {
-            for(int y = 0; y < levelHeight; y++)
-            {
-                tileRep->insert(rightTileX, y, wallTileId);
-            }
-        }
-    }
 
 //    m_actor = new Actor(mainWindow, "../res/actor.spr");
 //     m_actor->setFPS(10);

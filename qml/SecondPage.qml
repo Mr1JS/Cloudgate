@@ -22,7 +22,7 @@ Page {
         }
 
         Component.onCompleted: {
-            gameView.levelPath = "res/level.xml"
+            gameView.levelPath = "res/level_master.xml"
             forceActiveFocus()
             gameView.startGame()
         }

@@ -27,10 +27,10 @@ SDL_Surface* TextureIO<Derived>::load(HighFive::Group group, std::string dataset
                                     dims[0],
                                     8 * dims[2],
                                     dims[1] * dims[2],
-                                    0xff000000,
                                     0x00ff0000,
                                     0x0000ff00,
-                                    0x000000ff);
+                                    0x000000ff,
+                                    0xff000000);
 }
 
 template <typename Derived>

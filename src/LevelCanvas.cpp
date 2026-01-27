@@ -421,8 +421,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     }
 
     // ---- NEW: Load background image from Qt resources and store into H5 like tileset ----
-    const QString bgResourcePath = ":/resources/images/clouds2.png";
-    const QString bgTextureName  = "cloud2";  // dataset name under /textures
+    const QString bgResourcePath = "qrc:/resources/images/clouds2.png";
+    const QString bgTextureName  = "clouds2";  // dataset name under /textures
 
     QImage bgImg(bgResourcePath);
     if (bgImg.isNull())
@@ -436,7 +436,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     }
 
     // ---- NEW: Load actor image from Qt resources and store into H5 like tileset ----
-    const QString actorResourcePath = ":/resources/images/mario1.png";
+    const QString actorResourcePath = "qrc:/resources/images/mario1.png";
     const QString actorTextureName  = "mario1";  // dataset name under /textures
     QImage actorImg(actorResourcePath);
     if (actorImg.isNull())
@@ -551,7 +551,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     // background still references the tileset for tilemap usage
     // (If you want XML to reference the PNG instead, tell me and I adapt)
-    ts << "  <background_tiles texture=\"" << m_tilesetTextureName << "\">\n";
+    ts << "  <background_tiles texture=\"" << bgTextureName << "\">\n";
     ts << "    <layer>0</layer>\n";
     ts << "  </background_tiles>\n";
 
@@ -622,7 +622,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 
     QString h5FileName;
     QString bgTextureName;
-    QString bgTilesDataset;
     QString colTextureName;
     QString colTilesDataset;
 
@@ -646,7 +645,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         else if (line.startsWith("<background_tiles"))
         {
             bgTextureName = extractAttr(line, "texture");
-            bgTilesDataset = extractAttr(line, "tiles");
         }
         else if (line.startsWith("<collision_tiles"))
         {
