@@ -165,8 +165,8 @@ namespace jumper
                         {
                             /* Compute the position of the target on the screen */
                             // Y-Offset von 600, damit die Karte weiter unten startet
-                            target.x = j * m_tileWidth - m_offset.x() + m_windowOffset.x();
-                            target.y = i * m_tileHeight - m_offset.y() + m_windowOffset.y() + 600;
+                            target.x =j * m_tileWidth - m_offset.x() + m_windowOffset.x();
+                            target.y =i * m_tileHeight - m_offset.y() + m_windowOffset.y() + 600;
 
                             /* Compute the position of the source pixel data
                              * within the texture (no offset for first tiles)
@@ -177,13 +177,13 @@ namespace jumper
                             source.x = col * m_tileWidth;
                             if (col > 0)
                             {
-                                source.x += col * m_tileOffset;
+                                source.x += col * m_tileOffset + m_tileOffset;
                             }
 
                             source.y = row * m_tileHeight;
                             if (row > 0)
                             {
-                                source.y += row * m_tileOffset;
+                                source.y += row * m_tileOffset  + m_tileOffset;
                             }
 
                             /* Copy pixel date to correct position */

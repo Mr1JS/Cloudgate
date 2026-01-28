@@ -37,31 +37,64 @@ void TilesetPalette::paint(QPainter* painter)
     int columns = qMax(1, (int)(width() / (m_tileWidth + m_spacing)));
     int start = 0;
     int end = m_endIndex;
+
     // choose either default Tiles or 1x2 Tiles
     if (m_extraTiles)
     {
         start = m_endIndex;
         end = m_tiles.size();
-    }
-
-    for (int i = start; i < end; i++)
-    {
-        int row = (i - start) / columns;
-        int col = (i - start) % columns;
-
-        QRect targetRect(m_spacing + col * (m_tileWidth + m_spacing),
-                         m_spacing + row * (m_tileHeight + m_spacing),
-                         m_tileWidth,
-                         m_tileHeight);
-
-        // Draw tile exactly with sourceRect
-        painter->drawPixmap(targetRect, m_tiles[i].pixmap, m_tiles[i].sourceRect);
-
-        // Highlight on selection
-        if (m_tiles[i].index == m_selectedIndex)
+        // loop in steps of two so it draws every second tile below the first
+        for (int i = start; i < end-1; i += 2)
         {
-            painter->setPen(QPen(QColor(0, 255, 0), 3));
-            painter->drawRect(targetRect.adjusted(1, 1, -1, -1));
+            int row = (i - start) / (columns* 2) * 2;
+            int col = ((i - start) / 2) % columns;
+            // upper part of extraTile
+            QRect targetRect( m_spacing + col * (m_tileWidth + m_spacing),
+                              m_spacing + row * (m_tileHeight + m_spacing / 2),
+                              m_tileWidth,
+                              m_tileHeight);
+            // draw upper part
+            painter->drawPixmap(targetRect, m_tiles[i].pixmap, m_tiles[i].sourceRect);
+
+
+            // lower part of extraTile
+            QRect targetRect2( m_spacing + col * (m_tileWidth + m_spacing),
+                               (row + 1) * (m_tileHeight + m_spacing / 2),
+                               m_tileWidth,
+                               m_tileHeight);          
+            // draw lower part
+            painter->drawPixmap(targetRect2, m_tiles[i+1].pixmap, m_tiles[i+1].sourceRect);
+
+            // Highlight both together on selection
+            if (m_tiles[i+1].index == m_selectedIndex)
+            {
+                painter->setPen(QPen(QColor(0, 255, 0), 3));
+                painter->drawRect(targetRect2.adjusted(1, -31, -1, -1));
+            }
+        }
+    }
+    else 
+    {   // only one tile / normal tiles
+        for (int i = start; i < end; i++)
+        {
+            int row = (i - start) / columns;
+            int col = (i - start) % columns;
+
+            // size of tile
+            QRect targetRect(m_spacing + col * (m_tileWidth + m_spacing),
+                             m_spacing + row * (m_tileHeight + m_spacing),
+                             m_tileWidth,
+                             m_tileHeight);
+
+            // Draw tile exactly with sourceRect
+            painter->drawPixmap(targetRect, m_tiles[i].pixmap, m_tiles[i].sourceRect);
+
+            // Highlight on selection
+            if (m_tiles[i].index == m_selectedIndex)
+            {
+                painter->setPen(QPen(QColor(0, 255, 0), 3));
+                painter->drawRect(targetRect.adjusted(1, 1, -1, -1));
+            }
         }
     }
 }
@@ -75,31 +108,38 @@ void TilesetPalette::mousePressEvent(QMouseEvent* event)
 {
     int columns = qMax(1, (int)(width() / (m_tileWidth + m_spacing)));
 
-    // Improved click detection
+    // get position of click
     const QPointF pos = event->position();
     int clickX = int(pos.x());
     int clickY = int(pos.y());
 
+    // calculate height based on current Tileset mode
+    int heightMultiplier = (m_extraTiles) ? 2 : 1;
+
     // Calculate which grid cell was clicked
     int cellX = clickX / (m_tileWidth + m_spacing);
-    int cellY = clickY / (m_tileHeight + m_spacing);
+    int cellY = clickY / (m_tileHeight * heightMultiplier + m_spacing);
 
     // Check if inside the tile (not in spacing)
     int xInCell = clickX - (cellX * (m_tileWidth + m_spacing));
-    int yInCell = clickY - (cellY * (m_tileHeight + m_spacing));
+    int yInCell = clickY - (cellY * (m_tileHeight * heightMultiplier + m_spacing));
 
     // Only if clicked inside tile (not spacing)
     if (xInCell >= m_spacing && xInCell < (m_spacing + m_tileWidth) &&
-        yInCell >= m_spacing && yInCell < (m_spacing + m_tileHeight))
+        yInCell >= m_spacing && yInCell < (m_spacing + m_tileHeight * heightMultiplier))
     {
+        // id of visible element on page
         int idx = cellY * columns + cellX;
-        // get real Index in extraTiles mode
+
+        // if extraTiles, add the highest index of normal tiles, then 2x because its 2 tiles per clickable Element and +1 to always choose the lower part
         if (m_extraTiles)
         {
-            idx += m_endIndex;
+            idx += m_endIndex + idx + 1;
         }
+
         if (idx >= 0 && idx < m_tiles.size())
         {
+            // save selected id
             m_selectedIndex = idx;
             update();
             emit tileSelected(idx);
