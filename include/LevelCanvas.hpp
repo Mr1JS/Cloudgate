@@ -8,10 +8,12 @@
 #include <QRect>
 #include <QColor>
 #include "TilesetPalette.hpp"
+#include "Tile.hpp"
 
 #include "game/io/BaseHdf5IO.hpp"
 #include "game/io/TileSetIO.hpp"
 #include "game/io/TextureIO.hpp"
+
 
 // Level canvas for placing tiles
 class LevelCanvas : public QQuickPaintedItem
@@ -28,7 +30,9 @@ public:
     explicit LevelCanvas(QQuickItem *parent = nullptr);
     void setExtraTiles(bool mode);
 
-    Q_INVOKABLE void setTileset(const QString &path, int tileW = 34, int tileH = 34, int offset = 0, int endIndex = 20);
+    //Q_INVOKABLE void setTileset(const QImage &path, int tileW = 34, int tileH = 34, int offset = 0, int endIndex = 20);
+    Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
+    
     Q_INVOKABLE void placeTile(int tileIndex);
     Q_INVOKABLE void clearLevel();
     Q_INVOKABLE void saveLevel(const QString &path);
