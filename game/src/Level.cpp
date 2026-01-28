@@ -31,7 +31,7 @@ namespace jumper
 Level::Level(MainWindow* mainWindow, std::string filename)
     : StaticRenderable(mainWindow),
       m_mainWindow(mainWindow),
-      m_camera(400, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
+      m_camera(322, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera)
 {
     m_physics   = 0;

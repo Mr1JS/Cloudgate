@@ -5,8 +5,10 @@ import Cloudgate_game 1.0
 
 Window {
     id: window
-    width: 800
-    height: 1024
+    minimumHeight: 800
+    minimumWidth: 638
+    maximumHeight: 800
+    maximumWidth: 638
     visible: true
     title: qsTr("Hello World")
 
