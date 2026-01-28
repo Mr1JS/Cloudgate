@@ -56,20 +56,38 @@ void LevelEditorController::registerCanvas(LevelCanvas *canvas)
 
 void LevelEditorController::loadTileset(const QString &path, int tileWidth, int tileHeight, int offset, int endIndex)
 {
-    if (path.isEmpty()) 
-    { 
-        qWarning() << "Tileset file not found."; 
-        return; 
-    }
+
+
+        // Get absolute path to level.xml
+        QString absoluteLevelPath = path;
+        if (absoluteLevelPath.isEmpty()) {
+            QDir appDir(QCoreApplication::applicationDirPath());
+            appDir.cdUp();
+            absoluteLevelPath = appDir.absoluteFilePath("res/level.xml");
+
+            if (!QFile::exists(absoluteLevelPath)) {
+                QDir currentDir = QDir::current();
+                absoluteLevelPath = currentDir.absoluteFilePath("res/level.xml");
+            }
+        } else if (!QDir::isAbsolutePath(absoluteLevelPath)) {
+            QDir appDir(QCoreApplication::applicationDirPath());
+            appDir.cdUp();
+            absoluteLevelPath = appDir.absoluteFilePath(absoluteLevelPath);
+
+            if (!QFile::exists(absoluteLevelPath)) {
+                QDir currentDir = QDir::current();
+                absoluteLevelPath = currentDir.absoluteFilePath(path);
+            }
+        }
 
     // get full xml path
-    QString xmlPath = QFileInfo(path).absolutePath();
+    QString xmlPath = absoluteLevelPath;
 
     // read xml
     boost::property_tree::ptree pt;
     try 
     { 
-        read_xml(path.toStdString(), pt); 
+        read_xml(xmlPath.toStdString(), pt); 
     }
     catch (const std::exception &e) 
     { 
@@ -78,7 +96,10 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
     }
 
     QString h5Name = QString::fromStdString(pt.get<std::string>("level.<xmlattr>.resources"));
-    QString h5Path = xmlPath + "/" + h5Name;
+    QFileInfo xmlInfo(absoluteLevelPath);
+    QDir xmlDir = xmlInfo.dir();
+
+    QString h5Path = xmlDir.absoluteFilePath(h5Name);
     qDebug() << "HDF5 path:" << h5Path;
 
     std::string texDataset;
