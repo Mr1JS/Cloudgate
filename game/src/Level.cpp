@@ -38,6 +38,8 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     m_actor     = 0;
     m_tiles     = 0;
 
+    m_stateController = new StateController(mainWindow, filename);
+
     // Setup level attributes from config file
     LevelParser p(filename, this, m_mainWindow);
 
@@ -84,8 +86,6 @@ Level::Level(MainWindow* mainWindow, std::string filename)
             }
         }
     }
-
-    m_stateController = new StateController(mainWindow, filename);
 
 //    m_actor = new Actor(mainWindow, "../res/actor.spr");
 //     m_actor->setFPS(10);

@@ -147,8 +147,8 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
 
             // Add tile set to level
             m_level->getStateController()->addHeartTexture(tex, tileWidth);
-        } else { std::cout << "Not loading heart textures with v.first=" << v.first << std::endl;}
-
+        }
+        
         if (v.first == "actor")
         {
             // Parse attributes

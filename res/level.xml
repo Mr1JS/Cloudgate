@@ -23,7 +23,7 @@
     <tileOffset>0</tileOffset>
     <layer>3</layer>
   </numbers>
-  <icons texture="heart">
+  <icons texture="icons">
     <tileWidth>16</tileWidth>
     <tileHeight>16</tileHeight>
     <layer>3</layer>
