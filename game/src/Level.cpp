@@ -132,6 +132,11 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
     }
 }
 
+StateController* Level::getStateController()
+{
+    return m_stateController;
+}
+
 void Level::update(const Uint8* keystates)
 {
     // Update camera (automatisches Scrollen nach oben)

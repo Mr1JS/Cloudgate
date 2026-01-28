@@ -23,6 +23,11 @@
     <tileOffset>0</tileOffset>
     <layer>3</layer>
   </numbers>
+  <icons texture="heart">
+    <tileWidth>16</tileWidth>
+    <tileHeight>16</tileHeight>
+    <layer>3</layer>
+  </icons>
   <level_forces>
     <gravity x="0" y="9.81"/>
   </level_forces>

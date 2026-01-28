@@ -7,50 +7,38 @@ namespace jumper
 {
 
 StateController::StateController(MainWindow* mainWindow, std::string& filename)
+: m_hearts{}
 {
     m_mainWindow = mainWindow;
     m_isRunning = false;
     m_runtime = 0;
     m_playerHp = MAX_HEARTS;
     m_timer = new QElapsedTimer();
-    m_heartFileName = getHeartFileName(filename);
-    m_heartTexture = LoadTexture(m_mainWindow->renderer(), m_heartFileName);
-    m_hearts = new SDLRenderable[MAX_HEARTS];
+    m_heartWidth = -1;
+}
+
+
+void StateController::addHeartTexture(SDL_Texture* heartTexture, int texWidth)
+{
+//    m_hearts = new SDLRenderable[MAX_HEARTS];
+    std::cout << "Loading heart textures" << std::endl;
+    m_heartWidth = texWidth;
     for (int i = 0; i < MAX_HEARTS; i++) 
     {
-        m_hearts[i] = SDLRenderable(mainWindow, m_heartTexture);
-        Vector v = Vector(m_mainWindow->w() - 32*i, 10);
-        m_hearts[i].setPosition(v);
+        if (m_hearts[i] != nullptr)
+        {
+            std::cout << "Heart " << i << " already instanciated! Skipping." << std::endl;
+            continue;
+        }
+        m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
+        Vector v = Vector(m_mainWindow->w() - m_heartWidth*i, 10);
+        m_hearts[i]->setPosition(v);
     }
+
 }
 
-std::string StateController::getHeartFileName(const std::string& filename)
+bool StateController::isPaused()
 {
-    // Read meta data from level file
-    std::ifstream in(filename.c_str());
-    std::string texFileName, actorFileName, heartFileName;
-
-    // Get path from given .lvl file
-    size_t position = filename.find_last_of("/\\");
-    std::string path = filename.substr(0, position + 1);
-
-    if(in.good())
-    {
-        in >> texFileName;
-        in >> actorFileName;
-        in >> heartFileName;
-    }
-    else
-    {
-        std::cout << "Unable to open file " << filename << std::endl;
-    }
-
-    in.close();
-
-    return path + heartFileName;
-}
-
-bool StateController::isPaused() {
     return !m_isRunning;
 }
 
@@ -79,20 +67,31 @@ void StateController::resetGameTime()
     m_runtime   = 0;
     m_isRunning = false;
 
-    // reset hp graphics
+    m_playerHp = MAX_HEARTS;
+
+//    if (m_hearts)
+//    {
+        // reset hp graphics
     for (int i = 0; i < MAX_HEARTS; i++) 
     {
-        Vector v = Vector(m_mainWindow->w() - 32*i, 10);
-        m_hearts[i].setPosition(v);
+        if (m_hearts[i])
+        {
+            Vector v = Vector(m_mainWindow->w() - m_heartWidth*i, 10);
+            m_hearts[i]->setPosition(v);
+        }
     }
+//    }
 }
 
 void StateController::decrementHp(int number)
 {
     m_playerHp -= number;
-    // set heart image out of bounds
-    Vector v = Vector(-32, -32);
-    m_hearts[m_playerHp].setPosition(v);
+    if (m_hearts[m_playerHp])
+    {
+        // set heart image out of bounds
+        Vector v = Vector(-m_heartWidth*2, -10);
+        m_hearts[m_playerHp]->setPosition(v);
+    }
 }
 
 void StateController::render()
@@ -106,23 +105,24 @@ StateController::~StateController()
         delete m_timer;
     }
 
-    if (m_hearts)
-    {
-        /*
-        for (int i; i < MAX_HEARTS; i++) {
+//    if (m_hearts)
+//    {
+        for (int i; i < MAX_HEARTS; i++)
+        {
             if (m_hearts[i]) {
                 delete m_hearts[i];
             }
         }
-        */
-        delete m_hearts;
-    }
+        
+//        delete m_hearts;
+//    }
 
+/*
     if (m_heartTexture)
     {
         delete m_heartTexture;
     }
-
+*/
 }
 
 } /* namespace jumper */

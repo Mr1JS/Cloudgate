@@ -120,6 +120,35 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             m_level->addRenderable(ts, layer);
         }
 
+        if (v.first == "icons")
+        {
+            // Parse attributes
+            std::string textureDataset = v.second.get("<xmlattr>.texture", "");
+            int layer                  = v.second.get<int>("layer", 0);
+            int tileWidth              = v.second.get("tileWidth", 0);
+            int tileHeight             = v.second.get("tileHeight", 0);
+//            int tilesPerRow            = v.second.get("tilesPerRow", 0);
+//            int numRows                = v.second.get("numRows", 0);
+//            int tileOffset             = v.second.get("tileOffset", 0);
+
+            SDL_Surface* surface = io.TextureIO::load("textures", textureDataset);
+            if (surface == nullptr)
+            {
+                throw std::invalid_argument("The image " + textureDataset
+                                            + " could not be loaded from hdf5!");
+            }
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(mw->renderer(), surface);
+            SDL_FreeSurface(surface);
+            if (tex == nullptr)
+            {
+                throw std::invalid_argument("Could not create texture from image " + textureDataset
+                                            + "!");
+            }
+
+            // Add tile set to level
+            m_level->getStateController()->addHeartTexture(tex, tileWidth);
+        } else { std::cout << "Not loading heart textures with v.first=" << v.first << std::endl;}
+
         if (v.first == "actor")
         {
             // Parse attributes

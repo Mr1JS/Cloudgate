@@ -27,6 +27,8 @@ public:
     /// Create an instance of StateController
     StateController(MainWindow* mainWindow, std::string& filename);
 
+    void addHeartTexture(SDL_Texture* heartTexture, int texWidth);
+
     void startGameTime();
 
     /// Updates game time
@@ -48,24 +50,20 @@ public:
     virtual ~StateController();
 
 private:
-    /// Get string of filename for heart texture
-    std::string getHeartFileName(const std::string& filename);
-    
     /// Player hp in hearts
     int m_playerHp;
 
     /// Current time elapsed in level
     int m_runtime;
+
     QElapsedTimer* m_timer;
 
     /// Whether level has started and runtime should be logged or not
     bool m_isRunning;
 
-    std::string m_heartFileName;
+    std::array<SDLRenderable*, MAX_HEARTS> m_hearts;
 
-    SDL_Texture* m_heartTexture;
-
-    SDLRenderable* m_hearts;
+    int m_heartWidth;
 
     MainWindow* m_mainWindow;
 };
