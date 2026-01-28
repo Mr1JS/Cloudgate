@@ -146,7 +146,12 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Add tile set to level
-            m_level->getStateController()->addHeartTexture(tex, tileWidth);
+            std::array<SDLRenderable*, MAX_HEARTS> rs = m_level->getStateController()->addHeartTexture(tex, tileWidth, layer);
+
+            for (int i = 0; i < MAX_HEARTS; i++)
+            {
+                level->addRenderable(rs[i], layer);
+            }
         }
         
         if (v.first == "actor")

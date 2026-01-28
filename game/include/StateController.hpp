@@ -27,7 +27,7 @@ public:
     /// Create an instance of StateController
     StateController(MainWindow* mainWindow, std::string& filename);
 
-    void addHeartTexture(SDL_Texture* heartTexture, int texWidth);
+    std::array<SDLRenderable*, MAX_HEARTS> addHeartTexture(SDL_Texture* heartTexture, int texWidth, int layer);
 
     void startGameTime();
 

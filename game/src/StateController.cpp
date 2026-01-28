@@ -18,23 +18,26 @@ StateController::StateController(MainWindow* mainWindow, std::string& filename)
 }
 
 
-void StateController::addHeartTexture(SDL_Texture* heartTexture, int texWidth)
+std::array<SDLRenderable*, MAX_HEARTS> StateController::addHeartTexture(SDL_Texture* heartTexture, int texWidth, int layer)
 {
 //    m_hearts = new SDLRenderable[MAX_HEARTS];
     std::cout << "Loading heart textures" << std::endl;
     m_heartWidth = texWidth;
     for (int i = 0; i < MAX_HEARTS; i++) 
     {
-        if (m_hearts[i] != nullptr)
+        if (m_hearts[i])
         {
             std::cout << "Heart " << i << " already instanciated! Skipping." << std::endl;
             continue;
         }
         m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
-        Vector v = Vector(m_mainWindow->w() - m_heartWidth*i, 10);
+        Vector v = Vector(m_mainWindow->w() - m_heartWidth*(i+1), 10);
         m_hearts[i]->setPosition(v);
     }
 
+    std::cout << "Loading hearts done" << std::endl;
+
+    return m_hearts;
 }
 
 bool StateController::isPaused()
