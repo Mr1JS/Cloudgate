@@ -6,13 +6,8 @@
 #include <QList>
 #include <QRect>
 #include <QColor>
+#include "Tile.hpp"
 
-// Tile structure for individual tiles
-struct Tile {
-    int index;
-    QPixmap pixmap;
-    QRect sourceRect;
-};
 
 // Tileset palette for tile selection
 class TilesetPalette : public QQuickPaintedItem
@@ -23,7 +18,9 @@ class TilesetPalette : public QQuickPaintedItem
 public:
     explicit TilesetPalette(QQuickItem* parent = nullptr);
 
-    Q_INVOKABLE void loadTileset(const QString& path, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
+    //Q_INVOKABLE void loadTileset(const QImage& path, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
+    Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
+
 
     int tileCount() const { return m_tiles.size(); }
 
@@ -38,7 +35,6 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 private:
-    void extractTilesWithTransparency(const QPixmap& pixmap, int offset);
     QList<Tile> m_tiles;
     int m_tileWidth = 32;
     int m_tileHeight = 32;
