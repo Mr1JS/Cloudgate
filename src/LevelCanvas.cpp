@@ -329,7 +329,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     }
 
     // ---- NEW: Load background image from Qt resources and store into H5 like tileset ----
-    const QString bgResourcePath = ":/resources/images/clouds2.png";
+    const QString bgResourcePath = "qrc:/resources/images/clouds2.png";
     const QString bgTextureName  = "clouds2";  // dataset name under /textures
 
     QImage bgImg(bgResourcePath);
@@ -344,7 +344,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     }
 
     // ---- NEW: Load actor image from Qt resources and store into H5 like tileset ----
-    const QString actorResourcePath = ":/resources/images/mario1.png";
+    const QString actorResourcePath = "qrc:/resources/images/mario1.png";
     const QString actorTextureName  = "mario1";  // dataset name under /textures
     QImage actorImg(actorResourcePath);
     if (actorImg.isNull())
