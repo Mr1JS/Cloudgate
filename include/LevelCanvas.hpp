@@ -78,7 +78,7 @@ private:
 
     // ---- Tileset meta ----
     QString m_tilesetPath;        // e.g. "res/tileset1.png"
-    QString m_tilesetTextureName; // e.g. "tileset1"
+    QString m_tilesetTextureName = "tileset"; // e.g. "tileset1"
 
     // Image member
     QImage m_tilesetImage;
