@@ -377,8 +377,8 @@ static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &ou
 {
     if (image.isNull())
         return false;
-
-    QImage img = image.convertToFormat(QImage::Format_RGBA8888);
+       // TODO: Change color format here
+    QImage img = image.convertToFormat(QImage::Format_ARGB32);
 
     H = img.height();
     W = img.width();
@@ -448,7 +448,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     {
         QImage img(m_tilesetPath);
         if (!img.isNull())
-            m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
+            // TODO: Change the Color format pls
+            m_tilesetImage = img.convertToFormat(QImage::Format_ARGB32);
     }
 
     // ---------- prepare background image ----------

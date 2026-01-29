@@ -2,11 +2,11 @@
   <background_tiles texture="clouds2">
     <layer>0</layer>
   </background_tiles>
-  <collision_tiles texture="tileset" tiles="level1">
+  <collision_tiles texture="tileset2" tiles="level1">
     <tileWidth>32</tileWidth>
     <tileHeight>32</tileHeight>
-    <tilesPerRow>20</tilesPerRow>
-    <numRows>13</numRows>
+    <tilesPerRow>10</tilesPerRow>
+    <numRows>19</numRows>
     <tileOffset>4</tileOffset>
     <layer>1</layer>
   </collision_tiles>
