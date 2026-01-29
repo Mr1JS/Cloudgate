@@ -416,18 +416,23 @@ static QString extractAttr(const QString &line, const QString &attrName)
 // ============================================================================
 void LevelCanvas::saveLevel(const QString &xmlPath)
 {
-    qDebug() << "[LevelCanvas] saveLevel ->" << xmlPath;
+    qDebug() << "[LevelCanvas] Starting save...";
+    qDebug() << "[LevelCanvas] Target:" << xmlPath;
+    qDebug() << "[LevelCanvas] Tiles placed:" << m_levelData.size();
 
-    // expand ~
     QString p = xmlPath;
     if (p.startsWith("~"))
         p.replace(0, 1, QDir::homePath());
 
     QFileInfo xmlInfo(p);
     const QString outDir   = xmlInfo.absolutePath();
-    const QString baseName = xmlInfo.completeBaseName(); // level_trial
+    const QString baseName = xmlInfo.completeBaseName();
     const QString h5Name   = baseName + ".h5";
     const QString h5Path   = outDir + "/" + h5Name;
+    
+    qDebug() << "[LevelCanvas] Dir:" << outDir;
+    qDebug() << "[LevelCanvas] XML:" << p;
+    qDebug() << "[LevelCanvas] H5:" << h5Path;
 
     // Your reference h5 has {32,73}
     const int gridH = 32;
@@ -621,8 +626,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "</level>\n";
     f.close();
 
-    qDebug() << "[LevelCanvas] Saved XML:" << p;
-    qDebug() << "[LevelCanvas] Saved H5 :" << h5Path;
+    qDebug() << "[LevelCanvas] XML saved:" << p;
+    qDebug() << "[LevelCanvas] H5 saved:" << h5Path;
+    qDebug() << "[LevelCanvas] Done.";
 }
 
 // ============================================================================

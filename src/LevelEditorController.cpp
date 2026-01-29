@@ -139,37 +139,49 @@ void LevelEditorController::saveLevel()
         return;
     }
 
-    // Open QFileDialog to get save path
+    // default save location
+    QString defaultPath = QDir::currentPath() + "/res/level_master.xml";
+    qDebug() << "Default path:" << defaultPath;
+
     QString file_name = QFileDialog::getSaveFileName(
         nullptr,
         "Save Level",
-        "level_master.xml",
-        "Level Files (*.xml)");
+        defaultPath,
+        "Level Files (*.xml);;All Files (*)");
 
-    // If user cancelled
     if (file_name.isEmpty())
     {
-        qDebug() << "Save cancelled by user";
+        qDebug() << "Save cancelled";
         return;
     }
 
+<<<<<<< HEAD
     // Ensure .xml extension
+=======
+    qDebug() << "Saving to:" << file_name;
+
+    // add .xml if needed
+>>>>>>> 5b4e4fa (improve saving  and add debug output)
     if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
     {
         file_name += ".xml";
     }
 
-    // Open file for writing
+    // create dir if missing
+    QFileInfo fileInfo(file_name);
+    QDir().mkpath(fileInfo.absolutePath());
+
+    // test write access
     QFile file(file_name);
     if (!file.open(QFile::WriteOnly | QFile::Text))
     {
-        qWarning() << "Could not open file for writing:" << file_name;
+        qWarning() << "Can't write to:" << file_name;
+        qWarning() << "Error:" << file.errorString();
         return;
     }
-
-    // Save level
-    m_canvas->saveLevel(file_name);
     file.close();
+
+    m_canvas->saveLevel(file_name);
 
     emit levelSaved(file_name);
     qDebug() << "Level saved to:" << file_name;
