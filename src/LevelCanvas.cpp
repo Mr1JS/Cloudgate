@@ -606,12 +606,6 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <frame_height>32</frame_height>\n";
     ts << "    <position_x>100</position_x>\n";
     ts << "    <position_y>600</position_y>\n";
-    ts << "    <jump_force_y>-540.0</jump_force_y>\n";
-    ts << "    <move_force_x>800.0</move_force_x>\n";
-    ts << "    <max_run_velocity>122.0</max_run_velocity>\n";
-    ts << "    <max_fall_velocity>250.0</max_fall_velocity>\n";
-    ts << "    <max_jump_height>90</max_jump_height>\n";
-    ts << "    <fps>12</fps>\n";
     ts << "    <layer>2</layer>\n";
     ts << "  </actor>\n";
 

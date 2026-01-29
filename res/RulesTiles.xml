@@ -1,125 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset tileWidth="32" tileHeight="32" tilesPerRow="9">
     <!-- ROW 1: Sand Ground Tiles (IDs 0-8) -->
-    <tile id="0" name="Sand Full Block" type="ground" collision="true"/>
-    <tile id="1" name="Sand Left" type="ground" collision="true"/>
-    <tile id="2" name="Sand Mid" type="ground" collision="true"/>
-    <tile id="3" name="Sand Right" type="ground" collision="true"/>
-    <tile id="4" name="Sand Cliff Left" type="ground" collision="true"/>
-    <tile id="5" name="Sand Hill Right Top" type="ground" collision="true"/>
-    <tile id="6" name="Sand Hill Left Top" type="ground" collision="true"/>
-    <tile id="7" name="Sand Half" type="ground" collision="true"/>
-    <tile id="8" name="Sand Half Left" type="ground" collision="true"/>
+    <tile id="0" name="Sand Full Block" type="ground"/>
+    <tile id="1" name="Sand Left" type="ground"/>
+    <tile id="2" name="Sand Mid" type="ground"/>
+    <tile id="3" name="Sand Right" type="ground"/>
+    <tile id="4" name="Sand Cliff Left" type="ground"/>
+    <tile id="5" name="Sand Hill Right Top" type="ground"/>
+    <tile id="6" name="Sand Hill Left Top" type="ground"/>
+    <tile id="7" name="Sand Half" type="ground"/>
+    <tile id="8" name="Sand Half Left" type="ground"/>
 
     <!-- ROW 2: Sand Ground Tiles Continued (IDs 9-17) -->
-    <tile id="9" name="Sand Cliff Left Alt" type="ground" collision="true"/>
-    <tile id="10" name="Sand Center" type="ground" collision="true"/>
-    <tile id="11" name="Sand Cliff Right Alt" type="ground" collision="true"/>
-    <tile id="12" name="Sand Center Rounded" type="ground" collision="true"/>
-    <tile id="13" name="Sand Cliff Right" type="platform" collision="true"/>
-    <tile id="14" name="Sand Hill Right Bottom" type="ground" collision="true"/>
-    <tile id="15" name="Sand Hill Left Bottom" type="ground" collision="true"/>
-    <tile id="16" name="Sand Half Mid" type="ground" collision="true"/>
-    <tile id="17" name="Sand Half Right" type="ground" collision="true"/>
+    <tile id="9" name="Sand Cliff Left Alt" type="ground"/>
+    <tile id="10" name="Sand Center" type="ground"/>
+    <tile id="11" name="Sand Cliff Right Alt" type="ground"/>
+    <tile id="12" name="Sand Center Rounded" type="ground"/>
+    <tile id="13" name="Sand Cliff Right" type="platform"/>
+    <tile id="14" name="Sand Hill Right Bottom" type="ground"/>
+    <tile id="15" name="Sand Hill Left Bottom" type="ground"/>
+    <tile id="16" name="Sand Half Mid" type="ground"/>
+    <tile id="17" name="Sand Half Right" type="ground"/>
 
     <!-- ROW 3: Snow Ground Tiles (IDs 18-26) -->
-    <tile id="18" name="Snow Full Block" type="ground" collision="true"/>
-    <tile id="19" name="Snow Left" type="ground" collision="true"/>
-    <tile id="20" name="Snow Mid" type="ground" collision="true"/>
-    <tile id="21" name="Snow Right" type="ground" collision="true"/>
-    <tile id="22" name="Snow Cliff Left" type="ground" collision="true"/>
-    <tile id="23" name="Snow Hill Right Top" type="ground" collision="true"/>
-    <tile id="24" name="Snow Hill Left Top" type="ground" collision="true"/>
-    <tile id="25" name="Snow Half" type="ground" collision="true"/>
-    <tile id="26" name="Snow Half Left" type="ground" collision="true"/>
+    <tile id="18" name="Snow Full Block" type="ground"/>
+    <tile id="19" name="Snow Left" type="ground"/>
+    <tile id="20" name="Snow Mid" type="ground"/>
+    <tile id="21" name="Snow Right" type="ground"/>
+    <tile id="22" name="Snow Cliff Left" type="ground"/>
+    <tile id="23" name="Snow Hill Right Top" type="ground"/>
+    <tile id="24" name="Snow Hill Left Top" type="ground"/>
+    <tile id="25" name="Snow Half" type="ground"/>
+    <tile id="26" name="Snow Half Left" type="ground"/>
 
     <!-- ROW 4: Snow Ground Tiles Continued (IDs 27-35) -->
-    <tile id="27" name="Snow Cliff Left Alt" type="ground" collision="true"/>
-    <tile id="28" name="Snow Center" type="ground" collision="true"/>
-    <tile id="29" name="Snow Cliff Right Alt" type="ground" collision="true"/>
-    <tile id="30" name="Snow Center Rounded" type="ground" collision="true"/>
-    <tile id="31" name="Snow Cliff Right" type="platform" collision="true"/>
-    <tile id="32" name="Snow Hill Right Bottom" type="ground" collision="true"/>
-    <tile id="33" name="Snow Hill Left Bottom" type="ground" collision="true"/>
-    <tile id="34" name="Snow Half Mid" type="ground" collision="true"/>
-    <tile id="35" name="Snow Half Right" type="ground" collision="true"/>   
-
-
+    <tile id="27" name="Snow Cliff Left Alt" type="ground"/>
+    <tile id="28" name="Snow Center" type="ground"/>
+    <tile id="29" name="Snow Cliff Right Alt" type="ground"/>
+    <tile id="30" name="Snow Center Rounded" type="ground"/>
+    <tile id="31" name="Snow Cliff Right" type="platform"/>
+    <tile id="32" name="Snow Hill Right Bottom" type="ground"/>
+    <tile id="33" name="Snow Hill Left Bottom" type="ground"/>
+    <tile id="34" name="Snow Half Mid" type="ground"/>
+    <tile id="35" name="Snow Half Right" type="ground"/>   
 
 
     <!-- ROW 5: Grass Ground Tiles (IDs 36-44) -->
-    <tile id="36" name="Grass Full Block" type="ground" collision="true"/>
-    <tile id="37" name="Grass Left" type="ground" collision="true"/>
-    <tile id="38" name="Grass Mid" type="ground" collision="true"/>
-    <tile id="39" name="Grass Right" type="ground" collision="true"/>
-    <tile id="40" name="Grass Cliff Left" type="ground" collision="true"/>
-    <tile id="41" name="Grass Hill Right Top" type="ground" collision="true"/>
-    <tile id="42" name="Grass Hill Left Top" type="ground" collision="true"/>
-    <tile id="43" name="Grass Half" type="ground" collision="true"/>
-    <tile id="44" name="Grass Half Left" type="ground" collision="true"/>
+    <tile id="36" name="Grass Full Block" type="ground"/>
+    <tile id="37" name="Grass Left" type="ground"/>
+    <tile id="38" name="Grass Mid" type="ground"/>
+    <tile id="39" name="Grass Right" type="ground"/>
+    <tile id="40" name="Grass Cliff Left" type="ground"/>
+    <tile id="41" name="Grass Hill Right Top" type="ground"/>
+    <tile id="42" name="Grass Hill Left Top" type="ground"/>
+    <tile id="43" name="Grass Half" type="ground"/>
+    <tile id="44" name="Grass Half Left" type="ground"/>
 
     <!-- ROW 6: Grass Ground Tiles Continued (IDs 45-53) -->
-    <tile id="45" name="Grass Cliff Left Alt" type="ground" collision="true"/>
-    <tile id="46" name="Grass Center" type="ground" collision="true"/>
-    <tile id="47" name="Grass Cliff Right Alt" type="ground" collision="true"/>
-    <tile id="48" name="Grass Center Rounded" type="ground" collision="true"/>
-    <tile id="49" name="Grass Cliff Right" type="platform" collision="true"/>
-    <tile id="50" name="Grass Hill Right Bottom" type="ground" collision="true"/>
-    <tile id="51" name="Grass Hill Left Bottom" type="ground" collision="true"/>
-    <tile id="52" name="Grass Half Mid" type="ground" collision="true"/>
-    <tile id="53" name="Grass Half Right" type="ground" collision="true"/>
+    <tile id="45" name="Grass Cliff Left Alt" type="ground"/>
+    <tile id="46" name="Grass Center" type="ground"/>
+    <tile id="47" name="Grass Cliff Right Alt" type="ground"/>
+    <tile id="48" name="Grass Center Rounded" type="ground"/>
+    <tile id="49" name="Grass Cliff Right" type="platform"/>
+    <tile id="50" name="Grass Hill Right Bottom" type="ground"/>
+    <tile id="51" name="Grass Hill Left Bottom" type="ground"/>
+    <tile id="52" name="Grass Half Mid" type="ground"/>
+    <tile id="53" name="Grass Half Right" type="ground"/>
 
 
 
 
 
     <!-- ROW 7: Stone Ground Tiles (IDs 54-62) -->
-    <tile id="54" name="Stone Full Block" type="ground" collision="true"/>
-    <tile id="55" name="Stone Left" type="ground" collision="true"/>
-    <tile id="56" name="Stone Mid" type="ground" collision="true"/>
-    <tile id="57" name="Stone Right" type="ground" collision="true"/>
-    <tile id="58" name="Stone Cliff Left" type="ground" collision="true"/>
-    <tile id="59" name="Stone Hill Right Top" type="ground" collision="true"/>
-    <tile id="60" name="Stone Hill Left Top" type="ground" collision="true"/>
-    <tile id="61" name="Stone Half" type="ground" collision="true"/>
-    <tile id="62" name="Stone Half Left" type="ground" collision="true"/>
+    <tile id="54" name="Stone Full Block" type="ground"/>
+    <tile id="55" name="Stone Left" type="ground"/>
+    <tile id="56" name="Stone Mid" type="ground"/>
+    <tile id="57" name="Stone Right" type="ground"/>
+    <tile id="58" name="Stone Cliff Left" type="ground"/>
+    <tile id="59" name="Stone Hill Right Top" type="ground"/>
+    <tile id="60" name="Stone Hill Left Top" type="ground"/>
+    <tile id="61" name="Stone Half" type="ground"/>
+    <tile id="62" name="Stone Half Left" type="ground"/>
 
     <!-- ROW 8: Stone Ground Tiles Continued (IDs 63-71) -->
-    <tile id="63" name="Stone Cliff Left Alt" type="ground" collision="true"/>
-    <tile id="64" name="Stone Center" type="ground" collision="true"/>
-    <tile id="65" name="Stone Cliff Right Alt" type="ground" collision="true"/>
-    <tile id="66" name="Stone Center Rounded" type="ground" collision="true"/>
-    <tile id="67" name="Stone Cliff Right" type="platform" collision="true"/>
-    <tile id="68" name="Stone Hill Right Bottom" type="ground" collision="true"/>
-    <tile id="69" name="Stone Hill Left Bottom" type="ground" collision="true"/>
-    <tile id="70" name="Stone Half Mid" type="ground" collision="true"/>
-    <tile id="71" name="Stone Half Right" type="ground" collision="true"/>
+    <tile id="63" name="Stone Cliff Left Alt" type="ground"/>
+    <tile id="64" name="Stone Center" type="ground"/>
+    <tile id="65" name="Stone Cliff Right Alt" type="ground"/>
+    <tile id="66" name="Stone Center Rounded" type="ground"/>
+    <tile id="67" name="Stone Cliff Right" type="platform"/>
+    <tile id="68" name="Stone Hill Right Bottom" type="ground"/>
+    <tile id="69" name="Stone Hill Left Bottom" type="ground"/>
+    <tile id="70" name="Stone Half Mid" type="ground"/>
+    <tile id="71" name="Stone Half Right" type="ground"/>
 
 
 
 
 
     <!-- ROW 9: Dirt Ground Tiles (IDs 72-80) -->
-    <tile id="72" name="Dirt Full Block" type="ground" collision="true"/>
-    <tile id="73" name="Dirt Left" type="ground" collision="true"/>
-    <tile id="74" name="Dirt Mid" type="ground" collision="true"/>
-    <tile id="75" name="Dirt Right" type="ground" collision="true"/>
-    <tile id="76" name="Dirt Cliff Left" type="ground" collision="true"/>
-    <tile id="77" name="Dirt Hill Right Top" type="ground" collision="true"/>
-    <tile id="78" name="Dirt Hill Left Top" type="ground" collision="true"/>
-    <tile id="79" name="Dirt Half" type="ground" collision="true"/>
-    <tile id="80" name="Dirt Half Left" type="ground" collision="true"/>
+    <tile id="72" name="Dirt Full Block" type="ground"/>
+    <tile id="73" name="Dirt Left" type="ground"/>
+    <tile id="74" name="Dirt Mid" type="ground"/>
+    <tile id="75" name="Dirt Right" type="ground"/>
+    <tile id="76" name="Dirt Cliff Left" type="ground"/>
+    <tile id="77" name="Dirt Hill Right Top" type="ground"/>
+    <tile id="78" name="Dirt Hill Left Top" type="ground"/>
+    <tile id="79" name="Dirt Half" type="ground"/>
+    <tile id="80" name="Dirt Half Left" type="ground"/>
 
     <!-- ROW 10: Dirt Ground Tiles Continued (IDs 81-89) -->
-    <tile id="81" name="Dirt Cliff Left Alt" type="ground" collision="true"/>
-    <tile id="82" name="Dirt Center" type="ground" collision="true"/>
-    <tile id="83" name="Dirt Cliff Right Alt" type="ground" collision="true"/>
-    <tile id="84" name="Dirt Center Rounded" type="ground" collision="true"/>
-    <tile id="85" name="Dirt Cliff Right" type="platform" collision="true"/>
-    <tile id="86" name="Dirt Hill Right Bottom" type="ground" collision="true"/>
-    <tile id="87" name="Dirt Hill Left Bottom" type="ground" collision="true"/>
-    <tile id="88" name="Dirt Half Mid" type="ground" collision="true"/>
-    <tile id="89" name="Dirt Half Right" type="ground" collision="true"/>
+    <tile id="81" name="Dirt Cliff Left Alt" type="ground"/>
+    <tile id="82" name="Dirt Center" type="ground"/>
+    <tile id="83" name="Dirt Cliff Right Alt" type="ground"/>
+    <tile id="84" name="Dirt Center Rounded" type="ground"/>
+    <tile id="85" name="Dirt Cliff Right" type="platform"/>
+    <tile id="86" name="Dirt Hill Right Bottom" type="ground"/>
+    <tile id="87" name="Dirt Hill Left Bottom" type="ground"/>
+    <tile id="88" name="Dirt Half Mid" type="ground"/>
+    <tile id="89" name="Dirt Half Right" type="ground"/>
 
 
 
@@ -127,80 +125,79 @@
 
 
     <!-- ROW 11: Castle Ground Tiles (IDs 90-98) -->
-    <tile id="90" name="Castle Full Block" type="ground" collision="true"/>
-    <tile id="91" name="Castle Left" type="ground" collision="true"/>
-    <tile id="92" name="Castle Mid" type="ground" collision="true"/>
-    <tile id="93" name="Castle Right" type="ground" collision="true"/>
-    <tile id="94" name="Castle Cliff Left" type="ground" collision="true"/>
-    <tile id="95" name="Castle Hill Right Top" type="ground" collision="true"/>
-    <tile id="96" name="Castle Hill Left Top" type="ground" collision="true"/>
-    <tile id="97" name="Castle Half" type="ground" collision="true"/>
-    <tile id="98" name="Castle Half Left" type="ground" collision="true"/>
+    <tile id="90" name="Castle Full Block" type="ground"/>
+    <tile id="91" name="Castle Left" type="ground"/>
+    <tile id="92" name="Castle Mid" type="ground"/>
+    <tile id="93" name="Castle Right" type="ground"/>
+    <tile id="94" name="Castle Cliff Left" type="ground"/>
+    <tile id="95" name="Castle Hill Right Top" type="ground"/>
+    <tile id="96" name="Castle Hill Left Top" type="ground"/>
+    <tile id="97" name="Castle Half" type="ground"/>
+    <tile id="98" name="Castle Half Left" type="ground"/>
 
     <!-- ROW 12: Castle Ground Tiles Continued (IDs 99-107) -->
-    <tile id="99" name="Castle Cliff Left Alt" type="ground" collision="true"/>
-    <tile id="100" name="Castle Center" type="ground" collision="true"/>
-    <tile id="101" name="Castle Cliff Right Alt" type="ground" collision="true"/>
-    <tile id="102" name="Castle Center Rounded" type="ground" collision="true"/>
-    <tile id="103" name="Castle Cliff Right" type="platform" collision="true"/>
-    <tile id="104" name="Castle Hill Right Bottom" type="ground" collision="true"/>
-    <tile id="105" name="Castle Hill Left Bottom" type="ground" collision="true"/>
-    <tile id="106" name="Castle Half Mid" type="ground" collision="true"/>
-    <tile id="107" name="Castle Half Right" type="ground" collision="true"/>
+    <tile id="99" name="Castle Cliff Left Alt" type="ground"/>
+    <tile id="100" name="Castle Center" type="ground"/>
+    <tile id="101" name="Castle Cliff Right Alt" type="ground"/>
+    <tile id="102" name="Castle Center Rounded" type="ground"/>
+    <tile id="103" name="Castle Cliff Right" type="platform"/>
+    <tile id="104" name="Castle Hill Right Bottom" type="ground"/>
+    <tile id="105" name="Castle Hill Left Bottom" type="ground"/>
+    <tile id="106" name="Castle Half Mid" type="ground"/>
+    <tile id="107" name="Castle Half Right" type="ground"/>
 
 
 
 
 
 
-    <!-- ROW 13: Special Items (IDs 108-116) -->
-    <tile id="108" name="Box Item" type="interactive" collision="true"/>
-    <tile id="109" name="Box Item Alt" type="interactive" collision="true"/>
-    <tile id="110" name="Box Coin" type="collectible" collision="false"/>
-    <tile id="111" name="Box Item Disabled" type="decoration" collision="true"/>
-    <tile id="112" name="Box Item Alt Disabled" type="decoration" collision="true"/>
-    <tile id="113" name="Box Coin Disabled" type="decoration" collision="true"/>
-    <tile id="114" name="Box Coin Alt Disabled" type="decoration" collision="true"/>
-    <tile id="115" name="Box" type="decoration" collision="true"/>
+    <!-- ROW 13: Special Items (IDs 108-115) -->
+    <tile id="108" name="Box Item" type="interactive"/>
+    <tile id="109" name="Box Item Alt" type="interactive"/>
+    <tile id="110" name="Box Coin" type="collectible"/>
+    <tile id="111" name="Box Item Disabled" type="decoration"/>
+    <tile id="112" name="Box Item Alt Disabled" type="decoration"/>
+    <tile id="113" name="Box Coin Disabled" type="decoration"/>
+    <tile id="114" name="Box Coin Alt Disabled" type="decoration"/>
+    <tile id="115" name="Box" type="decoration"/>
 
-    <!-- ROW 14: Decorations & Objects (IDs 116-125) -->
-    <tile id="116" name="Box Alt" type="decoration" collision="true"/>
-    <tile id="117" name="Box Empty" type="decoration" collision="true"/>
-    <tile id="118" name="Box Warning" type="decoration" collision="true"/>
-    <tile id="119" name="Box Explosive" type="hazard" collision="true" hazard="true"/>
-    <tile id="120" name="Box Explosive Disabled" type="decoration" collision="true"/>
-    <tile id="121" name="Box Explosive Alt" type="decoration" collision="true"/>
-    <tile id="122" name="Bridge" type="platform" collision="false"/>
-    <tile id="123" name="Bridge Logs" type="platform" collision="false"/>
-    <tile id="124" name="Ladder Top" type="platform" collision="false"/>
+    <!-- ROW 14: Decorations & Objects (IDs 116-124) -->
+    <tile id="116" name="Box Alt" type="decoration"/>
+    <tile id="117" name="Box Empty" type="decoration"/>
+    <tile id="118" name="Box Warning" type="decoration"/>
+    <tile id="119" name="Box Explosive" type="hazard" hazard="true"/>
+    <tile id="120" name="Box Explosive Disabled" type="decoration"/>
+    <tile id="121" name="Box Explosive Alt" type="decoration"/>
+    <tile id="122" name="Bridge" type="platform"/>
+    <tile id="123" name="Bridge Logs" type="platform"/>
+    <tile id="124" name="Ladder Top" type="platform"/>
 
-    <!-- ROW 15: Structures (IDs 127-135) -->
-    <tile id="125" name="Fence" type="platform" collision="true"/>
-    <tile id="127" name="" type="decoration" collision="true"/>
-    <tile id="128" name="Sign Exit" type="decoration" collision="true"/>
-    <tile id="129" name="Sign" type="goal" collision="false"/>
-    <tile id="130" name="Sign Right" type="decoration" collision="false"/>
-    <tile id="131" name="Sign Left" type="decoration" collision="false"/>
-    <tile id="132" name="" type="decoration" collision="false"/>
-    <tile id="133" name="" type="decoration" collision="false"/>
-    <tile id="134" name="" type="collectible" collision="false"/>
+    <!-- ROW 15: Structures (IDs 125-134) -->
+    <tile id="125" name="Fence" type="platform"/>
+    <tile id="127" name="Spikes" type="hazard" hazard="true"/>
+    <tile id="128" name="Sign Exit" type="decoration"/>
+    <tile id="129" name="Sign" type="decoration"/>
+    <tile id="130" name="Sign Right" type="decoration"/>
+    <tile id="131" name="Sign Left" type="decoration"/>
+    <tile id="132" name="Coin Bronze" type="collectible"/>
+    <tile id="133" name="Coin Silver" type="collectible"/>
+    <tile id="134" name="Coin Gold" type="collectible"/>
 
-    <!-- ROW 16: Tools & Items (IDs 136-144) -->
-    <tile id="135" name="Key Yellow" type="key" collision="false"/>
-    <tile id="136" name="" type="key" collision="false"/>
-    <tile id="137" name="" type="decoration" collision="true"/>
-    <tile id="138" name="" type="decoration" collision="false"/>
-    <tile id="139" name="" type="decoration" collision="false"/>
-    <tile id="140" name="Door Open Top" type="decoration" collision="false"/>
-    <tile id="141" name="Door Open Mid" type="decoration" collision="false"/>
-    <tile id="142" name="Door Closed Top" type="interactive" collision="true"/>
-    <tile id="143" name="Door Closed Mid" type="interactive" collision="true"/>
+    <!-- ROW 16: Tools & Items (IDs 135-143) -->
+    <tile id="135" name="Key Yellow" type="key"/>
+    <tile id="136" name="Spring Board Down" type="interactive"/>
+    <tile id="137" name="Spring Board Up" type="interactive"/>
+    <tile id="138" name="Bush Green" type="decoration"/>
+    <tile id="139" name="Bush White" type="decoration"/>
+    <tile id="140" name="Door Open Top" type="decoration"/>
+    <tile id="141" name="Door Open Mid" type="decoration"/>
+    <tile id="142" name="Door Closed Top" type="interactive"/>
+    <tile id="143" name="Door Closed Mid" type="interactive"/>
 
     <!-- ROW 17: Enemies -->
-    <tile id="144" name="Ghost White Top" type="enemy" collision="false" hazard="true"/>
-    <tile id="145" name="Ghost White Bottom" type="enemy" collision="false" hazard="true"/>
-    <tile id="146" name="Snake Slime Top" type="enemy" collision="false" hazard="true"/>
-    <tile id="147" name="Snake Slime Bottom" type="enemy" collision="false" hazard="true"/>
-
+    <tile id="144" name="Ghost White Top" type="enemy" hazard="true"/>
+    <tile id="145" name="Ghost White Bottom" type="enemy" hazard="true"/>
+    <tile id="146" name="Snake Slime Top" type="enemy" hazard="true"/>
+    <tile id="147" name="Snake Slime Bottom" type="enemy" hazard="true"/>
 
 </tileset>
