@@ -19,6 +19,7 @@
 #include "Camera.hpp"
 #include "TileSet.hpp"
 #include "LevelForces.hpp"
+#include "StateController.hpp"
 
 namespace jumper
 {
@@ -61,6 +62,8 @@ public:
     
     /// Checks if actor is outside camera bounds (for game over)
     bool isActorOutsideCamera() const;
+
+    StateController* getStateController();
 
     /// Adds a renderable on the given layer to the level.
     /// If the renderable is an actor, collisions will only
@@ -106,8 +109,10 @@ private:
     LevelForces             m_levelForce;
 
     /// A layer manager for correct rendering of the renderables
-    LayerManager           m_layers;
+    LayerManager            m_layers;
 
+    /// For managing level states such as hp, time elapsed and other things
+    StateController*        m_stateController;
 };
 
 } /* namespace jumper */

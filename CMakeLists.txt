@@ -76,6 +76,7 @@ set(GAME_SOURCES
     game/include/MovingRenderable.hpp
     game/include/Physics.hpp
     game/include/SDLRenderable.hpp
+    game/include/StateController.hpp
     game/include/TileArray.hpp
     game/include/TileSet.hpp
     game/include/Util.hpp
@@ -97,6 +98,7 @@ set(GAME_SOURCES
     game/src/MovingRenderable.cpp
     game/src/Physics.cpp
     game/src/SDLRenderable.cpp
+    game/src/StateController.cpp
     game/src/TileArray.cpp
     game/src/TileSet.cpp
     game/src/Util.cpp

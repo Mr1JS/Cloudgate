@@ -10,6 +10,11 @@
     <tileOffset>4</tileOffset>
     <layer>1</layer>
   </collision_tiles>
+  <icons texture="icons">
+    <tileWidth>16</tileWidth>
+    <tileHeight>16</tileHeight>
+    <layer>3</layer>
+  </icons>
   <actor texture="mario1">
     <num_frames>2</num_frames>
     <frame_width>18</frame_width>

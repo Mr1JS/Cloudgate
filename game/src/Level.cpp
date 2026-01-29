@@ -38,8 +38,54 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     m_actor     = 0;
     m_tiles     = 0;
 
+    m_stateController = new StateController(mainWindow, filename);
+
     // Setup level attributes from config file
     LevelParser p(filename, this, m_mainWindow);
+
+    // Füge Wand-Tiles links und rechts hinzu (als sichtbare Grenzen)
+    if(m_tiles && m_tiles->tiles())
+    {
+        TileSetRepresentation* tileRep = m_tiles->tiles();
+        int tileWidth = tileRep->tileWidth();
+        int levelHeight = tileRep->height();
+        int levelWidth = tileRep->width();
+        
+        // Berechne die Kamera-Grenzen in Tile-Koordinaten
+        int cameraX = m_camera.x();  // Kamera X in World-Koordinaten (400)
+        int cameraWidth = m_camera.width();  // Kamera Breite (800)
+        int cameraRight = cameraX + cameraWidth;  // Rechte Grenze in World-Koordinaten (1200)
+        
+        // Konvertiere World-Koordinaten zu Tile-Koordinaten
+        // Linke Wand: Bei Tile 0 (linker Rand des Levels)
+        int leftTileX = 0;
+        // Rechte Wand: Bei Kamera X + Breite (rechter Rand der Kamera)
+        int rightTileX = cameraRight / tileWidth;
+        
+        // Stelle sicher, dass die rechte Wand innerhalb der Level-Breite ist
+        if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
+        
+        // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
+        int wallTileId = 1;
+        
+        // Füge linke Wand hinzu (von unten nach oben)
+        if(leftTileX >= 0 && leftTileX < levelWidth)
+        {
+            for(int y = 0; y < levelHeight; y++)
+            {
+                tileRep->insert(leftTileX, y, wallTileId);
+            }
+        }
+        
+        // Füge rechte Wand hinzu (von unten nach oben)
+        if(rightTileX >= 0 && rightTileX < levelWidth)
+        {
+            for(int y = 0; y < levelHeight; y++)
+            {
+                tileRep->insert(rightTileX, y, wallTileId);
+            }
+        }
+    }
 
 //    m_actor = new Actor(mainWindow, "../res/actor.spr");
 //     m_actor->setFPS(10);
@@ -86,20 +132,40 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
     }
 }
 
+StateController* Level::getStateController()
+{
+    return m_stateController;
+}
+
 void Level::update(const Uint8* keystates)
 {
     // Update camera (automatisches Scrollen nach oben)
     // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
     double dt = 1.0 / 60.0;
+    if (m_stateController->isPaused())
+    {
+        dt = 0;
+    }
+
     m_camera.update(dt);
     
     if(m_physics)
     {
         // Update actor according to given key states
         updateActor(keystates);
-
+        
         // Run physics
         m_physics->update();
+    }
+        
+    if (m_stateController)
+    {
+        m_stateController->updateGameTime();
+        
+        if (m_stateController->isPaused() && (keystates[SDL_SCANCODE_LEFT ] || keystates[SDL_SCANCODE_RIGHT]
+            || keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_SPACE])) {
+                m_stateController->startGameTime();
+        }
     }
 }
 
