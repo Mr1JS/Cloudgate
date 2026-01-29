@@ -23,7 +23,7 @@ std::array<SDLRenderable*, MAX_HEARTS> StateController::addHeartTexture(SDL_Text
 //    m_hearts = new SDLRenderable[MAX_HEARTS];
     std::cout << "Loading heart textures" << std::endl;
     m_heartWidth = texWidth;
-    for (int i = 0; i < MAX_HEARTS; i++) 
+    for (int i = 0; i < MAX_HEARTS; i++)
     {
         if (m_hearts[i])
         {
@@ -31,13 +31,25 @@ std::array<SDLRenderable*, MAX_HEARTS> StateController::addHeartTexture(SDL_Text
             continue;
         }
         m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
-        Vector v = Vector(m_mainWindow->w() - m_heartWidth*(i+1), 10);
-        m_hearts[i]->setPosition(v);
     }
+
+    resetHeartPosition();
 
     std::cout << "Loading hearts done" << std::endl;
 
     return m_hearts;
+}
+
+void StateController::resetHeartPosition()
+{
+    for (int i = 0; i < MAX_HEARTS; i++)
+    {
+        if (m_hearts[i])
+        {
+            Vector v = Vector(m_mainWindow->w() - m_heartWidth*(i+1), 10);
+            m_hearts[i]->setPosition(v);
+        }
+    }
 }
 
 bool StateController::isPaused()
@@ -53,15 +65,31 @@ void StateController::startGameTime()
 
 void StateController::updateGameTime()
 {
-    if (m_isRunning) {
-        m_runtime = m_timer->elapsed();
+    if (!m_isRunning)
+    {
+        return;
     }
 
-    if (m_runtime % 100 == 1) {
+    m_runtime = m_timer->elapsed();
+
+    int runtimed = m_runtime % 100;
+    if (runtimed > 0 && runtimed < 15) {
         int min = m_runtime/1000/60;
         int sec = m_runtime/1000 - min*60;
         int ms  = m_runtime - sec*1000;
         std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
+
+        /*
+        // testing decrementHp()
+        if (sec % 2 == 1) {
+            decrementHp();
+        }
+        */
+    }
+
+    if (m_playerHp <= 0)
+    {
+        resetGameTime();
     }
 }
 
@@ -72,23 +100,14 @@ void StateController::resetGameTime()
 
     m_playerHp = MAX_HEARTS;
 
-//    if (m_hearts)
-//    {
-        // reset hp graphics
-    for (int i = 0; i < MAX_HEARTS; i++) 
-    {
-        if (m_hearts[i])
-        {
-            Vector v = Vector(m_mainWindow->w() - m_heartWidth*i, 10);
-            m_hearts[i]->setPosition(v);
-        }
-    }
-//    }
+    resetHeartPosition();
 }
 
 void StateController::decrementHp(int number)
 {
+    //std::cout << "Decrementing player hp from " << m_playerHp;
     m_playerHp -= number;
+    //std::cout << " to " << m_playerHp << std::endl;
     if (m_hearts[m_playerHp])
     {
         // set heart image out of bounds

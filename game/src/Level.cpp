@@ -142,28 +142,30 @@ void Level::update(const Uint8* keystates)
     // Update camera (automatisches Scrollen nach oben)
     // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
     double dt = 1.0 / 60.0;
-    if (m_stateController->isPaused()) {
+    if (m_stateController->isPaused())
+    {
         dt = 0;
     }
+
     m_camera.update(dt);
     
     if(m_physics)
     {
         // Update actor according to given key states
         updateActor(keystates);
-
+        
         // Run physics
         m_physics->update();
     }
-    
-    if (m_stateController != nullptr)
+        
+    if (m_stateController)
     {
         m_stateController->updateGameTime();
         
         if (m_stateController->isPaused() && (keystates[SDL_SCANCODE_LEFT ] || keystates[SDL_SCANCODE_RIGHT]
-             || keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_SPACE])) {
+            || keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_SPACE])) {
                 m_stateController->startGameTime();
-             }
+        }
     }
 }
 

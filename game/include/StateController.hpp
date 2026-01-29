@@ -50,6 +50,8 @@ public:
     virtual ~StateController();
 
 private:
+    void resetHeartPosition();
+
     /// Player hp in hearts
     int m_playerHp;
 
