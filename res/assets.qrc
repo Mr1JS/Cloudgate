@@ -1,12 +1,14 @@
 <RCC>
-    <qresource prefix="/resources">
-        <file>images/clouds.jpg</file>
-        <file>images/clouds.png</file>
-        <file>images/clouds2.png</file>
-        <file>images/test_image.jpg</file>
-        <file>images/test_image.png</file>
-        <file>images/tileset.png</file>
-        <file>images/mario1.png</file>
-        <file>images/heart1.png</file>
-    </qresource>
+  <qresource prefix="/resources">
+    <file>images/clouds.jpg</file>
+    <file>images/clouds.png</file>
+    <file>images/clouds2.png</file>
+    <file>images/test_image.jpg</file>
+    <file>images/test_image.png</file>
+    <file>images/tileset.png</file>
+    <file>images/mario1.png</file>
+    <file>images/Snake.png</file>
+    <file>images/Ghost.png</file>
+    <file>images/tileset2.png</file>
+  </qresource>
 </RCC>

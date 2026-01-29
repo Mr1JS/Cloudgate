@@ -53,46 +53,21 @@ void LevelEditorController::registerCanvas(LevelCanvas *canvas)
     qDebug() << "LevelCanvas registered with controller";
 }
 
-
 void LevelEditorController::loadTileset(const QString &path, int tileWidth, int tileHeight, int offset, int endIndex)
 {
 
-
-        // Get absolute path to level.xml
-        QString absoluteLevelPath = path;
-        if (absoluteLevelPath.isEmpty()) {
-            QDir appDir(QCoreApplication::applicationDirPath());
-            appDir.cdUp();
-            absoluteLevelPath = appDir.absoluteFilePath("res/level.xml");
-
-            if (!QFile::exists(absoluteLevelPath)) {
-                QDir currentDir = QDir::current();
-                absoluteLevelPath = currentDir.absoluteFilePath("res/level.xml");
-            }
-        } else if (!QDir::isAbsolutePath(absoluteLevelPath)) {
-            QDir appDir(QCoreApplication::applicationDirPath());
-            appDir.cdUp();
-            absoluteLevelPath = appDir.absoluteFilePath(absoluteLevelPath);
-
-            if (!QFile::exists(absoluteLevelPath)) {
-                QDir currentDir = QDir::current();
-                absoluteLevelPath = currentDir.absoluteFilePath(path);
-            }
-        }
-
-    // get full xml path
-    QString xmlPath = absoluteLevelPath;
-
-    // read xml
-    boost::property_tree::ptree pt;
-    try 
-    { 
-        read_xml(xmlPath.toStdString(), pt); 
+    // Load tileset into both palette and canvas
+    if (m_palette)
+    {
+        m_palette->loadTileset(path, tileWidth, tileHeight, offset, endIndex);
+        // Load the Tile-names from the XML file
+        m_palette->loadTileNames("res/RulesTiles.xml");
+        qDebug() << "Tileset loaded into palette";
     }
-    catch (const std::exception &e) 
-    { 
-        qWarning() << "Failed to read XML:" << e.what(); 
-        return; 
+    catch (const std::exception &e)
+    {
+        qWarning() << "Failed to read XML:" << e.what();
+        return;
     }
 
     QString h5Name = QString::fromStdString(pt.get<std::string>("level.<xmlattr>.resources"));
@@ -108,10 +83,10 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
         if (v.first == "collision_tiles")
             texDataset = v.second.get("<xmlattr>.texture", "");
 
-    if (texDataset.empty()) 
-    { 
-        qWarning() << "no texture found"; 
-        return; 
+    if (texDataset.empty())
+    {
+        qWarning() << "no texture found";
+        return;
     }
 
     // open hdf5 and  extract tiles
@@ -135,8 +110,8 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
             for (int x = 0; x < img.width(); x++)
             {
                 QRgb px = img.pixel(x, y);
-                if (qAbs(qRed(px)-92)<=tol && qAbs(qGreen(px)-130)<=tol && qAbs(qBlue(px)-161)<=tol)
-                    img.setPixel(x, y, qRgba(0,0,0,0));
+                if (qAbs(qRed(px) - 92) <= tol && qAbs(qGreen(px) - 130) <= tol && qAbs(qBlue(px) - 161) <= tol)
+                    img.setPixel(x, y, qRgba(0, 0, 0, 0));
             }
         tilesetImage = img;
 
@@ -165,15 +140,15 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
         qDebug() << "Tiles extracted:" << tiles.size();
 
         // give tiles to canvas and palette
-        if (m_canvas) 
+        if (m_canvas)
         {
             m_canvas->setTileset(tiles, tileWidth, tileHeight, offset, endIndex);
         }
-        if (m_palette) 
+        if (m_palette)
         {
             m_palette->setTileset(tiles, tileWidth, tileHeight, offset, endIndex);
         }
-        
+
         m_tilesetPath = h5Path;
         m_tileWidth = tileWidth;
         m_tileHeight = tileHeight;
@@ -183,15 +158,11 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
         emit tilesetPathChanged();
         qDebug() << "Tileset successfully loaded";
     }
-    catch (const std::exception &e) 
-    { 
-        qWarning() << "Failed to load tileset:" << e.what(); 
+    catch (const std::exception &e)
+    {
+        qWarning() << "Failed to load tileset:" << e.what();
     }
 }
-
-
-
-
 
 void LevelEditorController::setTileDimensions(int width, int height)
 {
@@ -253,37 +224,45 @@ void LevelEditorController::saveLevel()
         return;
     }
 
-    // Open QFileDialog to get save path
+    // default save location
+    QString defaultPath = QDir::currentPath() + "/res/level_master.xml";
+    qDebug() << "Default path:" << defaultPath;
+
     QString file_name = QFileDialog::getSaveFileName(
         nullptr,
         "Save Level",
-        "level_master.xml",
-        "Level Files (*.xml)");
+        defaultPath,
+        "Level Files (*.xml);;All Files (*)");
 
-    // If user cancelled
     if (file_name.isEmpty())
     {
-        qDebug() << "Save cancelled by user";
+        qDebug() << "Save cancelled";
         return;
     }
 
-        // Ensure .xml extension
-        if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
+    qDebug() << "Saving to:" << file_name;
+
+    // add .xml if needed
+    if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
     {
         file_name += ".xml";
     }
 
-    // Open file for writing
+    // create dir if missing
+    QFileInfo fileInfo(file_name);
+    QDir().mkpath(fileInfo.absolutePath());
+
+    // test write access
     QFile file(file_name);
     if (!file.open(QFile::WriteOnly | QFile::Text))
     {
-        qWarning() << "Could not open file for writing:" << file_name;
+        qWarning() << "Can't write to:" << file_name;
+        qWarning() << "Error:" << file.errorString();
         return;
     }
-
-    // Save level
-    m_canvas->saveLevel(file_name);
     file.close();
+
+    m_canvas->saveLevel(file_name);
 
     emit levelSaved(file_name);
     qDebug() << "Level saved to:" << file_name;
@@ -333,7 +312,7 @@ void LevelEditorController::selectTile(int tileIndex)
 {
     m_selectedTileIndex = tileIndex;
 
-    qDebug() << "Controller: Tile" << tileIndex << "selected";
+    // qDebug() << "Controller: Tile" << tileIndex << "selected";
 
     // Update canvas with selected tile
     if (m_canvas)

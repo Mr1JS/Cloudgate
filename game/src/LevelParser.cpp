@@ -89,8 +89,19 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
                                       numRows,
                                       tileOffset);
 
+            /// ADDED
+            // Load background as FULL TEXTURE (like actor loading)
+                SDL_Surface* surface = io.TextureIO::load("textures", tilesetDataset);
+                SDL_Texture* tex = SDL_CreateTextureFromSurface(m_mainWindow->renderer(),      surface);
+                SDL_FreeSurface(surface);
+
+                // Create simple SDLRenderable, not TileSet
+                SDLRenderable* bg = new SDLRenderable(m_mainWindow, tex);
+                bg->setPosition(Vector<int>(0, 0));
+            ////
+
             // Add tile set to level
-            m_level->addRenderable(ts, layer);
+            m_level->addRenderable(bg, layer);
         }
 
         if (v.first == "numbers")

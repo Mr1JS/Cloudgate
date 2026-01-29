@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <set>
 
 namespace jumper
 {
@@ -155,6 +156,7 @@ namespace jumper
 
             if (m_tiles)
             {
+                static std::set<int> logged_ids;
                 for (i = 0; i < m_arrayHeight; i++)
                 {
                     for (j = 0; j < m_arrayWidth; j++)
@@ -163,6 +165,14 @@ namespace jumper
                         tile_index = m_tiles->get(j, i) - 1;
                         if (tile_index >= 0)
                         {
+                            // Log each unique tile ID only once
+                            int tile_id = tile_index + 1;
+                            if (logged_ids.find(tile_id) == logged_ids.end())
+                            {
+                                std::cout << "[TileSet] Used Tile ID: " << tile_id << std::endl;
+                                logged_ids.insert(tile_id);
+                            }
+                            
                             /* Compute the position of the target on the screen */
                             // Y-Offset von 600, damit die Karte weiter unten startet
                             target.x = j * m_tileWidth - m_offset.x() + m_windowOffset.x();

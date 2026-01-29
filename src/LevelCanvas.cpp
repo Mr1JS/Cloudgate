@@ -31,17 +31,23 @@ LevelCanvas::LevelCanvas(QQuickItem *parent)
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
 }
 
-
-void LevelCanvas::setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex)
+void LevelCanvas::setTileset(const QList<Tile> &tiles, int tileW, int tileH, int offset, int endIndex)
 {
-    m_tiles      = tiles;
-    m_tileWidth  = tileW;
+    m_tiles = tiles;
+    m_tileWidth = tileW;
     m_tileHeight = tileH;
-    m_endIndex   = endIndex;
+    m_endIndex = endIndex;
 
     update();
-}
+    qDebug() << "Canvas tileset loaded:" << m_tiles.size() << "tiles";
+    qDebug() << "==============================";
 
+    // Initialize frame after tileset is loaded (only if empty)
+    if (m_levelData.isEmpty())
+    {
+        clearLevel(); // Creates the frame
+    }
+}
 
 void LevelCanvas::placeTile(int tileIndex)
 {
@@ -51,7 +57,31 @@ void LevelCanvas::placeTile(int tileIndex)
 
 void LevelCanvas::clearLevel()
 {
-    m_levelData.clear();
+    // Only remove inner tiles, keep frame
+    QList<QPair<int, int>> toRemove;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    {
+        if (!isFrameTile(it.key().first, it.key().second))
+        {
+            toRemove.append(it.key());
+        }
+    }
+    for (const auto &key : toRemove)
+    {
+        m_levelData.remove(key);
+    }
+
+    // Create frame on first call only
+    if (m_levelData.isEmpty())
+    {
+        for (int x = 1; x < m_gridWidth - 1; x++)
+            m_levelData[QPair<int, int>(x, m_gridHeight - 1)] = 1;
+        for (int y = 0; y < m_gridHeight; y++)
+        {
+            m_levelData[QPair<int, int>(0, y)] = 55;
+            m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 55;
+        }
+    }
     update();
 }
 
@@ -108,28 +138,34 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {
+        // Protect frame tiles
+        if (isFrameTile(gridX, gridY) && event->button() == Qt::RightButton)
+        {
+            return; // Can't delete frame tiles
+        }
+
         QPair<int, int> pos(gridX, gridY);
 
         if (m_levelData.contains(pos))
         {
             // Right click or placing Tile on extraTile (1x2 Tile)
             if (event->button() == Qt::RightButton || (m_levelData[pos] != m_currentTileIndex && m_levelData[pos] >= m_endIndex))
-        {
+            {
                 // if extraTile
                 if (m_levelData[pos] >= m_endIndex)
                 {
                     // is Upper or Lower Part
                     if (m_levelData[pos] % 2 != m_endIndex % 2)
                     {
-                        QPair<int, int> pos2(gridX, gridY-1);
+                        QPair<int, int> pos2(gridX, gridY - 1);
                         m_levelData.remove(pos2);
-                        qDebug() << "Tile deleted at (" << gridX << "," << gridY-1 << ")";
+                        qDebug() << "Tile deleted at (" << gridX << "," << gridY - 1 << ")";
                     }
                     else
                     {
-                        QPair<int, int> pos2(gridX, gridY+1);
+                        QPair<int, int> pos2(gridX, gridY + 1);
                         m_levelData.remove(pos2);
-                        qDebug() << "Tile deleted at (" << gridX << "," << gridY+1 << ")";
+                        qDebug() << "Tile deleted at (" << gridX << "," << gridY + 1 << ")";
                     }
                 }
 
@@ -152,33 +188,32 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 // check if Upper or Lower and not outside of grid
                 if (m_currentTileIndex % 2 != m_endIndex % 2 && gridY != 0)
                 {
-                    QPair<int, int> pos2(gridX, gridY-1);
+                    QPair<int, int> pos2(gridX, gridY - 1);
                     // special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 != m_endIndex % 2)
                         {
-                            QPair<int, int> pos3(gridX, gridY-2);
+                            QPair<int, int> pos3(gridX, gridY - 2);
                             m_levelData.remove(pos3);
                         }
                     }
-                    m_levelData[pos2] = m_currentTileIndex-1;
-
+                    m_levelData[pos2] = m_currentTileIndex - 1;
                 }
                 // check if Upper or Lower and not outside of grid
-                else if (m_currentTileIndex % 2 == m_endIndex % 2 && gridY != m_gridHeight-1)
+                else if (m_currentTileIndex % 2 == m_endIndex % 2 && gridY != m_gridHeight - 1)
                 {
-                    QPair<int, int> pos2(gridX, gridY+1);
+                    QPair<int, int> pos2(gridX, gridY + 1);
                     // special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 == m_endIndex % 2)
                         {
-                            QPair<int, int> pos3(gridX, gridY+2);
+                            QPair<int, int> pos3(gridX, gridY + 2);
                             m_levelData.remove(pos3);
                         }
                     }
-                    m_levelData[pos2] = m_currentTileIndex+1;
+                    m_levelData[pos2] = m_currentTileIndex + 1;
                 }
                 // tried placing extraTile outside
                 else
@@ -250,7 +285,7 @@ static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &ou
 {
     if (image.isNull())
         return false;
-
+    // TODO: Change color format here
     QImage img = image.convertToFormat(QImage::Format_RGBA8888);
 
     H = img.height();
@@ -269,7 +304,7 @@ static QImage rgbaBytesToImage(const std::vector<unsigned char> &bytes, int H, i
     if ((int)bytes.size() != H * W * 4)
         return QImage();
 
-    QImage img(W, H, QImage::Format_RGBA8888);
+    QImage img(W, H, QImage::Format_ARGB32);
     memcpy(img.bits(), bytes.data(), bytes.size());
     return img;
 }
@@ -295,145 +330,162 @@ static QString extractAttr(const QString &line, const QString &attrName)
 // ============================================================================
 void LevelCanvas::saveLevel(const QString &xmlPath)
 {
-    qDebug() << "[LevelCanvas] saveLevel ->" << xmlPath;
-
-    // expand ~
+    // ---------- path handling ----------
     QString p = xmlPath;
     if (p.startsWith("~"))
         p.replace(0, 1, QDir::homePath());
 
     QFileInfo xmlInfo(p);
-    const QString outDir   = xmlInfo.absolutePath();
-    const QString baseName = xmlInfo.completeBaseName(); // level_trial
-    const QString h5Name   = baseName + ".h5";
-    const QString h5Path   = outDir + "/" + h5Name;
+    const QString outDir = xmlInfo.absolutePath();
+    const QString baseName = xmlInfo.completeBaseName();
+    const QString h5Path = outDir + "/" + baseName + ".h5";
 
-    // Your reference h5 has {32,73}
+    // ---------- collision data ----------
     const int gridH = 32;
     const int gridW = 73;
 
-    // collision_tiles  = m_collisionData -> /tiles/level1
-    std::vector<int> flatCollision = flattenTileMap(m_levelData, gridW, gridH, 0);
+    std::vector<int> flatCollision =
+        flattenTileMap(m_levelData, gridW, gridH, 0);
 
-    std::vector<size_t> tileDim = { (size_t)gridH, (size_t)gridW };
+    std::vector<size_t> tileDim = {
+        static_cast<size_t>(gridH),
+        static_cast<size_t>(gridW)};
 
-    // save tileset into /textures/<tilesetTextureName>
-    if (m_tilesetTextureName.isEmpty() && !m_tilesetPath.isEmpty())
-        m_tilesetTextureName = QFileInfo(m_tilesetPath).baseName();
-
+    // ---------- prepare tileset image ----------
     if (m_tilesetImage.isNull() && !m_tilesetPath.isEmpty())
     {
-        QImage loaded(m_tilesetPath);
-        if (!loaded.isNull())
-            m_tilesetImage = loaded.convertToFormat(QImage::Format_RGBA8888);
+        QImage img(m_tilesetPath);
+        if (!img.isNull())
+            // TODO: Change the Color format pls
+            m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
     }
 
-    // ---- NEW: Load background image from Qt resources and store into H5 like tileset ----
-    const QString bgResourcePath = "qrc:/resources/images/clouds2.png";
-    const QString bgTextureName  = "clouds2";  // dataset name under /textures
+    // ---------- prepare background image ----------
+    QImage bgImg("qrc:/resources/images/clouds2.png");
+    if (!bgImg.isNull())
+        bgImg = bgImg.convertToFormat(QImage::Format_ARGB32);
 
-    QImage bgImg(bgResourcePath);
-    if (bgImg.isNull())
-    {
-        qWarning() << "[LevelCanvas] Background PNG not found in qrc:" << bgResourcePath;
-        // we continue saving the level anyway (tiles + tileset)
-    }
-    else
-    {
-        bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
-    }
-
-    // ---- NEW: Load actor image from Qt resources and store into H5 like tileset ----
     const QString actorResourcePath = "qrc:/resources/images/mario1.png";
-    const QString actorTextureName  = "mario1";  // dataset name under /textures
-    QImage actorImg(actorResourcePath);
-    if (actorImg.isNull())
-    {
-        qWarning() << "[LevelCanvas] Actor PNG not found in qrc:" << actorResourcePath;
-        // we continue saving the level anyway (tiles + tileset)
-    }
-    else
-    {
-        actorImg = actorImg.convertToFormat(QImage::Format_RGBA8888);
-    }
+    const QString actorTextureName = "mario1";
 
-    // ---- H5 SAVE using CRTP BaseHdf5IO ----
+    QImage actorImg(actorResourcePath);
+    if (!actorImg.isNull())
+        actorImg = actorImg.convertToFormat(QImage::Format_ARGB32);
+
     try
     {
-        using IO = jumper::BaseHdf5IO<
-            jumper::hdf5features::TextureIO,
-            jumper::hdf5features::TileSetIO>;
-
+        // ==========================================================
+        //  CRTP IO: ONLY TileSetIO
+        // ==========================================================
+        using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
         io.open(h5Path.toStdString());
 
-        // ---- tileset texture ----
-        if (!m_tilesetImage.isNull() && !m_tilesetTextureName.isEmpty())
+        // ----------------------------------------------------------
+        // Save tileset texture as RAW DATASET
+        // ----------------------------------------------------------
+        if (!m_tilesetImage.isNull())
         {
-            std::vector<unsigned char> texBytes;
-            int texH = 0, texW = 0;
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
 
-            if (imageToRgbaBytes(m_tilesetImage, texBytes, texH, texW))
+            if (imageToRgbaBytes(m_tilesetImage, bytes, h, w))
             {
-                std::vector<size_t> texDim = { (size_t)texH, (size_t)texW, (size_t)4 };
-                auto texArr = makeSharedArrayCopy(texBytes);
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
 
-                io.save<unsigned char>("textures",
-                                       m_tilesetTextureName.toStdString(),
-                                       texDim,
-                                       texArr);
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
+
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    m_tilesetTextureName.toStdString(),
+                    dims,
+                    chunks,
+                    arr);
             }
         }
 
-        // ---- NEW: background png saved as texture ----
+        // ----------------------------------------------------------
+        // Save background texture as RAW DATASET
+        // ----------------------------------------------------------
         if (!bgImg.isNull())
         {
-            std::vector<unsigned char> bgBytes;
-            int bgH = 0, bgW = 0;
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
 
-            if (imageToRgbaBytes(bgImg, bgBytes, bgH, bgW))
+            if (imageToRgbaBytes(bgImg, bytes, h, w))
             {
-                std::vector<size_t> bgDim = { (size_t)bgH, (size_t)bgW, (size_t)4 };
-                auto bgTexArr = makeSharedArrayCopy(bgBytes);
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
 
-                io.save<unsigned char>("textures",
-                                       bgTextureName.toStdString(),
-                                       bgDim,
-                                       bgTexArr);
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
 
-                qDebug() << "[LevelCanvas] Saved background texture to H5: /textures/" << bgTextureName
-                         << "dim=" << bgH << "x" << bgW << "x4";
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    "clouds2",
+                    dims,
+                    chunks,
+                    arr);
             }
         }
 
-        // ---- NEW: Save actor image as texture ----
+        // ----------------------------------------------------------
+        // Save actor texture as RAW DATASET (engine asset)
+        // ----------------------------------------------------------
         if (!actorImg.isNull())
         {
-            std::vector<unsigned char> actorBytes;
-            int actorH = 0, actorW = 0;
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
 
-            if (imageToRgbaBytes(actorImg, actorBytes, actorH, actorW))
+            if (imageToRgbaBytes(actorImg, bytes, h, w))
             {
-                std::vector<size_t> actorDim = { (size_t)actorH, (size_t)actorW, (size_t)4 };
-                auto actorTexArr = makeSharedArrayCopy(actorBytes);
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
 
-                io.save<unsigned char>("textures",
-                                       actorTextureName.toStdString(),
-                                       actorDim,
-                                       actorTexArr);
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
 
-                qDebug() << "[LevelCanvas] Saved actor texture to H5: /textures/" << actorTextureName
-                         << "dim=" << actorH << "x" << actorW << "x4";
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    actorTextureName.toStdString(),
+                    dims,
+                    chunks,
+                    arr);
+
+                qDebug() << "[LevelCanvas] Saved actor texture to H5:"
+                         << "/textures/" << actorTextureName
+                         << "dim=" << h << "x" << w << "x4";
             }
         }
 
-        // ---- tiles ----
+        // ----------------------------------------------------------
+        // Save collision tiles (TileSetIO responsibility)
+        // ----------------------------------------------------------
         auto colArr = makeSharedArrayCopy(flatCollision);
-        io.save<int>("tiles", "level1", tileDim, colArr); // collision
+
+        io.save<int>(
+            "tiles",
+            "level1",
+            tileDim,
+            colArr);
     }
     catch (const std::exception &e)
     {
-        qWarning() << "[LevelCanvas] H5 save failed:" << e.what();
+        qWarning() << "[LevelCanvas] HDF5 save failed:" << e.what();
         return;
     }
 
@@ -452,14 +504,14 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     if (!m_tilesetImage.isNull() && m_tileWidth > 0 && m_tileHeight > 0)
     {
         tilesPerRow = m_tilesetImage.width() / m_tileWidth;
-        numRows     = m_tilesetImage.height() / m_tileHeight;
+        numRows = m_tilesetImage.height() / m_tileHeight;
     }
 
-    ts << "<level resources=\"" << h5Name << "\">\n";
+    ts << "<level resources=\"" << baseName + ".h5" << "\">\n";
 
     // background still references the tileset for tilemap usage
     // (If you want XML to reference the PNG instead, tell me and I adapt)
-    ts << "  <background_tiles texture=\"" << bgTextureName << "\">\n";
+    ts << "  <background_tiles texture=\"" << "clouds2" << "\">\n";
     ts << "    <layer>0</layer>\n";
     ts << "  </background_tiles>\n";
 
@@ -480,12 +532,6 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <frame_height>32</frame_height>\n";
     ts << "    <position_x>100</position_x>\n";
     ts << "    <position_y>600</position_y>\n";
-    ts << "    <jump_force_y>-540.0</jump_force_y>\n";
-    ts << "    <move_force_x>800.0</move_force_x>\n";
-    ts << "    <max_run_velocity>122.0</max_run_velocity>\n";
-    ts << "    <max_fall_velocity>250.0</max_fall_velocity>\n";
-    ts << "    <max_jump_height>90</max_jump_height>\n";
-    ts << "    <fps>12</fps>\n";
     ts << "    <layer>2</layer>\n";
     ts << "  </actor>\n";
 
@@ -500,8 +546,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "</level>\n";
     f.close();
 
-    qDebug() << "[LevelCanvas] Saved XML:" << p;
-    qDebug() << "[LevelCanvas] Saved H5 :" << h5Path;
+    qDebug() << "[LevelCanvas] XML saved:" << p;
+    qDebug() << "[LevelCanvas] H5 saved:" << h5Path;
+    qDebug() << "[LevelCanvas] Done.";
 }
 
 // ============================================================================
@@ -598,75 +645,64 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     // -------- build H5 path next to XML --------
     const QString h5Path = xmlInfo.absolutePath() + "/" + h5FileName;
 
-    // -------- H5 LOAD via CRTP BaseHdf5IO --------
+    // -------- H5 LOAD via CRTP BaseHdf5IO (TileSetIO ONLY) --------
     try
     {
-        using IO = jumper::BaseHdf5IO<
-            jumper::hdf5features::TextureIO,
-            jumper::hdf5features::TileSetIO>;
-
+        using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
         io.open(h5Path.toStdString());
 
-        // Load tiles
-        // We need dims; if your loadArray requires dim param, use stored grid size.
-        // Here we assume your loadArray returns vector + dim through argument.
-        // If your BaseHdf5IO signature is different, tell me and I adjust.
+        // ----------------------------------------------------------
+        // Load collision tiles (raw tileset data)
+        // ----------------------------------------------------------
+        std::vector<size_t> tileDims;
+        auto tileArr =
+            io.TileSetIO::loadRaw("tiles", colTilesDataset.toStdString(), tileDims);
 
-        // -> collision tiles
-        std::vector<size_t> colDim;
-        auto colArr = io.loadArray<int>("tiles", colTilesDataset.toStdString(), colDim);
-
-        size_t colN = 1;
-        for (size_t d : colDim)
-            colN *= d;
-
-        std::vector<int> colFlat(colN);
-        std::copy(colArr.get(), colArr.get() + colN, colFlat.begin());
-
-        // Grid size from dataset dims
-        int gridH = 32;
-        int gridW = 73;
-        if (colDim.size() >= 2)
+        if (tileDims.size() < 2)
         {
-            gridH = (int)colDim[0];
-            gridW = (int)colDim[1];
+            qWarning() << "[LevelCanvas] Invalid tile dataset dimensions.";
+            return;
         }
 
-        // IMPORTANT: these are grid dims, NOT tile pixel width/height!
-        // So do NOT change m_tileWidth / m_tileHeight here.
-        // (m_tileWidth/m_tileHeight come from xml <tileWidth>, <tileHeight>)
+        m_gridHeight = static_cast<int>(tileDims[0]);
+        m_gridWidth = static_cast<int>(tileDims[1]);
 
-        m_gridHeight = gridH;
-        m_gridWidth = gridW;
+        // flatten TileArray<T> into editor map
+        std::vector<int> flatTiles;
+        flatTiles.reserve(m_gridWidth * m_gridHeight);
 
-        // rebuild maps
-        // m_collisionData = unflattenTileMap(colFlat, gridW, gridH, 0); // does not exist anymore, since m_levelData holds both
-        m_levelData = unflattenTileMap(colFlat, gridW, gridH, 0);
+        for (int y = 0; y < m_gridHeight; ++y)
+            for (int x = 0; x < m_gridWidth; ++x)
+                flatTiles.push_back(tileArr[y][x]);
 
-        // ---- texture ----
+        m_levelData = unflattenTileMap(flatTiles, m_gridWidth, m_gridHeight, 0);
+
+        // ----------------------------------------------------------
+        // Load tileset texture as RAW ARRAY (no TextureIO!)
+        // ----------------------------------------------------------
         if (!m_tilesetTextureName.isEmpty())
         {
-            std::vector<size_t> texDim;
-            auto texArr = io.loadArray<unsigned char>("textures", m_tilesetTextureName.toStdString(), texDim);
+            std::vector<size_t> texDims;
+            auto texArr =
+                io.loadArray<unsigned char>(
+                    "textures",
+                    m_tilesetTextureName.toStdString(),
+                    texDims);
 
-            size_t texN = 1;
-            for (size_t d : texDim)
-                texN *= d;
-
-            std::vector<unsigned char> texBytes(texN);
-            std::copy(texArr.get(), texArr.get() + texN, texBytes.begin());
-
-            if (texDim.size() == 3 && texDim[2] == 4)
+            if (texDims.size() != 3 || texDims[2] != 4)
             {
-                int H = (int)texDim[0];
-                int W = (int)texDim[1];
-                m_tilesetImage = rgbaBytesToImage(texBytes, H, W);
+                qWarning() << "[LevelCanvas] Unexpected texture dimensions.";
+                return;
             }
-            else
-            {
-                qWarning() << "[LevelCanvas] Unexpected texture dims:" << (int)texDim.size();
-            }
+
+            int H = static_cast<int>(texDims[0]);
+            int W = static_cast<int>(texDims[1]);
+
+            std::vector<unsigned char> texBytes(H * W * 4);
+            std::memcpy(texBytes.data(), texArr.get(), texBytes.size());
+
+            m_tilesetImage = rgbaBytesToImage(texBytes, H, W);
         }
     }
     catch (const std::exception &e)
@@ -674,7 +710,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         qWarning() << "[LevelCanvas] H5 load failed:" << e.what();
         return;
     }
-    
+
     update();
 
     qDebug() << "[LevelCanvas] Loaded level:"

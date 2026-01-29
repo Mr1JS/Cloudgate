@@ -85,6 +85,11 @@ private:
 
     bool m_extraTiles = false;
     int m_endIndex = 20; // at which point do the tiles split up between normal Tiles and extraTiles
+
+    // method to find if we are in the drawing area
+    inline bool isFrameTile(int x, int y) const {
+        return (x == 0 || x == m_gridWidth - 1 || y == m_gridHeight - 1);
+    }
 };
 
 #endif // LEVELCANVAS_HPP
