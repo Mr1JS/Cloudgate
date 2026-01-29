@@ -59,6 +59,8 @@ public:
     TileSetRepresentation* tiles();
 
     const Camera& getCamera();
+
+    bool isActorDead() const;
     
     /// Checks if actor is outside camera bounds (for game over)
     bool isActorOutsideCamera() const;

@@ -224,6 +224,16 @@ const Camera& Level::getCamera()
     return m_camera;
 }
 
+bool Level::isActorDead() const
+{
+    if (m_stateController->getHp() <= 0 || isActorOutsideCamera())
+    {
+        return true;
+    }
+
+    return false;
+}
+
 bool Level::isActorOutsideCamera() const
 {
     if(!m_actor)

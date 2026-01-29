@@ -256,7 +256,7 @@ void GameView::updateGame()
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
     if(m_running && m_gameWindow && m_gameWindow->level())
     {
-        if(m_gameWindow->level()->isActorOutsideCamera())
+        if(m_gameWindow->level()->isActorDead())
         {
             // Game Over: Stoppe das Spiel
             stopGame();

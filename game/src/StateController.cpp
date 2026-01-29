@@ -65,11 +65,20 @@ void StateController::startGameTime()
 
 void StateController::updateGameTime()
 {
-    if (!m_isRunning)
+    if (isPaused())
     {
         return;
     }
-
+    
+    /*
+    TODO: replace everything with 
+    runtimed = currentRuntime - m_runtime;
+    if (runtimed > X)
+    {
+        // update time graphics
+        m_runtime = m_timer->elapsed();
+    }
+    */ 
     m_runtime = m_timer->elapsed();
 
     int runtimed = m_runtime % 100;
@@ -78,7 +87,6 @@ void StateController::updateGameTime()
         int sec = m_runtime/1000 - min*60;
         int ms  = m_runtime - sec*1000;
         std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
-
         /*
         // testing decrementHp()
         if (sec % 2 == 1) {
@@ -86,14 +94,14 @@ void StateController::updateGameTime()
         }
         */
     }
-
-    if (m_playerHp <= 0)
-    {
-        resetGameTime();
-    }
 }
 
-void StateController::resetGameTime()
+void StateController::stop()
+{
+    m_isRunning = false;
+}
+
+void StateController::resetGame()
 {
     m_runtime   = 0;
     m_isRunning = false;
@@ -101,6 +109,11 @@ void StateController::resetGameTime()
     m_playerHp = MAX_HEARTS;
 
     resetHeartPosition();
+}
+
+int StateController::getHp()
+{
+    return m_playerHp;
 }
 
 void StateController::decrementHp(int number)

@@ -35,7 +35,11 @@ public:
     void updateGameTime();
 
     /// Reset runtime back to 0
-    void resetGameTime();
+    void resetGame();
+
+    void stop();
+
+    int getHp();
 
     void decrementHp(int number = 1);
 
