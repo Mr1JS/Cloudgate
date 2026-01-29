@@ -155,13 +155,9 @@ void LevelEditorController::saveLevel()
         return;
     }
 
-<<<<<<< HEAD
-    // Ensure .xml extension
-=======
     qDebug() << "Saving to:" << file_name;
 
     // add .xml if needed
->>>>>>> 5b4e4fa (improve saving  and add debug output)
     if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
     {
         file_name += ".xml";

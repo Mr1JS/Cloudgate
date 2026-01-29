@@ -36,6 +36,27 @@ TileSetIO<Derived>::load(HighFive::Group group, std::string datasetName, int til
 }
 
 template <typename Derived>
+int**
+TileSetIO<Derived>::loadRaw(std::string group, std::string datasetName, std::vector<size_t>& dims)
+{
+    shared_array<int> data = m_fileAccess->template loadArray<int>(group, datasetName, dims);
+
+    int** result = new int* [dims[0]];
+
+    for (size_t y = 0; y < dims[0]; y++)
+    {
+        result[y] = new int[dims[1]];
+
+        for (size_t x = 0; x < dims[1]; x++)
+        {
+            result[y][x] = data[y * dims[1] + x];
+        }
+    }
+
+    return result;
+}
+
+template <typename Derived>
 void TileSetIO<Derived>::save(std::string groupName,
                               std::string datasetName,
                               const TileSetRepresentation& tiles)
