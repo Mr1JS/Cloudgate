@@ -360,7 +360,7 @@ Page {
 
         // Load tileset through controller
         editorController.loadTileset("res/level_master.xml", 32,
-                                     32, 4, 105)
+                                     32, 4, 140)
 
         // Set focus when page loads
         levelEditorPage.forceActiveFocus()

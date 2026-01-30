@@ -7,7 +7,7 @@
     <file>images/test_image.png</file>
     <file>images/tileset.png</file>
     <file>images/mario1.png</file>
-    <file>images/Snake.png</file>
-    <file>images/Ghost.png</file>
+    <file>images/snake.png</file>
+    <file>images/ghost.png</file>
   </qresource>
 </RCC>

@@ -246,7 +246,7 @@ static std::vector<int> flattenTileMap(
         const int y = it.key().second;
         if (x < 0 || x >= w || y < 0 || y >= h)
             continue;
-        out[y * w + x] = it.value();
+        out[y * w + x] = it.value() + 1;
     }
 
     return out;
@@ -269,7 +269,7 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     {
         for (int x = 0; x < w; ++x)
         {
-            const int v = flat[y * w + x];
+            const int v = flat[y * w + x] - 1;
             if (v != defaultValue)
                 out.insert(qMakePair(x, y), v);
         }
@@ -361,11 +361,24 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     }
 
     // ---------- prepare background image ----------
-    QImage bgImg("qrc:/resources/images/clouds2.png");
+    QImage bgImg(":/resources/images/clouds2.png");
     if (!bgImg.isNull())
+    {
         bgImg = bgImg.convertToFormat(QImage::Format_ARGB32);
+    }
 
-    const QString actorResourcePath = "qrc:/resources/images/mario1.png";
+    QImage ghostImg(":/resources/images/ghost.png");
+    if (!ghostImg.isNull())
+    {
+        ghostImg = ghostImg.convertToFormat(QImage::Format_ARGB32);
+    }
+    QImage snakeImg(":/resources/images/snake.png");
+    if (!snakeImg.isNull())
+    {
+        snakeImg = snakeImg.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    const QString actorResourcePath = ":/resources/images/mario1.png";
     const QString actorTextureName = "mario1";
 
     QImage actorImg(actorResourcePath);
@@ -462,6 +475,68 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
                 io.save(
                     "textures",
                     actorTextureName.toStdString(),
+                    dims,
+                    chunks,
+                    arr);
+
+                qDebug() << "[LevelCanvas] Saved actor texture to H5:"
+                         << "/textures/" << actorTextureName
+                         << "dim=" << h << "x" << w << "x4";
+            }
+        }
+
+        // ----------------------------------------------------------
+        // Save ghost texture as RAW DATASET (engine asset)
+        // ----------------------------------------------------------
+        if (!ghostImg.isNull())
+        {
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
+
+            if (imageToRgbaBytes(ghostImg, bytes, h, w))
+            {
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
+
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
+
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    "ghost",
+                    dims,
+                    chunks,
+                    arr);
+            }
+        }
+
+        // ----------------------------------------------------------
+        // Save snake texture as RAW DATASET (engine asset)
+        // ----------------------------------------------------------
+        if (!snakeImg.isNull())
+        {
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
+
+            if (imageToRgbaBytes(snakeImg, bytes, h, w))
+            {
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
+
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
+
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    "snake",
                     dims,
                     chunks,
                     arr);
