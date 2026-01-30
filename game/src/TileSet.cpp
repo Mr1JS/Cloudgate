@@ -40,8 +40,15 @@ namespace jumper
         {
             throw std::invalid_argument("The image " + tilesetDataset + " could not be loaded from hdf5!");
         }
-        m_texture = SDL_CreateTextureFromSurface(mw->renderer(), surface);
+        SDL_Surface* rgbaSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
         SDL_FreeSurface(surface);
+
+        Uint32 key = SDL_MapRGB(rgbaSurface->format, 94,129,162);
+        SDL_SetColorKey(rgbaSurface, SDL_TRUE, key);
+
+        m_texture = SDL_CreateTextureFromSurface(mw->renderer(), surface);
+        SDL_FreeSurface(rgbaSurface);
+        
         if (m_texture == nullptr)
         {
             throw std::invalid_argument("Could not create texture from image " + tilesetDataset + "!");
@@ -179,7 +186,7 @@ namespace jumper
                             target.y = i * m_tileHeight - m_offset.y() + m_windowOffset.y() + 600;
 
                             /* Compute the position of the source pixel data
-                             * within the texture (no offset for first tiles)
+                             * within the texture (offset for first tiles)
                              */
                             row = tile_index / 9;
                             col = tile_index % 9;

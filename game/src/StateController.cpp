@@ -77,7 +77,7 @@ void StateController::updateGameTime()
         int min = m_runtime/1000/60;
         int sec = m_runtime/1000 - min*60;
         int ms  = m_runtime - sec*1000;
-        std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
+        //std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
 
         /*
         // testing decrementHp()

@@ -142,8 +142,10 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
             for (int x = 0; x < img.width(); x++)
             {
                 QRgb px = img.pixel(x, y);
-                if (qAbs(qRed(px) - 92) <= tol && qAbs(qGreen(px) - 130) <= tol && qAbs(qBlue(px) - 161) <= tol)
+                if (qAbs(qRed(px) - 94) <= tol && qAbs(qGreen(px) - 129) <= tol && qAbs(qBlue(px) - 162) <= tol)
+                {
                     img.setPixel(x, y, qRgba(0, 0, 0, 0));
+                }
             }
         tilesetImage = img;
 

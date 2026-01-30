@@ -270,7 +270,7 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
         for (int x = 0; x < w; ++x)
         {
             const int v = flat[y * w + x] - 1;
-            if (v != defaultValue)
+            if (v >= 0)
                 out.insert(qMakePair(x, y), v);
         }
     }
@@ -284,15 +284,32 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
 static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &outBytes, int &H, int &W)
 {
     if (image.isNull())
+    {
         return false;
-    // TODO: Change color format here
-    QImage img = image.convertToFormat(QImage::Format_RGBA8888);
-
+    }
+    // start with argb
+    QImage img = image.convertToFormat(QImage::Format_ARGB32);
     H = img.height();
     W = img.width();
+    outBytes.resize(H * W * 4);
 
-    outBytes.resize((size_t)H * (size_t)W * 4);
-    memcpy(outBytes.data(), img.bits(), outBytes.size());
+    const unsigned char *src = img.bits();
+    unsigned char *dst = outBytes.data();
+    // Qt to SDL fix by manually switching rgba values
+    for (int i = 0; i < H * W; ++i)
+    {
+        unsigned char a = src[4*i + 3];
+        unsigned char r = src[4*i + 2];
+        unsigned char g = src[4*i + 1];
+        unsigned char b = src[4*i + 0];
+
+        dst[4*i + 0] = b; 
+        dst[4*i + 1] = g; 
+        dst[4*i + 2] = r; 
+        dst[4*i + 3] = a; 
+
+    }
+
     return true;
 }
 
@@ -302,12 +319,30 @@ static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &ou
 static QImage rgbaBytesToImage(const std::vector<unsigned char> &bytes, int H, int W)
 {
     if ((int)bytes.size() != H * W * 4)
+    {
         return QImage();
-
+    }
+    // start with argb
     QImage img(W, H, QImage::Format_ARGB32);
-    memcpy(img.bits(), bytes.data(), bytes.size());
+    unsigned char *dst = img.bits();
+
+    for (int i = 0; i < H * W; ++i)
+    {
+        // same fix as above
+        unsigned char b = bytes[4*i + 0];
+        unsigned char g = bytes[4*i + 1];
+        unsigned char r = bytes[4*i + 2];
+        unsigned char a = bytes[4*i + 3];
+
+        dst[4*i + 0] = b;
+        dst[4*i + 1] = g;
+        dst[4*i + 2] = r;
+        dst[4*i + 3] = a;
+    }
+
     return img;
 }
+
 
 // -----------------------------------------------
 // Small XML helper: extract attribute value from a single tag line
@@ -327,7 +362,6 @@ static QString extractAttr(const QString &line, const QString &attrName)
 // background_tiles = m_levelData -> /tiles/level2
 // collision_tiles  = m_collisionData -> /tiles/level1
 // tileset texture  = /textures/<tilesetTextureName>
-// ============================================================================
 void LevelCanvas::saveLevel(const QString &xmlPath)
 {
     // ---------- path handling ----------
@@ -364,18 +398,18 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     QImage bgImg(":/resources/images/clouds2.png");
     if (!bgImg.isNull())
     {
-        bgImg = bgImg.convertToFormat(QImage::Format_ARGB32);
+        bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
     QImage ghostImg(":/resources/images/ghost.png");
     if (!ghostImg.isNull())
     {
-        ghostImg = ghostImg.convertToFormat(QImage::Format_ARGB32);
+        ghostImg = ghostImg.convertToFormat(QImage::Format_RGBA8888);
     }
     QImage snakeImg(":/resources/images/snake.png");
     if (!snakeImg.isNull())
     {
-        snakeImg = snakeImg.convertToFormat(QImage::Format_ARGB32);
+        snakeImg = snakeImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
     const QString actorResourcePath = ":/resources/images/mario1.png";
@@ -383,7 +417,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     QImage actorImg(actorResourcePath);
     if (!actorImg.isNull())
-        actorImg = actorImg.convertToFormat(QImage::Format_ARGB32);
+        actorImg = actorImg.convertToFormat(QImage::Format_RGBA8888);
 
     try
     {
@@ -401,9 +435,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         {
             std::vector<unsigned char> bytes;
             int h = 0, w = 0;
-
             if (imageToRgbaBytes(m_tilesetImage, bytes, h, w))
             {
+            
                 std::vector<size_t> dims = {
                     static_cast<size_t>(h),
                     static_cast<size_t>(w),
@@ -605,8 +639,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <num_frames>2</num_frames>\n";
     ts << "    <frame_width>18</frame_width>\n";
     ts << "    <frame_height>32</frame_height>\n";
-    ts << "    <position_x>100</position_x>\n";
-    ts << "    <position_y>600</position_y>\n";
+    ts << "    <position_x>50</position_x>\n";
+    ts << "    <position_y>1350</position_y>\n";
     ts << "    <layer>2</layer>\n";
     ts << "  </actor>\n";
 

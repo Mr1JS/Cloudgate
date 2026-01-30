@@ -178,7 +178,7 @@ namespace jumper
                 }
 
                 // Set background color for renderer
-                SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 0);
+                SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
             }
         }
 
