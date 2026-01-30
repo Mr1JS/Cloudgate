@@ -13,6 +13,7 @@
 #include "game/include/Level.hpp"
 
 #include <SDL.h>
+#include <cmath>
 
 #include <iostream>
 using namespace std;
@@ -27,6 +28,29 @@ Physics::Physics(Actor* actor,
 {
     m_tiles = m_level->tiles();
     m_lastTicks = SDL_GetTicks();
+    m_lastHazardDamageTicks = 0;
+    m_pendingKnockback = Vector2f(0, 0);
+    m_knockbackFramesRemaining = 0;
+    m_pendingMovement = Vector2f(0, 0);
+}
+
+namespace {
+    /// Prüft ob die Tile-ID zu einem Hazard-Typ gehört (RulesTiles.xml)
+    bool isHazardTile(int tileId)
+    {
+        switch (tileId)
+        {
+            case 119:  // Box Explosive
+            case 127:  // Spikes
+            case 144:  // Ghost White Top
+            case 145:  // Ghost White Bottom
+            case 146:  // Snake Slime Top
+            case 147:  // Snake Slime Bottom
+                return true;
+            default:
+                return false;
+        }
+    }
 }
 
 void Physics::update()
@@ -36,9 +60,36 @@ void Physics::update()
     // Get elapsed time since last call (in seconds)
     double dt = (currentTicks - m_lastTicks) / 1000.0;
 
-    // Update player position and resolve collisions
+    // Update velocity und berechne Bewegung
     updateActorPosition(dt);
-    resolveCollision();
+
+    // Substepping: Bewegung in kleine Schritte aufteilen, nach jedem Schritt Kollision prüfen
+    // Verhindert Durchdringen von Wänden bei hoher Geschwindigkeit
+    const double maxStepSize = 10.0;
+    const int maxSubsteps = 20;
+    Vector2f remaining = m_pendingMovement;
+    int substepCount = 0;
+    while((std::abs(remaining.x()) > 0.1 || std::abs(remaining.y()) > 0.1) && substepCount < maxSubsteps)
+    {
+        double len = std::sqrt(remaining.x() * remaining.x() + remaining.y() * remaining.y());
+        Vector2f step;
+        if(len <= maxStepSize)
+        {
+            step = remaining;
+            remaining = Vector2f(0, 0);
+        }
+        else
+        {
+            double scale = maxStepSize / len;
+            step = Vector2f(remaining.x() * scale, remaining.y() * scale);
+            remaining.setX(remaining.x() - step.x());
+            remaining.setY(remaining.y() - step.y());
+        }
+        m_actor->setWorldPosition(m_actor->worldPosition() + step);
+        resolveCollision();
+        substepCount++;
+    }
+    m_pendingMovement = Vector2f(0, 0);
     
     // FINALE ABSOLUTE PRÜFUNG: Stelle sicher, dass die Position nach allen Updates korrekt ist
     // Diese Prüfung wird IMMER ausgeführt, auch wenn die Position bereits über der Grenze ist
@@ -93,7 +144,13 @@ void Physics::updateActorPosition(double dt)
         // Compute the velocity differeces that come from gravity
         // and move force
         d_gravity = m_level->forces().gravity() * dt;
-        d_move =    m_actor->forces().moveForce() * dt;
+        // Während Knockback: Gravitation stark reduzieren, damit Charakter diagonal nach oben fliegen kann
+        if(m_knockbackFramesRemaining > 0)
+            d_gravity = Vector2f(d_gravity.x() * 0.15, d_gravity.y() * 0.15);
+        d_move = m_actor->forces().moveForce() * dt;
+        // Während Knockback: Lenken stark reduzieren (kein Turbo-Boost in der Luft)
+        if(m_knockbackFramesRemaining > 0)
+            d_move = Vector2f(d_move.x() * 0.03, d_move.y() * 0.03);
 
         // Update velocity
         m_actor->setVelocity(m_actor->velocity() + d_move + d_gravity);
@@ -105,35 +162,74 @@ void Physics::updateActorPosition(double dt)
                         m_actor->velocity().y() + (m_actor->forces().jumpForce().y() * dt));
         }
 
-        // Damp velocity according to extrinsic level damping
-        m_actor->setVelocity(m_actor->velocity() * m_level->forces().damping().x());
+        // Damp velocity - während Knockback sanfter, damit Flug länger dauert
+        const double dampBase = m_level->forces().damping().x();
+        const double dampDuringKnockback = 0.94;  // höher = langsamer Ausklang, längere Flugdauer
+        double damp = (m_knockbackFramesRemaining > 0) ? dampDuringKnockback : dampBase;
+        m_actor->setVelocity(m_actor->velocity() * damp);
 
-        // Clamp velocities
-        if(m_actor->velocity().x() > m_actor->forces().maxRunVelocity() * dt)
+        // Knockback portionenweise anwenden (jeden Frame ein Stück = langsamere Beschleunigung)
+        const double knockbackApplyFraction = 0.15;  // Anteil pro Frame (niedriger = sanfter, langsamer)
+        if(m_pendingKnockback.x() != 0 || m_pendingKnockback.y() != 0)
         {
-            m_actor->setVelocity(Vector2f(m_actor->forces().maxRunVelocity() * dt,
-                    m_actor->velocity().y()));
+            double applyX = m_pendingKnockback.x() * knockbackApplyFraction;
+            double applyY = m_pendingKnockback.y() * knockbackApplyFraction;
+            m_actor->setVelocity(m_actor->velocity() + Vector2f(applyX, applyY));
+            m_pendingKnockback.setX(m_pendingKnockback.x() - applyX);
+            m_pendingKnockback.setY(m_pendingKnockback.y() - applyY);
+            if(std::abs(m_pendingKnockback.x()) < 0.5 && std::abs(m_pendingKnockback.y()) < 0.5)
+                m_pendingKnockback = Vector2f(0, 0);
+            m_knockbackFramesRemaining = 25;
         }
 
-        if(m_actor->velocity().x() < -m_actor->forces().maxRunVelocity() * dt)
+        // Clamp velocities (überspringen während Knockback, damit Geschwindigkeit natürlich ausklingt)
+        if(m_knockbackFramesRemaining <= 0)
         {
-            m_actor->setVelocity(Vector2f(-m_actor->forces().maxRunVelocity() * dt,
-                    m_actor->velocity().y()));
-        }
+            if(m_actor->velocity().x() > m_actor->forces().maxRunVelocity() * dt)
+            {
+                m_actor->setVelocity(Vector2f(m_actor->forces().maxRunVelocity() * dt,
+                        m_actor->velocity().y()));
+            }
 
-        if(m_actor->velocity().y() > m_actor->forces().maxFallVelocity() * dt)
-        {
-           m_actor->setVelocity(
-                    Vector2f(m_actor->velocity().x(), m_actor->forces().maxFallVelocity() * dt));
-        }
+            if(m_actor->velocity().x() < -m_actor->forces().maxRunVelocity() * dt)
+            {
+                m_actor->setVelocity(Vector2f(-m_actor->forces().maxRunVelocity() * dt,
+                        m_actor->velocity().y()));
+            }
 
-        if(m_actor->velocity().y() < -m_actor->forces().maxJumpVelocity() * dt)
+            if(m_actor->velocity().y() > m_actor->forces().maxFallVelocity() * dt)
+            {
+               m_actor->setVelocity(
+                        Vector2f(m_actor->velocity().x(), m_actor->forces().maxFallVelocity() * dt));
+            }
+
+            if(m_actor->velocity().y() < -m_actor->forces().maxJumpVelocity() * dt)
+            {
+                m_actor->setVelocity(
+                        Vector2f(m_actor->velocity().x(), -m_actor->forces().maxJumpVelocity() * dt));
+            }
+        }
+        else
         {
-            m_actor->setVelocity(
-                    Vector2f(m_actor->velocity().x(), -m_actor->forces().maxJumpVelocity() * dt));
+            m_knockbackFramesRemaining--;
         }
 
         //cout << "V: " << m_actor->velocity() << endl;
+
+        // Bewegung pro Frame begrenzen in der Luft (verhindert Durchdringen von Wänden beim Lenken)
+        Vector2f velForPosition = m_actor->velocity();
+        bool inAir = !m_actor->onGround();
+        if(inAir)
+        {
+            const double maxMovePerFrame = 28.0;  // ~1 Tile, verhindert Tunneling
+            double speed = std::sqrt(velForPosition.x() * velForPosition.x() + velForPosition.y() * velForPosition.y());
+            if(speed > maxMovePerFrame && speed > 0.01)
+            {
+                double scale = maxMovePerFrame / speed;
+                velForPosition = Vector2f(velForPosition.x() * scale, velForPosition.y() * scale);
+                m_actor->setVelocity(velForPosition);
+            }
+        }
 
         // Prüfe Kamera-Grenzen BEVOR die Position gesetzt wird
         // Verhindere, dass die Position über die Grenze hinausgeht
@@ -144,7 +240,7 @@ void Physics::updateActorPosition(double dt)
             // Die Kamera-Breite ist die Fenster-Breite, da die Kamera mit mainWindow->w() initialisiert wird
             int cameraRight = camera.x() + camera.width();
             Vector2f currentPos = m_actor->worldPosition();
-            Vector2f newPosition = currentPos + m_actor->velocity();
+            Vector2f newPosition = currentPos + velForPosition;
             
             // Prüfe rechte Grenze: Stoppe Geschwindigkeit, wenn Position über Grenze hinausgehen würde
             // WICHTIG: Prüfe auch die aktuelle Position, falls sie bereits über der Grenze ist
@@ -178,13 +274,12 @@ void Physics::updateActorPosition(double dt)
                 m_actor->velocity().setX(0);
             }
             
-            // Set new player position (mit Grenzen-Prüfung)
-            m_actor->setWorldPosition(newPosition);
+            // Bewegung speichern für Substepping (wird in update() angewendet)
+            m_pendingMovement = newPosition - currentPos;
         }
         else
         {
-            // Set new player position (ohne Grenzen-Prüfung, falls kein Level vorhanden)
-            m_actor->setWorldPosition(m_actor->worldPosition() + m_actor->velocity());
+            m_pendingMovement = velForPosition;
         }
 
 
@@ -329,7 +424,8 @@ void Physics::resolveCollision()
         if((y >= 0) && (y < m_tiles->height()) && (x >= 0) && (x < m_tiles->width()) )
         {
 
-            if(m_tiles->get(x, y) > 0)
+            int tileId = m_tiles->get(x, y);
+            if(tileId > 0)
             {
 
                 // Get SDL rect for current tile and sprite and check intersection
@@ -347,63 +443,37 @@ void Physics::resolveCollision()
 
                 if(SDL_IntersectRect(&tileRect, &spriteRect, &intersectionRect))
                 {
-//                    if(n == 6)
-//                    {
-//                        m_actor->setOnGround(true);
-//                    }
-//
-//                    // Handle pose correction cases
-//                    if(n == 4)
-//                    {
-//                        desiredPosition.setX(desiredPosition.x() - intersectionRect.w);
-//                    }
-//                    else if(n == 1)
-//                    {
-//                        desiredPosition.setY(desiredPosition.y() + intersectionRect.h);
-//                        m_actor->setJumping(false);
-//                    }
-//                    else if(n == 3)
-//                    {
-//                        desiredPosition.setX(desiredPosition.x() + intersectionRect.w);
-//                    }
-//                    else if(n == 6)
-//                    {
-//                        desiredPosition.setY(desiredPosition.y() - intersectionRect.h);
-//                    }
-//                    else
-//                    {
-//                        if(intersectionRect.w >= 2 && intersectionRect.h >= 2)
-//                        {
-//                            if(intersectionRect.w > intersectionRect.h)
-//                            {
-//                                if( (n == 5) || (n == 7))
-//                                {
-//                                    desiredPosition.setY(desiredPosition.y() - intersectionRect.h);
-//                                }
-//                                else
-//                                {
-//                                    desiredPosition.setY(desiredPosition.y() + intersectionRect.h);
-//                                }
-//                            }
-//                            else
-//                            {
-//                                if( (n == 2) || (n == 7))
-//                                {
-//                                    desiredPosition.setX(desiredPosition.x() - intersectionRect.w);
-//                                }
-//                                else
-//                                {
-//                                    desiredPosition.setX(desiredPosition.x() + intersectionRect.w);
-//                                }
-//                                if( (n == 0) || (n == 2) )
-//                                {
-//                                    m_actor->setJumping(false);
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                }
+                    // Hazard-Kollision: Schaden + "Aua!" + Wegschießen
+                    if(isHazardTile(tileId) && m_level && m_level->getStateController())
+                    {
+                        unsigned int now = SDL_GetTicks();
+                        const unsigned int hazardCooldownMs = 1000;
+                        if(now - m_lastHazardDamageTicks >= hazardCooldownMs)
+                        {
+                            m_level->getStateController()->decrementHp(1);
+                            std::cout << "Aua!" << std::endl;
+                            m_lastHazardDamageTicks = now;
+
+                            // Charakter diagonal nach oben wegschießen (via m_pendingKnockback)
+                            double tileCenterX = tileRect.x + tileRect.w / 2.0;
+                            double tileCenterY = tileRect.y + tileRect.h / 2.0;
+                            double actorCenterX = spriteRect.x + spriteRect.w / 2.0;
+                            double actorCenterY = spriteRect.y + spriteRect.h / 2.0;
+                            double dx = actorCenterX - tileCenterX;  // Richtung weg vom Hazard
+                            // Diagonal nach oben: Horizontal weg vom Hazard, Y stark nach oben
+                            double dirX = (std::abs(dx) < 0.01) ? 0.5 : ((dx > 0) ? 0.5 : -0.5);
+                            double dirY = -1.2;  // Starker Aufwärtsimpuls (Y negativ = oben)
+                            double len = std::sqrt(dirX * dirX + dirY * dirY);
+                            if(len > 0.01)
+                            {
+                                dirX /= len;
+                                dirY /= len;
+                                const double knockbackStrength = 50.0;
+                                m_pendingKnockback = Vector2f(dirX * knockbackStrength, dirY * knockbackStrength);
+                            }
+                        }
+                    }
+
 
                 	if(n == 3)
                 	{

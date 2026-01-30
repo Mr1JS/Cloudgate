@@ -13,6 +13,7 @@
 
 #include "TileSetRepresentation.hpp"
 #include "ActorForces.hpp"
+#include "Vector.hpp"
 
 namespace jumper {
 
@@ -59,6 +60,18 @@ private:
     /// Clock time SDL init. Used to compute the time
     /// that elapsed since the last update() call.
     unsigned int            m_lastTicks;
+
+    /// Zeitpunkt des letzten Hazard-Schadens (für Invincibility-Frames)
+    unsigned int            m_lastHazardDamageTicks;
+
+    /// Ausstehender Knockback - wird portionenweise über mehrere Frames angewendet
+    Vector2f                m_pendingKnockback;
+
+    /// Frames ohne Velocity-Clamp, damit Knockback sanft ausklingen kann
+    int                     m_knockbackFramesRemaining;
+
+    /// Berechnete Bewegung für diesen Frame (für Substepping)
+    Vector2f                m_pendingMovement;
 };
 
 } // namespace jumper
