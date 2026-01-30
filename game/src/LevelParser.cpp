@@ -182,9 +182,9 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float jumpForceY    = v.second.get<float>("jump_force_y", -440.0f);
             float moveForceX    = v.second.get<float>("move_force_x", 800.0f);
             float moveForceY    = v.second.get<float>("move_force_y", 0.0f);
-            float maxVelRun     = v.second.get<float>("max_run_velocity", 400.0f);
+            float maxVelRun     = v.second.get<float>("max_run_velocity", 100.0f);
             float maxVelFall    = v.second.get<float>("max_fall_velocity", 160.0f);
-            float maxJumpHeight = v.second.get<float>("max_jump_height", 150.0f);
+            float maxJumpHeight = v.second.get<float>("max_jump_height", 40.0f);
 
             // TODO Jation & Pascal: the textureDataSet muust be changed. it must be dependent on the
             // Create new actor
