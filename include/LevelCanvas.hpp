@@ -77,7 +77,7 @@ private:
     QColor m_backgroundColor;
 
     // ---- Tileset meta ----
-    QString m_tilesetPath;        // e.g. "res/tileset1.png"
+    QString m_tilesetPath = "qrc:/resources/images/tileset.png";        // e.g. "res/tileset1.png"
     QString m_tilesetTextureName = "tileset"; // e.g. "tileset1"
 
     // Image member

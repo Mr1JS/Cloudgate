@@ -14,19 +14,18 @@ TilesetPalette::TilesetPalette(QQuickItem *parent)
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-void TilesetPalette::loadTileset(const QString &path, int tileW, int tileH, int offset, int endIndex)
+void TilesetPalette::setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex)
 {
-    m_tiles = tiles;
-    m_tileWidth = tileW;
+    m_tiles      = tiles;
+    m_tileWidth  = tileW;
     m_tileHeight = tileH;
     m_tileOffset = offset;
-    m_endIndex = endIndex;
+    m_endIndex   = endIndex;
 
-    extractTilesWithTransparency(pix, offset);
-
+    emit tileCountChanged();
     update();
-    qDebug() << "Tiles loaded:" << m_tiles.size();
 }
+
 
 void TilesetPalette::loadTileNames(const QString &xmlPath)
 {

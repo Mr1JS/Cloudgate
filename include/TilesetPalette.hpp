@@ -7,14 +7,7 @@
 #include <QRect>
 #include <QColor>
 #include <QMap>
-
-// Tile structure for individual tiles
-struct Tile
-{
-    int index;
-    QPixmap pixmap;
-    QRect sourceRect;
-};
+#include "Tile.hpp"
 
 // Tileset palette for tile selection
 class TilesetPalette : public QQuickPaintedItem
@@ -25,7 +18,7 @@ class TilesetPalette : public QQuickPaintedItem
 public:
     explicit TilesetPalette(QQuickItem *parent = nullptr);
 
-    Q_INVOKABLE void loadTileset(const QString &path, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
+    Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
     void loadTileNames(const QString &xmlPath);
 
     int tileCount() const { return m_tiles.size(); }
