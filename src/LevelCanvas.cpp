@@ -8,7 +8,7 @@
 #include <QDataStream>
 #include <QFileInfo>
 #include <QTextStream>
-#include <QRegularExpression>
+#include <QXmlStreamReader>
 #include <QPair>
 #include <QMap>
 #include <QDebug>
@@ -342,20 +342,6 @@ static QImage rgbaBytesToImage(const std::vector<unsigned char> &bytes, int H, i
     }
 
     return img;
-}
-
-
-// -----------------------------------------------
-// Small XML helper: extract attribute value from a single tag line
-// e.g. <collision_tiles texture="tileset1" tiles="level1">
-// -----------------------------------------------
-static QString extractAttr(const QString &line, const QString &attrName)
-{
-    QRegularExpression re(attrName + R"delim(\s*=\s*"([^"]*)")delim");
-    auto m = re.match(line);
-    if (!m.hasMatch())
-        return "";
-    return m.captured(1);
 }
 
 // ============================================================================
@@ -705,45 +691,56 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         return;
     }
 
-    QTextStream ts(&f);
-    while (!ts.atEnd())
+    QXmlStreamReader xml(&f);
+    
+    while (!xml.atEnd())
     {
-        const QString line = ts.readLine().trimmed();
+        xml.readNext();
 
-        if (line.startsWith("<level "))
+        if (xml.isStartElement())
         {
-            h5FileName = extractAttr(line, "resources");
+            QString elementName = xml.name().toString();
+
+            if (elementName == "level")
+            {
+                h5FileName = xml.attributes().value("resources").toString();
+            }
+            else if (elementName == "background_tiles")
+            {
+                bgTextureName = xml.attributes().value("texture").toString();
+            }
+            else if (elementName == "collision_tiles")
+            {
+                colTextureName = xml.attributes().value("texture").toString();
+                colTilesDataset = xml.attributes().value("tiles").toString();
+            }
+            else if (elementName == "tileWidth")
+            {
+                bool ok = false;
+                int v = xml.readElementText().toInt(&ok);
+                if (ok)
+                    m_tileWidth = v;
+            }
+            else if (elementName == "tileHeight")
+            {
+                bool ok = false;
+                int v = xml.readElementText().toInt(&ok);
+                if (ok)
+                    m_tileHeight = v;
+            }
+            else if (elementName == "tileOffset")
+            {
+                bool ok = false;
+                int v = xml.readElementText().toInt(&ok);
+                if (ok)
+                    m_tileOffset = v;
+            }
         }
-        else if (line.startsWith("<background_tiles"))
-        {
-            bgTextureName = extractAttr(line, "texture");
-        }
-        else if (line.startsWith("<collision_tiles"))
-        {
-            colTextureName = extractAttr(line, "texture");
-            colTilesDataset = extractAttr(line, "tiles");
-        }
-        else if (line.startsWith("<tileWidth>"))
-        {
-            bool ok = false;
-            int v = line.mid(QString("<tileWidth>").size()).split("<").first().toInt(&ok);
-            if (ok)
-                m_tileWidth = v;
-        }
-        else if (line.startsWith("<tileHeight>"))
-        {
-            bool ok = false;
-            int v = line.mid(QString("<tileHeight>").size()).split("<").first().toInt(&ok);
-            if (ok)
-                m_tileHeight = v;
-        }
-        else if (line.startsWith("<tileOffset>"))
-        {
-            bool ok = false;
-            int v = line.mid(QString("<tileOffset>").size()).split("<").first().toInt(&ok);
-            if (ok)
-                m_tileOffset = v;
-        }
+    }
+
+    if (xml.hasError())
+    {
+        qWarning() << "[LevelCanvas] XML parsing error:" << xml.errorString();
     }
     f.close();
 
@@ -830,7 +827,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     update();
 
     qDebug() << "[LevelCanvas] Loaded level:"
-             << "grid=" << m_tileWidth << "x" << m_tileHeight
+             << "grid=" << m_gridWidth << "x" << m_gridHeight
              << "texture=" << m_tilesetTextureName;
 }
 

@@ -3,11 +3,9 @@
 #include "include/LevelCanvas.hpp"
 #include <QDebug>
 #include <QFileDialog>
+#include <QXmlStreamReader>
 #include "game/io/BaseHdf5IO.hpp"
 #include "game/io/TileSetIO.hpp"
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/foreach.hpp>
 #include "game/include/Util.hpp"
 
 using LevelHdf5IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
@@ -15,14 +13,14 @@ using LevelHdf5IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
 LevelEditorController::LevelEditorController(QObject *parent)
     : QObject(parent)
 {
-    qDebug() << "LevelEditorController created";
+    qDebug() << "[LevelEditorController] Created";
 }
 
 void LevelEditorController::registerPalette(TilesetPalette *palette)
 {
     if (m_palette != nullptr)
     {
-        qWarning() << "Palette already registered, replacing...";
+        qWarning() << "[LevelEditorController] Palette already registered, replacing...";
     }
 
     m_palette = palette;
@@ -34,14 +32,14 @@ void LevelEditorController::registerPalette(TilesetPalette *palette)
     connect(this, &LevelEditorController::tilesetReady,
             m_palette, &TilesetPalette::setTileset);
 
-    qDebug() << "TilesetPalette registered with controller";
+    qDebug() << "[LevelEditorController] TilesetPalette registered with controller";
 }
 
 void LevelEditorController::registerCanvas(LevelCanvas *canvas)
 {
     if (m_canvas != nullptr)
     {
-        qWarning() << "Canvas already registered, replacing...";
+        qWarning() << "[LevelEditorController] Canvas already registered, replacing...";
     }
 
     m_canvas = canvas;
@@ -50,7 +48,7 @@ void LevelEditorController::registerCanvas(LevelCanvas *canvas)
     connect(this, &LevelEditorController::tilesetReady,
             m_canvas, &LevelCanvas::setTileset);
 
-    qDebug() << "LevelCanvas registered with controller";
+    qDebug() << "[LevelEditorController] LevelCanvas registered with controller";
 }
 
 void LevelEditorController::loadTileset(const QString &path)
@@ -62,7 +60,7 @@ void LevelEditorController::loadTileset(const QString &path)
         //m_palette->loadTileset(path, tileWidth, tileHeight, offset, endIndex);
         // Load the Tile-names from the XML file
         m_palette->loadTileNames("res/RulesTiles.xml");
-        qDebug() << "Tileset loaded into palette";
+        qDebug() << "[LevelEditorController] Tileset loaded into palette";
     }
 
     QString absoluteLevelPath = path;
@@ -90,43 +88,70 @@ void LevelEditorController::loadTileset(const QString &path)
     QString xmlPath = absoluteLevelPath;
 
     // read xml
-    boost::property_tree::ptree pt;
-    try 
-    { 
-        read_xml(xmlPath.toStdString(), pt); 
-    }
-    catch (const std::exception &e) 
-    { 
-        qWarning() << "Failed to read XML:" << e.what(); 
-        return; 
+    QFile xmlFile(xmlPath);
+    if (!xmlFile.open(QFile::ReadOnly | QFile::Text))
+    {
+        qWarning() << "[LevelEditorController] Failed to read XML:" << xmlPath;
+        return;
     }
 
+    QXmlStreamReader xml(&xmlFile);
+    QString h5Name;
+    std::string texDataset;
 
-    QString h5Name = QString::fromStdString(pt.get<std::string>("level.<xmlattr>.resources"));
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+
+        if (xml.isStartElement())
+        {
+            if (xml.name() == QString("level"))
+            {
+                h5Name = xml.attributes().value("resources").toString();
+            }
+            else if (xml.name() == QString("collision_tiles"))
+            {
+                texDataset = xml.attributes().value("texture").toString().toStdString();
+            }
+            else if (xml.name() == QString("tileWidth"))
+            {
+                m_tileWidth = xml.readElementText().toInt();
+            }
+            else if (xml.name() == QString("tileHeight"))
+            {
+                m_tileHeight = xml.readElementText().toInt();
+            }
+            else if (xml.name() == QString("tileOffset"))
+            {
+                m_tileOffset = xml.readElementText().toInt();
+            }
+            else if (xml.name() == QString("switchIndex"))
+            {
+                m_endIndex = xml.readElementText().toInt();
+            }
+        }
+    }
+
+    if (xml.hasError())
+    {
+        qWarning() << "[LevelEditorController] XML parsing error:" << xml.errorString();
+        xmlFile.close();
+        return;
+    }
+    xmlFile.close();
+
+    if (texDataset.empty())
+    {
+        qWarning() << "[LevelEditorController] No texture found";
+        return;
+    }
+
     QFileInfo xmlInfo(absoluteLevelPath);
     QDir xmlDir = xmlInfo.dir();
 
     QString h5Path = xmlDir.absoluteFilePath(h5Name);
-    qDebug() << "HDF5 path:" << h5Path;
+    qDebug() << "[LevelEditorController] HDF5 path:" << h5Path;
     m_tilesetPath = h5Path;
-
-    std::string texDataset;
-    // get tileset of collision tiles
-    for (const auto &v : pt.get_child("level"))
-        if (v.first == "collision_tiles")
-        {
-            texDataset = v.second.get("<xmlattr>.texture", "");
-            m_tileWidth = v.second.get("tileWidth", 32);
-            m_tileHeight = v.second.get("tileHeight", 32);
-            m_tileOffset = v.second.get("tileOffset", 4);
-            m_endIndex = v.second.get("switchIndex", 140);
-        }
-
-    if (texDataset.empty())
-    {
-        qWarning() << "no texture found";
-        return;
-    }
 
     // open hdf5 and  extract tiles
     LevelHdf5IO io;
@@ -178,7 +203,7 @@ void LevelEditorController::loadTileset(const QString &path)
                 tiles.append(t);
             }
 
-        qDebug() << "Tiles extracted:" << tiles.size();
+        qDebug() << "[LevelEditorController] Tiles extracted:" << tiles.size();
 
         // give tiles to canvas and palette
         if (m_canvas)
@@ -191,11 +216,11 @@ void LevelEditorController::loadTileset(const QString &path)
         }
 
         emit tilesetPathChanged();
-        qDebug() << "Tileset successfully loaded";
+        qDebug() << "[LevelEditorController] Tileset successfully loaded";
     }
     catch (const std::exception &e)
     {
-        qWarning() << "Failed to load tileset:" << e.what();
+        qWarning() << "[LevelEditorController] Failed to load tileset:" << e.what();
     }
 }
 
@@ -204,24 +229,24 @@ void LevelEditorController::newLevel(int gridWidth, int gridHeight)
     m_gridWidth = gridWidth;
     m_gridHeight = gridHeight;
 
-    qDebug() << "Creating new level:" << gridWidth << "x" << gridHeight;
+    qDebug() << "[LevelEditorController] Creating new level:" << gridWidth << "x" << gridHeight;
 
     if (m_canvas)
     {
         m_canvas->setGridWidth(gridWidth);
         m_canvas->setGridHeight(gridHeight);
         m_canvas->clearLevel();
-        qDebug() << "New level created";
+        qDebug() << "[LevelEditorController] New level created";
     }
     else
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
     }
 }
 
 void LevelEditorController::clearLevel()
 {
-    qDebug() << "Clearing level...";
+    qDebug() << "[LevelEditorController] Clearing level...";
 
     if (m_canvas)
     {
@@ -229,27 +254,27 @@ void LevelEditorController::clearLevel()
         m_canvas->setGridHeight(m_gridHeight);
         m_canvas->clearLevel();
         emit levelCleared();
-        qDebug() << "Level cleared";
+        qDebug() << "[LevelEditorController] Level cleared";
     }
     else
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
     }
 }
 
 void LevelEditorController::saveLevel()
 {
-    qDebug() << "Opening save dialog...";
+    qDebug() << "[LevelEditorController] Opening save dialog...";
 
     if (!m_canvas)
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
         return;
     }
 
     // default save location
     QString defaultPath = QDir::currentPath() + "/res/level_master.xml";
-    qDebug() << "Default path:" << defaultPath;
+    qDebug() << "[LevelEditorController] Default path:" << defaultPath;
 
     QString file_name = QFileDialog::getSaveFileName(
         nullptr,
@@ -259,11 +284,11 @@ void LevelEditorController::saveLevel()
 
     if (file_name.isEmpty())
     {
-        qDebug() << "Save cancelled";
+        qDebug() << "[LevelEditorController] Save cancelled";
         return;
     }
 
-    qDebug() << "Saving to:" << file_name;
+    qDebug() << "[LevelEditorController] Saving to:" << file_name;
 
     // add .xml if needed
     if (!file_name.endsWith(".xml", Qt::CaseInsensitive))
@@ -279,8 +304,8 @@ void LevelEditorController::saveLevel()
     QFile file(file_name);
     if (!file.open(QFile::WriteOnly | QFile::Text))
     {
-        qWarning() << "Can't write to:" << file_name;
-        qWarning() << "Error:" << file.errorString();
+        qWarning() << "[LevelEditorController] Can't write to:" << file_name;
+        qWarning() << "[LevelEditorController] Error:" << file.errorString();
         return;
     }
     file.close();
@@ -288,16 +313,16 @@ void LevelEditorController::saveLevel()
     m_canvas->saveLevel(file_name);
 
     emit levelSaved(file_name);
-    qDebug() << "Level saved to:" << file_name;
+    qDebug() << "[LevelEditorController] Level saved to:" << file_name;
 }
 
 void LevelEditorController::loadLevel()
 {
-    qDebug() << "Opening load dialog...";
+    qDebug() << "[LevelEditorController] Opening load dialog...";
 
     if (!m_canvas)
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
         return;
     }
 
@@ -311,7 +336,7 @@ void LevelEditorController::loadLevel()
     // If user cancelled
     if (file_name.isEmpty())
     {
-        qDebug() << "Load cancelled by user";
+        qDebug() << "[LevelEditorController] Load cancelled by user";
         return;
     }
 
@@ -319,7 +344,7 @@ void LevelEditorController::loadLevel()
     QFile file(file_name);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        qWarning() << "Could not open file for reading:" << file_name;
+        qWarning() << "[LevelEditorController] Could not open file for reading:" << file_name;
         return;
     }
 
@@ -328,7 +353,7 @@ void LevelEditorController::loadLevel()
     file.close();
 
     emit levelLoaded(file_name);
-    qDebug() << "Level loaded from:" << file_name;
+    qDebug() << "[LevelEditorController] Level loaded from:" << file_name;
 }
 
 void LevelEditorController::selectTile(int tileIndex)
@@ -344,7 +369,7 @@ void LevelEditorController::selectTile(int tileIndex)
     }
     else
     {
-        qWarning() << "Canvas not registered!";
+        qWarning() << "[LevelEditorController] Canvas not registered!";
     }
 
     emit selectedTileChanged();
