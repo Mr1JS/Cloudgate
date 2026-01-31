@@ -424,8 +424,8 @@ void Physics::resolveCollision()
         if((y >= 0) && (y < m_tiles->height()) && (x >= 0) && (x < m_tiles->width()) )
         {
 
-            int tileId = m_tiles->get(x, y);
-            if(tileId > 0)
+            int tileId = m_tiles->get(x, y) - 1;
+            if(tileId >= 0)
             {
 
                 // Get SDL rect for current tile and sprite and check intersection

@@ -46,7 +46,7 @@ namespace jumper
         Uint32 key = SDL_MapRGB(rgbaSurface->format, 94,129,162);
         SDL_SetColorKey(rgbaSurface, SDL_TRUE, key);
 
-        m_texture = SDL_CreateTextureFromSurface(mw->renderer(), surface);
+        m_texture = SDL_CreateTextureFromSurface(mw->renderer(), rgbaSurface);
         SDL_FreeSurface(rgbaSurface);
         
         if (m_texture == nullptr)

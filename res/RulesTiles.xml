@@ -174,6 +174,7 @@
 
     <!-- ROW 15: Structures (IDs 125-134) -->
     <tile id="125" name="Fence" type="platform"/>
+    <tile id="126" name="Fence2" type="platform"/>
     <tile id="127" name="Spikes" type="hazard" hazard="true"/>
     <tile id="128" name="Sign Exit" type="decoration"/>
     <tile id="129" name="Sign" type="decoration"/>
