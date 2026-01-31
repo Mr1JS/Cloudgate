@@ -6,6 +6,8 @@
  *  Copyright (c) 2017 Thomas Wiemann.
  *  Restricted usage. Licensed for participants of the course "The C++ Programming Language" only.
  *  No unauthorized distribution.
+ *
+ *  Modifiziert für Box2D-Integration.
  */
 
 #ifndef PHYSICS_H
@@ -15,63 +17,99 @@
 #include "ActorForces.hpp"
 #include "Vector.hpp"
 
+#include <box2d/box2d.h>
+
 namespace jumper {
 
 class Actor;
 class Level;
+class Physics;
 
 /**
- * @brief Computes the collisions between a level
- *        and an actor instance using the given actor and level
- *        force parameters.
+ * @brief Contact-Listener für Hazard-Kollisionen und Knockback
+ */
+class HazardContactListener : public b2ContactListener
+{
+public:
+    HazardContactListener(Actor* actor, Level* level, Physics* physics);
+
+    void BeginContact(b2Contact* contact) override;
+
+private:
+    Actor*      m_actor;
+    Level*      m_level;
+    Physics*    m_physics;
+};
+
+/**
+ * @brief Box2D-basierte Physik-Engine.
+ *        Berechnet Kollisionen und Bewegung über Box2D.
  */
 class Physics
 {
 public:
-	/// Constructor using an Actor that interacts with an Level.
+	/// Konstruktor mit Actor und Level
     Physics(Actor* actor, Level* level);
 
-    /// Performs all computations
+    /// Destruktor
+    ~Physics();
+
+    /// Führt einen Physik-Update-Schritt aus
     void update();
+
+    /// Wird vom ContactListener bei Hazard-Kollision aufgerufen
+    void handleHazardContact(int tileId, const b2Vec2& tileCenter, const b2Vec2& actorCenter);
+
+    b2Body* getActorBody() const { return m_actorBody; }
+    unsigned int getLastHazardDamageTicks() const { return m_lastHazardDamageTicks; }
+    void setLastHazardDamageTicks(unsigned int t) { m_lastHazardDamageTicks = t; }
 
 private:
 
-    /// Resolves all collisions between actor and level tiles
-    void resolveCollision();
+    /// Erstellt statische Box2D-Bodies aus den Level-Tiles
+    void buildLevelBodies();
 
-    /// Computes the new desired position of an actor according
-    /// to the internal physics model
-    void updateActorPosition(double dt);
+    /// Konvertiert Pixel-Position zu Box2D-Koordinaten (Meter, Y invertiert)
+    b2Vec2 toBox2D(const Vector2f& pixel) const;
 
-    /// Gets the tiles surrounding the actor at the given position.
-    /// Tiles will contain the tile indices of the 8 surrounding tiles.
-    /// Memory has to be pre-allocated.
-    void getSurroundingTiles(const Vector2f& position, Vector<int>* tiles);
+    /// Konvertiert Box2D-Position zurück zu Pixel
+    Vector2f fromBox2D(const b2Vec2& world) const;
 
-    /// The actor within the level
+    /// Wendet Spielersteuerung auf den Box2D-Body an
+    void applyPlayerInput(double dt);
+
+    /// Prüft und korrigiert Kamera-Grenzen
+    void enforceCameraBounds();
+
+    /// Der Actor im Level
     Actor*                  m_actor;
 
-    /// The used tile set representation
+    /// Tile-Set für Kollisionsgeometrie
     TileSetRepresentation*  m_tiles;
 
-    /// The level
+    /// Das Level
     Level*                  m_level;
 
-    /// Clock time SDL init. Used to compute the time
-    /// that elapsed since the last update() call.
+    /// Box2D-Welt
+    b2World*                m_world;
+
+    /// Box2D-Body des Actors
+    b2Body*                 m_actorBody;
+
+    /// Contact-Listener (Ownership)
+    HazardContactListener*  m_contactListener;
+
+    /// Letzter Ticks-Wert für Delta-Zeit
     unsigned int            m_lastTicks;
 
-    /// Zeitpunkt des letzten Hazard-Schadens (für Invincibility-Frames)
+    /// Zeitpunkt des letzten Hazard-Schadens (Invincibility-Frames)
     unsigned int            m_lastHazardDamageTicks;
 
-    /// Ausstehender Knockback - wird portionenweise über mehrere Frames angewendet
-    Vector2f                m_pendingKnockback;
+    /// Skalierung Pixel pro Meter für Box2D
+    static constexpr float  PIXELS_PER_METER = 32.0f;
 
-    /// Frames ohne Velocity-Clamp, damit Knockback sanft ausklingen kann
-    int                     m_knockbackFramesRemaining;
-
-    /// Berechnete Bewegung für diesen Frame (für Substepping)
-    Vector2f                m_pendingMovement;
+    /// Y-Offset der Tile-Welt in Pixel
+    static constexpr float  TILE_Y_OFFSET = 600.0f;
 };
 
 } // namespace jumper
