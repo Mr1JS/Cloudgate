@@ -68,23 +68,23 @@ private:
     QList<Tile> m_tiles;
     QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
 
-    int m_tileWidth = 34;
-    int m_tileHeight = 34;
-    int m_gridWidth = 20;
-    int m_gridHeight = 25;
+    int m_tileWidth = 32;
+    int m_tileHeight = 32;
+    int m_gridWidth = 20; // not changeable in xml
+    int m_gridHeight = 25;// not changeable in xml
     int m_currentTileIndex = -1;
-    int m_tileOffset = 1;
+    int m_tileOffset = 4;
     QColor m_backgroundColor;
 
     // ---- Tileset meta ----
-    QString m_tilesetPath = ":/resources/images/tileset.png";        // e.g. "res/tileset1.png"
-    QString m_tilesetTextureName = "tileset"; // e.g. "tileset1"
+    QString m_tilesetPath = ":/resources/images/tileset.png";
+    QString m_tilesetTextureName = "tileset";
 
     // Image member
     QImage m_tilesetImage;
 
     bool m_extraTiles = false;
-    int m_endIndex = 20; // at which point do the tiles split up between normal Tiles and extraTiles
+    int m_endIndex = 140; // at which point do the tiles split up between normal Tiles and extraTiles
 
     // method to find if we are in the drawing area
     inline bool isFrameTile(int x, int y) const {

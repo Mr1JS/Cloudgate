@@ -37,6 +37,7 @@ void LevelCanvas::setTileset(const QList<Tile> &tiles, int tileW, int tileH, int
     m_tileWidth = tileW;
     m_tileHeight = tileH;
     m_endIndex = endIndex;
+    m_tileOffset = offset;
 
     update();
     qDebug() << "Canvas tileset loaded:" << m_tiles.size() << "tiles";
@@ -612,8 +613,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     int numRows = 0;
     if (!m_tilesetImage.isNull() && m_tileWidth > 0 && m_tileHeight > 0)
     {
-        tilesPerRow = m_tilesetImage.width() / m_tileWidth;
-        numRows = m_tilesetImage.height() / m_tileHeight;
+        tilesPerRow = m_tilesetImage.width() / (m_tileWidth + m_tileOffset);
+        numRows = m_tilesetImage.height() / (m_tileHeight + m_tileOffset);
     }
 
     ts << "<level resources=\"" << baseName + ".h5" << "\">\n";
@@ -630,9 +631,16 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
     ts << "    <numRows>" << numRows << "</numRows>\n";
     ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
+    ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
 
+    // icons like heart
+    ts << "  <icons texture=\"icons\">\n";
+    ts << "    <tileWidth>" << 32 << "</tileWidth>\n";
+    ts << "    <tileHeight>" << 32 << "</tileHeight>\n";
+    ts << "    <layer>3</layer>\n";
+    ts << "  </icons>\n";
     // Actor block (Dummy values for now) //TODO: if there are actor settings to save
     // then this should be adapted and changed accordingly
     ts << "  <actor texture=\"" << actorTextureName << "\">\n";
@@ -776,7 +784,6 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 
         m_gridHeight = static_cast<int>(tileDims[0]);
         m_gridWidth = static_cast<int>(tileDims[1]);
-
         // flatten TileArray<T> into editor map
         std::vector<int> flatTiles;
         flatTiles.reserve(m_gridWidth * m_gridHeight);
