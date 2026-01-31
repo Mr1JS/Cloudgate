@@ -80,6 +80,7 @@ set(GAME_SOURCES
     game/include/LevelForces.hpp
     game/include/LevelParser.hpp
     game/include/MainWindow.hpp
+    game/include/Monster.hpp
     game/include/MovingRenderable.hpp
     game/include/Physics.hpp
     game/include/SDLRenderable.hpp
@@ -102,6 +103,7 @@ set(GAME_SOURCES
     game/src/LevelForces.cpp
     game/src/LevelParser.cpp
     game/src/MainWindow.cpp
+    game/src/Monster.cpp
     game/src/MovingRenderable.cpp
     game/src/Physics.cpp
     game/src/SDLRenderable.cpp
