@@ -4,8 +4,8 @@
 
 #include "game/include/Monster.hpp"
 #include "game/include/MainWindow.hpp"
+#include "game/include/Actor.hpp"
 
-#include <algorithm>
 #include <cmath>
 
 namespace jumper {
@@ -37,6 +37,8 @@ Monster::Monster(MainWindow* mw, SDL_Texture* tilesetTexture,
     , m_moveSpeed(40.0)
     , m_leftBound(leftBound)
     , m_rightBound(rightBound)
+    , m_groundY(0.0)
+    , m_chaseTimer(0.0)
 {
     // Ghost: 144 Top, 145 Bottom | Snake: 146 Top, 147 Bottom (0-basiert: 143/144, 145/146)
     int tileTop = (type == Type::Ghost) ? 144 : 146;
@@ -48,26 +50,101 @@ Monster::Monster(MainWindow* mw, SDL_Texture* tilesetTexture,
 
     setWorldPosition(Vector<double>(x, y));
     setVelocity(Vector<double>(m_moveSpeed, 0));
+
+    if (m_type == Type::Ghost)
+    {
+        m_groundY = y + tileHeight * 2;
+        m_chaseTimer = 5.0;  // Jagd 5 Sekunden ab Spawn
+    }
 }
 
-void Monster::update(double dt)
+void Monster::update(double dt, Actor* actor)
 {
+    if (m_type == Type::Snake)
+    {
+        Vector<double> pos = worldPosition();
+        Vector<double> vel = velocity();
+        pos.setX(pos.x() + vel.x() * dt);
+        setWorldPosition(pos);
+        if (pos.x() <= m_leftBound)
+        {
+            setVelocity(Vector<double>(m_moveSpeed, 0));
+            setWorldPosition(Vector<double>(m_leftBound, pos.y()));
+        }
+        else if (pos.x() + w() >= m_rightBound)
+        {
+            setVelocity(Vector<double>(-m_moveSpeed, 0));
+            setWorldPosition(Vector<double>(m_rightBound - w(), pos.y()));
+        }
+        return;
+    }
+
+    const double chaseSpeed = 120.0;
+    const double chaseDuration = 5.0;
+    const double jumpSpeed = -280.0;
+    const double gravity = 400.0;
+    const double actorAboveThreshold = 20.0;
+
     Vector<double> pos = worldPosition();
     Vector<double> vel = velocity();
+    bool onGround = (pos.y() + h() >= m_groundY - 1.0);
 
+    if (actor && m_chaseTimer > 0.0)
+    {
+        double ax = actor->worldPosition().x() + actor->w() / 2.0;
+        double ay = actor->worldPosition().y() + actor->h() / 2.0;  // Actor-Mitte
+        double mx = pos.x() + w() / 2.0;
+        double my = pos.y() + h() / 2.0;
+
+        double dx = ax - mx;
+        double dy = ay - my;
+        double dist = std::sqrt(dx * dx + dy * dy);
+
+        if (dist > 1.0)  // Normalisiere Richtung
+        {
+            vel.setX((dx / dist) * chaseSpeed);
+            vel.setY((dy / dist) * chaseSpeed * 0.9);
+
+            if (onGround && dy < -actorAboveThreshold)
+                vel.setY(jumpSpeed);
+        }
+        m_chaseTimer -= dt;
+    }
+    else
+    {
+        vel.setX((vel.x() > 0) ? m_moveSpeed : -m_moveSpeed);
+        vel.setY(0.0);
+    }
+
+    vel.setY(vel.y() + gravity * dt);
     pos.setX(pos.x() + vel.x() * dt);
-    setWorldPosition(pos);
+    pos.setY(pos.y() + vel.y() * dt);
 
-    if (pos.x() <= m_leftBound)
+    if (!actor || vel.y() >= 0)
     {
-        setVelocity(Vector<double>(m_moveSpeed, 0));
-        setWorldPosition(Vector<double>(m_leftBound, pos.y()));
+        if (pos.y() + h() >= m_groundY)
+        {
+            pos.setY(m_groundY - h());
+            vel.setY(0.0);
+        }
     }
-    else if (pos.x() + w() >= m_rightBound)
+
+    if (!actor)
     {
-        setVelocity(Vector<double>(-m_moveSpeed, 0));
-        setWorldPosition(Vector<double>(m_rightBound - w(), pos.y()));
+        if (pos.x() <= m_leftBound)
+        {
+            pos.setX(m_leftBound);
+            vel.setX(std::abs(vel.x()));
+        }
+        else if (pos.x() + w() >= m_rightBound)
+        {
+            pos.setX(m_rightBound - w());
+            vel.setX(-std::abs(vel.x()));
+        }
     }
+
+    setWorldPosition(pos);
+    setVelocity(vel);
 }
 
 void Monster::render()

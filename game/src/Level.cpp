@@ -19,8 +19,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <random>
-#include <algorithm>
 #include <cmath>
 
 using std::cout;
@@ -91,7 +89,7 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         }
     }
 
-    spawnTraps();
+    spawnMonsters();  // Vor Physics: Monster-Tiles aus Grid entfernen, damit keine Box2D-Bodies entstehen
 
 //    m_actor = new Actor(mainWindow, "../res/actor.spr");
 //     m_actor->setFPS(10);
@@ -102,57 +100,6 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     {
         m_camera.setFocus(m_actor);
         m_physics = new Physics(m_actor, this);
-    }
-
-    spawnMonsters();
-}
-
-void Level::spawnTraps()
-{
-    if(!m_tiles || !m_tiles->tiles()) return;
-
-    TileSetRepresentation* tileRep = m_tiles->tiles();
-    int levelW = tileRep->width();
-    int levelH = tileRep->height();
-
-    std::vector<std::pair<int, int>> trapPositions;
-    for(int gy = 1; gy < levelH; ++gy)
-    {
-        for(int gx = 1; gx < levelW - 1; ++gx)
-        {
-            int below = tileRep->get(gx, gy);
-            int at = tileRep->get(gx, gy - 1);
-            if(below > 0 && at <= 0)
-            {
-                trapPositions.push_back({gx, gy - 1});
-            }
-        }
-    }
-
-    if(trapPositions.empty()) return;
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::shuffle(trapPositions.begin(), trapPositions.end(), gen);
-
-    const int maxTraps = 2;
-    const int minDistance = 64;
-    std::vector<std::pair<int, int>> placed;
-    int count = 0;
-    const int spikeId = 128;  // Spikes (1-basiert)
-    for(size_t i = 0; i < trapPositions.size() && count < maxTraps; ++i)
-    {
-        int gx = trapPositions[i].first, gy = trapPositions[i].second;
-        bool tooClose = false;
-        for(const auto& p : placed)
-        {
-            int dx = gx - p.first, dy = gy - p.second;
-            if(std::abs(dx) * 32 + std::abs(dy) * 32 < minDistance) { tooClose = true; break; }
-        }
-        if(tooClose) continue;
-        tileRep->insert(gx, gy, spikeId);
-        placed.push_back({gx, gy});
-        count++;
     }
 }
 
@@ -167,72 +114,59 @@ void Level::spawnMonsters()
     int levelH = tileRep->height();
     const int TILE_Y_OFFSET = 600;
 
-    struct SpawnPoint { double x, y, leftBound, rightBound; };
-    std::vector<SpawnPoint> spawnPositions;
+    // Tile-IDs: 1-basiert (145/146, 147/148) oder 0-basiert (144/145, 146/147)
+    const int GHOST_TOP_A = 145, GHOST_BOTTOM_A = 146;  // 1-basiert
+    const int GHOST_TOP_B = 144, GHOST_BOTTOM_B = 145;  // 0-basiert
+    const int SNAKE_TOP_A = 147, SNAKE_BOTTOM_A = 148;
+    const int SNAKE_TOP_B = 146, SNAKE_BOTTOM_B = 147;
     const int monsterW = 32;
-    for(int gy = 1; gy < levelH; ++gy)
+
+    for(int gy = 0; gy < levelH - 1; ++gy)
     {
-        for(int gx = 1; gx < levelW - 1; ++gx)
+        for(int gx = 0; gx < levelW; ++gx)
         {
-            int below = tileRep->get(gx, gy);
-            int at = tileRep->get(gx, gy - 1);
-            if(below > 0 && at <= 0)
+            int topTile = tileRep->get(gx, gy);
+            int botTile = tileRep->get(gx, gy + 1);
+            Monster::Type type;
+            bool isMonster = false;
+            if((topTile == GHOST_TOP_A && botTile == GHOST_BOTTOM_A) ||
+               (topTile == GHOST_TOP_B && botTile == GHOST_BOTTOM_B))
             {
-                int gxLeft = gx, gxRight = gx;
-                while(gxLeft > 0 && tileRep->get(gxLeft - 1, gy) > 0) gxLeft--;
-                while(gxRight < levelW - 1 && tileRep->get(gxRight + 1, gy) > 0) gxRight++;
-                double leftBound = gxLeft * tw;
-                double rightBound = (gxRight + 1) * tw - monsterW;
-                if(rightBound - leftBound >= monsterW)
-                {
-                    double wx = gx * tw + tw / 2.0 - monsterW / 2.0;
-                    double wy = gy * th + TILE_Y_OFFSET - 64;
-                    spawnPositions.push_back({wx, wy, leftBound, rightBound});
-                }
+                type = Monster::Type::Ghost;
+                isMonster = true;
             }
-        }
-    }
-
-    if(spawnPositions.empty()) return;
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::shuffle(spawnPositions.begin(), spawnPositions.end(), gen);
-
-    const int maxGhosts = 2;
-    const int maxSnakes = 2;
-    const double minDistance = 96;  // Mindestabstand zwischen Monstern (3 Tiles)
-    std::vector<std::pair<double, double>> placedPositions;
-    int ghostCount = 0, snakeCount = 0;
-    for(size_t i = 0; i < spawnPositions.size() && (ghostCount < maxGhosts || snakeCount < maxSnakes); ++i)
-    {
-        const auto& sp = spawnPositions[i];
-        bool tooClose = false;
-        for(const auto& placed : placedPositions)
-        {
-            double dx = sp.x - placed.first;
-            double dy = sp.y - placed.second;
-            if(std::sqrt(dx*dx + dy*dy) < minDistance)
+            else if((topTile == SNAKE_TOP_A && botTile == SNAKE_BOTTOM_A) ||
+                    (topTile == SNAKE_TOP_B && botTile == SNAKE_BOTTOM_B))
             {
-                tooClose = true;
-                break;
+                type = Monster::Type::Snake;
+                isMonster = true;
             }
+            if(!isMonster) continue;
+
+            double wx = gx * tw;
+            double wy = gy * th + TILE_Y_OFFSET;
+
+            int platformRow = gy + 2;
+            int gxLeft = gx, gxRight = gx;
+            if(platformRow < levelH)
+            {
+                while(gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0) gxLeft--;
+                while(gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0) gxRight++;
+            }
+            double leftBound = gxLeft * tw;
+            double rightBound = (gxRight + 1) * tw - monsterW;
+            if(rightBound - leftBound < monsterW)
+                rightBound = leftBound + monsterW;
+
+            tileRep->insert(gx, gy, 0);
+            tileRep->insert(gx, gy + 1, 0);
+
+            Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, wx, wy,
+                                    leftBound, rightBound,
+                                    tw, th, m_tiles->tilesPerRow(), m_tiles->tileOffset());
+            m_monsters.push_back(m);
+            m_layers.addRenderable(m, 2);
         }
-        if(tooClose) continue;
-        Monster::Type type;
-        if(ghostCount >= maxGhosts) type = Monster::Type::Snake;
-        else if(snakeCount >= maxSnakes) type = Monster::Type::Ghost;
-        else type = (gen() % 2 == 0) ? Monster::Type::Ghost : Monster::Type::Snake;
-        if((type == Monster::Type::Ghost && ghostCount >= maxGhosts) ||
-           (type == Monster::Type::Snake && snakeCount >= maxSnakes))
-            continue;
-        Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, sp.x, sp.y,
-                                sp.leftBound, sp.rightBound,
-                                tw, th, m_tiles->tilesPerRow(), m_tiles->tileOffset());
-        m_monsters.push_back(m);
-        m_layers.addRenderable(m, 2);
-        placedPositions.push_back({sp.x, sp.y});
-        if(type == Monster::Type::Ghost) ghostCount++; else snakeCount++;
     }
 }
 
@@ -317,7 +251,7 @@ void Level::update(const Uint8* keystates)
     }
 
     for(Monster* m : m_monsters)
-        m->update(dt);
+        m->update(dt, m_actor);
         
     if (m_stateController)
     {

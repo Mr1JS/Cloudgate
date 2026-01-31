@@ -121,7 +121,6 @@ private:
     std::vector<Monster*>   m_monsters;
 
     void spawnMonsters();
-    void spawnTraps();
 };
 
 } /* namespace jumper */
