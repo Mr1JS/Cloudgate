@@ -238,6 +238,8 @@ void LevelEditorController::clearLevel()
 
     if (m_canvas)
     {
+        m_canvas->setGridWidth(m_gridWidth);
+        m_canvas->setGridHeight(m_gridHeight);
         m_canvas->clearLevel();
         emit levelCleared();
         qDebug() << "Level cleared";
