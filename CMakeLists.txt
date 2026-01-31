@@ -35,6 +35,17 @@ set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
 set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
 add_subdirectory(ext/HighFive)
 
+# Box2D Physics Engine
+include(FetchContent)
+FetchContent_Declare(
+    box2d
+    GIT_REPOSITORY https://github.com/erincatto/box2d.git
+    GIT_TAG v2.4.2
+)
+set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
+set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(box2d)
+
 
 # Print SDL2 information for debugging
 if(SDL2_FOUND)
@@ -167,6 +178,7 @@ target_link_libraries(appCloudgate_game PRIVATE
     ${Boost_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${HDF5_HL_LIBRARIES}
+    box2d
 )
 
 # Windows DLL copying
