@@ -188,9 +188,8 @@ namespace jumper
                             /* Compute the position of the source pixel data
                              * within the texture (offset for first tiles)
                              */
-                            row = tile_index / 9;
-                            col = tile_index % 9;
-                            m_tileOffset = 4;
+                            row = tile_index / m_tilesPerRow;
+                            col = tile_index % m_tilesPerRow;
 
                             source.x = col * m_tileWidth + m_tileOffset;
                             if (col > 0)

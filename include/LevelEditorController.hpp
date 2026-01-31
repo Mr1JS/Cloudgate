@@ -27,8 +27,7 @@ public:
     explicit LevelEditorController(QObject *parent = nullptr);
 
     // Tileset management
-    Q_INVOKABLE void loadTileset(const QString &path, int tileWidth = 32, int tileHeight = 32, int offset = 4, int endIndex = 20);
-    Q_INVOKABLE void setTileDimensions(int width, int height);
+    Q_INVOKABLE void loadTileset(const QString &path);
 
     // Level management
     Q_INVOKABLE void newLevel(int gridWidth = 20, int gridHeight = 25);
@@ -68,9 +67,9 @@ private:
     int m_tileHeight = 32;
     int m_tileOffset = 4;
     int m_selectedTileIndex = -1;
-    int m_gridWidth = 20;
-    int m_gridHeight = 25;
-    int m_endIndex = 20; // at which point do the tiles split up between normal Tiles and extraTiles
+    int m_gridWidth = 20; // not changed in xml
+    int m_gridHeight = 25; // not changed in xml
+    int m_endIndex = 140; // at which point do the tiles split up between normal Tiles and extraTiles
 };
 
 #endif // LEVELEDITORCONTROLLER_HPP

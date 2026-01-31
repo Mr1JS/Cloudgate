@@ -53,7 +53,7 @@ void LevelEditorController::registerCanvas(LevelCanvas *canvas)
     qDebug() << "LevelCanvas registered with controller";
 }
 
-void LevelEditorController::loadTileset(const QString &path, int tileWidth, int tileHeight, int offset, int endIndex)
+void LevelEditorController::loadTileset(const QString &path)
 {
 
     // Load tileset into both palette and canvas
@@ -108,12 +108,19 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
 
     QString h5Path = xmlDir.absoluteFilePath(h5Name);
     qDebug() << "HDF5 path:" << h5Path;
+    m_tilesetPath = h5Path;
 
     std::string texDataset;
     // get tileset of collision tiles
     for (const auto &v : pt.get_child("level"))
         if (v.first == "collision_tiles")
+        {
             texDataset = v.second.get("<xmlattr>.texture", "");
+            m_tileWidth = v.second.get("tileWidth", 32);
+            m_tileHeight = v.second.get("tileHeight", 32);
+            m_tileOffset = v.second.get("tileOffset", 4);
+            m_endIndex = v.second.get("switchIndex", 140);
+        }
 
     if (texDataset.empty())
     {
@@ -151,10 +158,10 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
 
         // get tiles
         QList<Tile> tiles;
-        int totalTileW = tileWidth + offset;
-        int totalTileH = tileHeight + offset;
-        int cols = (tilesetImage.width() + offset) / totalTileW;
-        int rows = (tilesetImage.height() + offset) / totalTileH;
+        int totalTileW = m_tileWidth + m_tileOffset;
+        int totalTileH = m_tileHeight + m_tileOffset;
+        int cols = (tilesetImage.width() + m_tileOffset) / totalTileW;
+        int rows = (tilesetImage.height() + m_tileOffset) / totalTileH;
 
         int idx = 0;
         for (int row = 0; row < rows; row++)
@@ -164,9 +171,9 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
                 t.index = idx++;
                 t.pixmap = QPixmap::fromImage(tilesetImage);
 
-                int x = offset + col * totalTileW;
-                int y = offset + row * totalTileH;
-                t.sourceRect = QRect(x, y, tileWidth, tileHeight);
+                int x = m_tileOffset + col * totalTileW;
+                int y = m_tileOffset + row * totalTileH;
+                t.sourceRect = QRect(x, y, m_tileWidth, m_tileHeight);
 
                 tiles.append(t);
             }
@@ -176,18 +183,12 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
         // give tiles to canvas and palette
         if (m_canvas)
         {
-            m_canvas->setTileset(tiles, tileWidth, tileHeight, offset, endIndex);
+            m_canvas->setTileset(tiles, m_tileWidth, m_tileHeight, m_tileOffset, m_endIndex);
         }
         if (m_palette)
         {
-            m_palette->setTileset(tiles, tileWidth, tileHeight, offset, endIndex);
+            m_palette->setTileset(tiles, m_tileWidth, m_tileHeight, m_tileOffset, m_endIndex);
         }
-
-        m_tilesetPath = h5Path;
-        m_tileWidth = tileWidth;
-        m_tileHeight = tileHeight;
-        m_tileOffset = offset;
-        m_endIndex = endIndex;
 
         emit tilesetPathChanged();
         qDebug() << "Tileset successfully loaded";
@@ -195,20 +196,6 @@ void LevelEditorController::loadTileset(const QString &path, int tileWidth, int 
     catch (const std::exception &e)
     {
         qWarning() << "Failed to load tileset:" << e.what();
-    }
-}
-
-void LevelEditorController::setTileDimensions(int width, int height)
-{
-    m_tileWidth = width;
-    m_tileHeight = height;
-
-    qDebug() << "Tile dimensions changed to:" << width << "x" << height;
-
-    // Reload tileset with new dimensions
-    if (!m_tilesetPath.isEmpty())
-    {
-        loadTileset(m_tilesetPath, m_tileWidth, m_tileHeight, m_tileOffset, m_endIndex);
     }
 }
 
