@@ -202,6 +202,16 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
     }
 }
 
+void Level::setResPath(std::string path)
+{
+    m_resPath = path;
+}
+
+std::string Level::getResPath()
+{
+    return m_resPath;
+}
+
 StateController* Level::getStateController()
 {
     return m_stateController;

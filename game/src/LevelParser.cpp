@@ -25,6 +25,10 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
     std::size_t found = filename.find_last_of("/\\");
     std::string path  = filename.substr(0, found);
 
+    if (path != "")
+    {
+        m_level->setResPath(path);
+    }
     // Read property tree from xml file
     using boost::property_tree::ptree;
     ptree pt;

@@ -165,7 +165,7 @@
     <tile id="116" name="Box Alt" type="decoration"/>
     <tile id="117" name="Box Empty" type="decoration"/>
     <tile id="118" name="Box Warning" type="decoration"/>
-    <tile id="119" name="Box Explosive" type="hazard" hazard="true"/>
+    <tile id="119" name="Box Explosive" type="hazard"/>
     <tile id="120" name="Box Explosive Disabled" type="decoration"/>
     <tile id="121" name="Box Explosive Alt" type="decoration"/>
     <tile id="122" name="Bridge" type="platform"/>
@@ -175,7 +175,7 @@
     <!-- ROW 15: Structures (IDs 125-134) -->
     <tile id="125" name="Fence" type="platform"/>
     <tile id="126" name="Fence2" type="platform"/>
-    <tile id="127" name="Spikes" type="hazard" hazard="true"/>
+    <tile id="127" name="Spikes" type="hazard"/>
     <tile id="128" name="Sign Exit" type="decoration"/>
     <tile id="129" name="Sign" type="decoration"/>
     <tile id="130" name="Sign Right" type="decoration"/>
@@ -186,19 +186,19 @@
 
     <!-- ROW 16: Tools & Items (IDs 135-143) -->
     <tile id="135" name="Key Yellow" type="key"/>
-    <tile id="136" name="Spring Board Down" type="interactive"/>
-    <tile id="137" name="Spring Board Up" type="interactive"/>
+    <tile id="136" name="Spring Board Down" type="jump"/>
+    <tile id="137" name="Spring Board Up" type="decoration"/>
     <tile id="138" name="Bush Green" type="decoration"/>
     <tile id="139" name="Bush White" type="decoration"/>
-    <tile id="140" name="Door Open Top" type="decoration"/>
-    <tile id="141" name="Door Open Mid" type="decoration"/>
-    <tile id="142" name="Door Closed Top" type="interactive"/>
-    <tile id="143" name="Door Closed Mid" type="interactive"/>
+    <tile id="140" name="Door Open Top" type="door"/>
+    <tile id="141" name="Door Open Mid" type="door"/>
+    <tile id="142" name="Door Closed Top" type="door"/>
+    <tile id="143" name="Door Closed Mid" type="door"/>
 
     <!-- ROW 17: Enemies -->
-    <tile id="144" name="Ghost White Top" type="enemy" hazard="true"/>
-    <tile id="145" name="Ghost White Bottom" type="enemy" hazard="true"/>
-    <tile id="146" name="Snake Slime Top" type="enemy" hazard="true"/>
-    <tile id="147" name="Snake Slime Bottom" type="enemy" hazard="true"/>
+    <tile id="144" name="Ghost White Top" type="enemy"/>
+    <tile id="145" name="Ghost White Bottom" type="enemy"/>
+    <tile id="146" name="Snake Slime Top" type="enemy"/>
+    <tile id="147" name="Snake Slime Bottom" type="enemy"/>
 
 </tileset>

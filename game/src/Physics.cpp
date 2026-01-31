@@ -13,6 +13,7 @@
 #include "game/include/Physics.hpp"
 #include "game/include/Actor.hpp"
 #include "game/include/Level.hpp"
+#include "game/include/Util.hpp"
 
 #include <SDL.h>
 #include <cmath>
@@ -20,27 +21,14 @@
 
 namespace jumper {
 
-namespace {
-    bool isHazardTile(int tileId)
-    {
-        switch (tileId)
-        {
-            case 119: case 127: case 144: case 145: case 146: case 147:
-                return true;
-            default:
-                return false;
-        }
-    }
-}
+// --- ContactListener ---
 
-// --- HazardContactListener ---
-
-HazardContactListener::HazardContactListener(Actor* actor, Level* level, Physics* physics)
+ContactListener::ContactListener(Actor* actor, Level* level, Physics* physics)
     : m_actor(actor), m_level(level), m_physics(physics)
 {
 }
 
-void HazardContactListener::BeginContact(b2Contact* contact)
+void ContactListener::BeginContact(b2Contact* contact)
 {
     b2Fixture* fa = contact->GetFixtureA();
     b2Fixture* fb = contact->GetFixtureB();
@@ -64,26 +52,40 @@ void HazardContactListener::BeginContact(b2Contact* contact)
     }
     else
         return;
-
     int tileId = static_cast<int>(tileFixture->GetUserData().pointer);
-    if (tileId < 0 || !isHazardTile(tileId))
-        return;
 
-    unsigned int now = SDL_GetTicks();
-    const unsigned int hazardCooldownMs = 1000;
-    if (now - m_physics->getLastHazardDamageTicks() < hazardCooldownMs)
-        return;
-
-    m_physics->setLastHazardDamageTicks(now);
-    if (m_level && m_level->getStateController())
+    // invalid tileID
+    if (tileId < 0)
     {
-        m_level->getStateController()->decrementHp(1);
-        std::cout << "Aua!" << std::endl;
+        return;
+    }
+    std::string tileType = m_physics->getTileData(tileId).second;
+    
+    // take dmg (monster and traps)
+    if (tileType == "hazard" || tileType == "enemy")
+    {
+        unsigned int now = SDL_GetTicks();
+        const unsigned int hazardCooldownMs = 1000;
+        if (now - m_physics->getLastHazardDamageTicks() < hazardCooldownMs)
+            return;
+
+        m_physics->setLastHazardDamageTicks(now);
+        if (m_level && m_level->getStateController())
+        {
+            m_level->getStateController()->decrementHp(1);
+            std::cout << "Aua!" << std::endl;
+        }
+
+        b2Vec2 actorCenter = actorBody->GetWorldCenter();
+        b2Vec2 tileCenter = tileBody->GetWorldCenter();
+        m_physics->handleHazardContact(tileId, tileCenter, actorCenter);
     }
 
-    b2Vec2 actorCenter = actorBody->GetWorldCenter();
-    b2Vec2 tileCenter = tileBody->GetWorldCenter();
-    m_physics->handleHazardContact(tileId, tileCenter, actorCenter);
+    // check win condition and end game if condition is met
+    if (tileType == "door")
+    {
+        std::cout << "\nwhy can't I leave?? help!\n";
+    }
 }
 
 // --- Physics ---
@@ -101,6 +103,13 @@ Physics::Physics(Actor* actor, Level* level)
         m_world = nullptr;
         m_actorBody = nullptr;
         return;
+    }
+    // get names and types of each tile
+    std::string rulesPath = m_level->getResPath();
+    if (rulesPath != "")
+    {
+        rulesPath = rulesPath + "/tileDefinition/RulesTiles.xml";
+        m_tileData = jumper::ParseXMLData(rulesPath);
     }
 
     // Box2D-Gravitation: Level hat gravity_y=400 (nach unten), Box2D Y+ ist oben
@@ -137,7 +146,7 @@ Physics::Physics(Actor* actor, Level* level)
     buildLevelBodies();
 
     // Contact-Listener
-    m_contactListener = new HazardContactListener(m_actor, m_level, this);
+    m_contactListener = new ContactListener(m_actor, m_level, this);
     m_world->SetContactListener(m_contactListener);
 }
 
@@ -358,5 +367,11 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
     float strength = 280.0f / PIXELS_PER_METER;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
+
+std::pair<std::string, std::string> Physics::getTileData(int tileId)
+{
+    return m_tileData[tileId];
+}
+
 
 } // namespace jumper

@@ -84,6 +84,10 @@ public:
 
     /// Sets the current forces
     void setForces(const LevelForces& f);
+    /// set res path to access RulesTiles.xml
+    void setResPath(std::string path);
+    /// get res path
+    std::string getResPath();
 
 private:
 
@@ -121,6 +125,9 @@ private:
     std::vector<Monster*>   m_monsters;
 
     void spawnMonsters();
+
+    /// set res path to access RulesTiles.xml
+    std::string m_resPath = "";
 };
 
 } /* namespace jumper */

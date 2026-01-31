@@ -88,15 +88,15 @@ std::string GetPathFromFileName(std::string filename)
  * @return Map of tile IDs to tile names
  */
 // In Util.cpp
-std::map<int, std::string> ParseXMLData(const std::string& xmlPath)
+std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath)
 {
-    std::map<int, std::string> tileNames;
+    std::map<int, std::pair<std::string, std::string>> tileData;
 
     QFile file(QString::fromStdString(xmlPath));
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
         qWarning() << "Could not open XML file:" << xmlPath.c_str();
-        return tileNames;
+        return tileData;
     }
 
     QXmlStreamReader xml(&file);
@@ -104,14 +104,14 @@ std::map<int, std::string> ParseXMLData(const std::string& xmlPath)
     {
         xml.readNext();
 
-        // TODO: <tile id="1" name="grass"/>
-
+        // get name and type by id
         if (xml.isStartElement() && xml.name() == QString("tile"))
         {
             QXmlStreamAttributes attr = xml.attributes();
             int id = attr.value("id").toInt();
             QString name = attr.value("name").toString();
-            tileNames[id] = name.toStdString();
+            QString type = attr.value("type").toString();
+            tileData[id] = {name.toStdString(), type.toStdString()};
         }
     }
 
@@ -121,13 +121,7 @@ std::map<int, std::string> ParseXMLData(const std::string& xmlPath)
     }
 
     file.close();
-    qDebug() << "Loaded" << tileNames.size() << "tile names";
-    return tileNames;
-
-    // TODO: CALL THE FUNCTION
-    // Example usage:
-    // auto tileNames = jumper::ParseXMLData("assets/RulesTiles.xml");
-    // std::string tileName = tileNames[42];
+    return tileData;
 }
 
 } // namespace jumper
