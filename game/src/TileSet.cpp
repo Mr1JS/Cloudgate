@@ -176,7 +176,6 @@ namespace jumper
                             int tile_id = tile_index + 1;
                             if (logged_ids.find(tile_id) == logged_ids.end())
                             {
-                                std::cout << "[TileSet] Used Tile ID: " << tile_id << std::endl;
                                 logged_ids.insert(tile_id);
                             }
                             

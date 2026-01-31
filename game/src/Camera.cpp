@@ -61,8 +61,8 @@ int Camera::y() const
 void Camera::update(double dt)
 {
     // Kamera scrollt langsam nach oben (Y-Position verringern)
-    // Geschwindigkeit: 20 Pixel pro Sekunde nach oben (langsam für besseres Gameplay)
-    double scrollSpeed = 20.0;  // Pixel pro Sekunde
+    // Geschwindigkeit: 10 Pixel pro Sekunde nach oben (langsam für besseres Gameplay)
+    double scrollSpeed = 10.0;  // Pixel pro Sekunde
     
     // Akkumuliere die Bewegung (für smooth scrolling bei kleinen Werten)
     m_scrollAccumulator += scrollSpeed * dt;

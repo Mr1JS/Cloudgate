@@ -17,6 +17,7 @@
 #include "ActorForces.hpp"
 #include "Vector.hpp"
 
+#include <map>
 #include <box2d/box2d.h>
 
 namespace jumper {
@@ -26,12 +27,12 @@ class Level;
 class Physics;
 
 /**
- * @brief Contact-Listener für Hazard-Kollisionen und Knockback
+ * @brief Contact-Listener
  */
-class HazardContactListener : public b2ContactListener
+class ContactListener : public b2ContactListener
 {
 public:
-    HazardContactListener(Actor* actor, Level* level, Physics* physics);
+    ContactListener(Actor* actor, Level* level, Physics* physics);
 
     void BeginContact(b2Contact* contact) override;
 
@@ -66,6 +67,8 @@ public:
     b2Body* getActorBody() const { return m_actorBody; }
     unsigned int getLastHazardDamageTicks() const { return m_lastHazardDamageTicks; }
     void setLastHazardDamageTicks(unsigned int t) { m_lastHazardDamageTicks = t; }
+    // get Tile Data in ContactListener
+    std::pair<std::string, std::string> getTileData(int tileId);
 
 private:
 
@@ -100,7 +103,7 @@ private:
     b2Body*                 m_actorBody;
 
     /// Contact-Listener (Ownership)
-    HazardContactListener*  m_contactListener;
+    ContactListener*  m_contactListener;
 
     /// Letzter Ticks-Wert für Delta-Zeit
     unsigned int            m_lastTicks;
@@ -113,6 +116,8 @@ private:
 
     /// Y-Offset der Tile-Welt in Pixel
     static constexpr float  TILE_Y_OFFSET = 600.0f;
+    /// list of tileNames and tileTypes for each tileID
+    std::map<int, std::pair<std::string, std::string>> m_tileData;
 };
 
 } // namespace jumper

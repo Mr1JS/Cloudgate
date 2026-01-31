@@ -69,7 +69,7 @@ std::string GetPathFromFileName(std::string filename);
  * @param xmlPath Path to the XML file
  * @return Map of tile IDs to tile names
  */
-std::map<int, std::string> ParseXMLData(const std::string& xmlPath);
+std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath);
 
 } // namespace jumper
 
