@@ -9,5 +9,6 @@
     <file>images/mario1.png</file>
     <file>images/snake.png</file>
     <file>images/ghost.png</file>
+    <file>images/heart3.png</file>
   </qresource>
 </RCC>

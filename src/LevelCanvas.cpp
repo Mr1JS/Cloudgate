@@ -388,6 +388,12 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
+    QImage iconImg(":/resources/images/heart3.png");
+    if (!iconImg.isNull())
+    {
+        iconImg = iconImg.convertToFormat(QImage::Format_RGBA8888);
+    }
+
     QImage ghostImg(":/resources/images/ghost.png");
     if (!ghostImg.isNull())
     {
@@ -467,6 +473,32 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
                 io.save(
                     "textures",
                     "clouds2",
+                    dims,
+                    chunks,
+                    arr);
+            }
+        }
+
+        if (!iconImg.isNull())
+        {
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
+
+            if (imageToRgbaBytes(iconImg, bytes, h, w))
+            {
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
+
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
+
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    "icons",
                     dims,
                     chunks,
                     arr);
