@@ -15,9 +15,11 @@
 #include "game/include/Util.hpp"
 #include "game/include/Physics.hpp"
 #include "game/include/LevelParser.hpp"
+#include "game/include/Monster.hpp"
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 using std::cout;
 using std::endl;
@@ -87,6 +89,8 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         }
     }
 
+    spawnMonsters();  // Vor Physics: Monster-Tiles aus Grid entfernen, damit keine Box2D-Bodies entstehen
+
 //    m_actor = new Actor(mainWindow, "../res/actor.spr");
 //     m_actor->setFPS(10);
 //     m_actor->setWorldPosition(Vector<double>(800, 100));
@@ -97,7 +101,73 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         m_camera.setFocus(m_actor);
         m_physics = new Physics(m_actor, this);
     }
+}
 
+void Level::spawnMonsters()
+{
+    if(!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+
+    TileSetRepresentation* tileRep = m_tiles->tiles();
+    int tw = m_tiles->tileWidth();
+    int th = m_tiles->tileHeight();
+    int levelW = tileRep->width();
+    int levelH = tileRep->height();
+    const int TILE_Y_OFFSET = 600;
+
+    // Tile-IDs: 1-basiert (145/146, 147/148) oder 0-basiert (144/145, 146/147)
+    const int GHOST_TOP_A = 145, GHOST_BOTTOM_A = 146;  // 1-basiert
+    const int GHOST_TOP_B = 144, GHOST_BOTTOM_B = 145;  // 0-basiert
+    const int SNAKE_TOP_A = 147, SNAKE_BOTTOM_A = 148;
+    const int SNAKE_TOP_B = 146, SNAKE_BOTTOM_B = 147;
+    const int monsterW = 32;
+
+    for(int gy = 0; gy < levelH - 1; ++gy)
+    {
+        for(int gx = 0; gx < levelW; ++gx)
+        {
+            int topTile = tileRep->get(gx, gy);
+            int botTile = tileRep->get(gx, gy + 1);
+            Monster::Type type;
+            bool isMonster = false;
+            if((topTile == GHOST_TOP_A && botTile == GHOST_BOTTOM_A) ||
+               (topTile == GHOST_TOP_B && botTile == GHOST_BOTTOM_B))
+            {
+                type = Monster::Type::Ghost;
+                isMonster = true;
+            }
+            else if((topTile == SNAKE_TOP_A && botTile == SNAKE_BOTTOM_A) ||
+                    (topTile == SNAKE_TOP_B && botTile == SNAKE_BOTTOM_B))
+            {
+                type = Monster::Type::Snake;
+                isMonster = true;
+            }
+            if(!isMonster) continue;
+
+            double wx = gx * tw;
+            double wy = gy * th + TILE_Y_OFFSET;
+
+            int platformRow = gy + 2;
+            int gxLeft = gx, gxRight = gx;
+            if(platformRow < levelH)
+            {
+                while(gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0) gxLeft--;
+                while(gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0) gxRight++;
+            }
+            double leftBound = gxLeft * tw;
+            double rightBound = (gxRight + 1) * tw - monsterW;
+            if(rightBound - leftBound < monsterW)
+                rightBound = leftBound + monsterW;
+
+            tileRep->insert(gx, gy, 0);
+            tileRep->insert(gx, gy + 1, 0);
+
+            Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, wx, wy,
+                                    leftBound, rightBound,
+                                    tw, th, m_tiles->tilesPerRow(), m_tiles->tileOffset());
+            m_monsters.push_back(m);
+            m_layers.addRenderable(m, 2);
+        }
+    }
 }
 
 void Level::setForces(const LevelForces &f)
@@ -156,7 +226,32 @@ void Level::update(const Uint8* keystates)
         
         // Run physics
         m_physics->update();
+
+        // Monster-Kollision: Schaden + Knockback
+        unsigned int now = SDL_GetTicks();
+        const unsigned int damageCooldownMs = 1000;
+        if(m_actor && now - m_physics->getLastHazardDamageTicks() >= damageCooldownMs)
+        {
+            double ax = m_actor->worldPosition().x(), ay = m_actor->worldPosition().y();
+            int aw = m_actor->w(), ah = m_actor->h();
+            for(Monster* mon : m_monsters)
+            {
+                double mx = mon->worldPosition().x(), my = mon->worldPosition().y();
+                int mw = mon->w(), mh = mon->h();
+                if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
+                {
+                    m_physics->setLastHazardDamageTicks(now);
+                    if(m_stateController) m_stateController->decrementHp(1);
+                    double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
+                    m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));
+                    break;
+                }
+            }
+        }
     }
+
+    for(Monster* m : m_monsters)
+        m->update(dt, m_actor);
         
     if (m_stateController)
     {

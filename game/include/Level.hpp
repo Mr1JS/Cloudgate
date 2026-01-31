@@ -20,6 +20,9 @@
 #include "TileSet.hpp"
 #include "LevelForces.hpp"
 #include "StateController.hpp"
+#include "Monster.hpp"
+
+#include <vector>
 
 namespace jumper
 {
@@ -113,6 +116,11 @@ private:
 
     /// For managing level states such as hp, time elapsed and other things
     StateController*        m_stateController;
+
+    /// Monster-Liste für Update (Renderables werden von LayerManager verwaltet)
+    std::vector<Monster*>   m_monsters;
+
+    void spawnMonsters();
 };
 
 } /* namespace jumper */

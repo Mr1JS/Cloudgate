@@ -340,4 +340,23 @@ void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& a
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
 
+void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
+{
+    if (!m_actorBody || !m_actor) return;
+
+    Vector2f actorCenter(m_actor->worldPosition().x() + m_actor->w() / 2.0f,
+                         m_actor->worldPosition().y() + m_actor->h() / 2.0f);
+    b2Vec2 actorBox = toBox2D(actorCenter);
+    b2Vec2 otherBox = toBox2D(otherCenter);
+
+    float dx = actorBox.x - otherBox.x;
+    float dirX = (std::abs(dx) < 0.01f) ? 0.0f : ((dx > 0) ? 1.0f : -1.0f);
+    float dirY = 1.0f;
+    float len = std::sqrt(dirX*dirX + dirY*dirY);
+    dirX /= len;
+    dirY /= len;
+    float strength = 280.0f / PIXELS_PER_METER;
+    m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
+}
+
 } // namespace jumper

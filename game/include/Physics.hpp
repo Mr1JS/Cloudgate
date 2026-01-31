@@ -60,6 +60,9 @@ public:
     /// Wird vom ContactListener bei Hazard-Kollision aufgerufen
     void handleHazardContact(int tileId, const b2Vec2& tileCenter, const b2Vec2& actorCenter);
 
+    /// Wendet Knockback an (z.B. bei Monster-Kollision). otherCenter in Pixel-Koordinaten.
+    void applyKnockbackFromPosition(const Vector2f& otherCenter);
+
     b2Body* getActorBody() const { return m_actorBody; }
     unsigned int getLastHazardDamageTicks() const { return m_lastHazardDamageTicks; }
     void setLastHazardDamageTicks(unsigned int t) { m_lastHazardDamageTicks = t; }
