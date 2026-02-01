@@ -79,8 +79,8 @@ void LevelCanvas::clearLevel()
             m_levelData[QPair<int, int>(x, m_gridHeight - 1)] = 1;
         for (int y = 0; y < m_gridHeight; y++)
         {
-            m_levelData[QPair<int, int>(0, y)] = 55;
-            m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 55;
+            m_levelData[QPair<int, int>(0, y)] = 84;
+            m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 84;
         }
     }
     update();

@@ -29,7 +29,8 @@ using std::endl;
 namespace jumper
 {
 
-
+/// @param mainWindow 
+/// @param filename 
 Level::Level(MainWindow* mainWindow, std::string filename)
     : StaticRenderable(mainWindow),
       m_mainWindow(mainWindow),
@@ -68,7 +69,7 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
         
         // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
-        int wallTileId = 1;
+        int wallTileId = 85;
         
         // Füge linke Wand hinzu (von unten nach oben)
         if(leftTileX >= 0 && leftTileX < levelWidth)
