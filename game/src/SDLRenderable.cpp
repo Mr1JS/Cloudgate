@@ -53,15 +53,7 @@ void SDLRenderable::render()
 {
     if(readyToRender())
     {
-    SDL_Rect dst = m_targetRect;
-    // hardcoded for testing, scaling down if new big background
-    if (m_sourceRect.w > 1500 && m_sourceRect.h > 1500)
-    {
-        dst.x = 0;
-        dst.y = 0;
-        dst.w = 618;
-        dst.h =780;
-    }
+        SDL_Rect dst = m_targetRect;
         SDL_RenderCopyEx(
                     m_mainWindow->renderer(),
                     m_texture,
@@ -109,6 +101,29 @@ Vector<int> SDLRenderable::computeTargetPosition() const
 Vector<int> SDLRenderable::position() const
 {
     return m_position;
+}
+
+void SDLRenderable::scaleToWindow()
+{
+    if (!m_mainWindow || m_sourceRect.w == 0 || m_sourceRect.h == 0)
+    {
+        return;
+    }
+
+    int windowW = m_mainWindow->w();
+    int windowH = m_mainWindow->h();
+
+    // calculate scaling, keep aspect ratio
+    float scaleW = static_cast<float>(windowW) / m_sourceRect.w;
+    float scaleH = static_cast<float>(windowH) / m_sourceRect.h;
+    float scale = std::min(scaleW, scaleH);
+
+    m_targetRect.w = static_cast<int>(m_sourceRect.w * scale);
+    m_targetRect.h = static_cast<int>(m_sourceRect.h * scale);
+
+    // center in window
+    m_targetRect.x = (windowW - m_targetRect.w) / 2;
+    m_targetRect.y = (windowH - m_targetRect.h) / 2;
 }
 
 } // namespace jumper

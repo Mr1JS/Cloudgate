@@ -106,6 +106,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
                 // Create simple SDLRenderable, not TileSet
                 SDLRenderable* bg = new SDLRenderable(m_mainWindow, tex);
                 bg->setPosition(Vector<int>(0, 0));
+                bg->scaleToWindow(); // fit background to window
             ////
 
             // Add tile set to level

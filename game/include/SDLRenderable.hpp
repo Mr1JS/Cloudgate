@@ -63,6 +63,9 @@ public:
     /// Renders the tile array according to the given offset
     void setOffset(const Vector<int>& offset);
 
+    /// Scales the renderable to fit the window while maintaining aspect ratio
+    void scaleToWindow();
+
     /// Destructor
     virtual ~SDLRenderable() {}
 
