@@ -37,11 +37,15 @@ public:
     Q_INVOKABLE void clearLevel();
     Q_INVOKABLE void saveLevel(const QString &path);
     Q_INVOKABLE void loadLevel(const QString &path);
+    // Add Rows to Canvas
+    Q_INVOKABLE void addRowsAbove(int rows);
 
     int gridWidth() const { return m_gridWidth; }
     void setGridWidth(int w)
     {
         m_gridWidth = w;
+        // Fix
+        setWidth(m_gridWidth * m_tileWidth);
         emit gridWidthChanged();
         update();
     }
@@ -50,6 +54,8 @@ public:
     void setGridHeight(int h)
     {
         m_gridHeight = h;
+        // Fix
+        setHeight(m_gridHeight * m_tileHeight);
         emit gridHeightChanged();
         update();
     }

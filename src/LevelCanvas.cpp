@@ -71,18 +71,31 @@ void LevelCanvas::clearLevel()
     {
         m_levelData.remove(key);
     }
+    // Change grid to standard values 
+    m_gridWidth = 20;
+    m_gridHeight = 25;
 
-    // Create frame on first call only
-    if (m_levelData.isEmpty())
+    int floorY = m_gridHeight - 1;
+
+    // left and right + ground
+    for (int y = 0; y < m_gridHeight; ++y)
     {
-        for (int x = 1; x < m_gridWidth - 1; x++)
-            m_levelData[QPair<int, int>(x, m_gridHeight - 1)] = 1;
-        for (int y = 0; y < m_gridHeight; y++)
-        {
-            m_levelData[QPair<int, int>(0, y)] = 55;
-            m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 55;
-        }
+        m_levelData[QPair<int,int>(0, y)] = 55;               // left wall
+        m_levelData[QPair<int,int>(m_gridWidth-1, y)] = 55;   // right wall
     }
+
+    // ground
+    for (int x = 1; x < m_gridWidth-1; ++x)
+    {
+        m_levelData[QPair<int,int>(x, floorY)] = 1;
+    }
+
+    // Modify canvas 
+    setHeight(m_gridHeight * m_tileHeight);
+    setWidth(m_gridWidth * m_tileWidth);
+
+    emit gridHeightChanged();
+    emit gridWidthChanged();
     update();
 }
 
@@ -362,8 +375,10 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     const QString h5Path = outDir + "/" + baseName + ".h5";
 
     // ---------- collision data ----------
-    const int gridH = 32;
-    const int gridW = 73;
+    // Changed standard values to the actual values of the Grid
+    int gridW  = m_gridWidth;
+    int gridH = m_gridHeight;
+
 
     std::vector<int> flatCollision =
         flattenTileMap(m_levelData, gridW, gridH, 0);
@@ -421,6 +436,40 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         // ==========================================================
         using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
+        // TODO: when file is replaced then we have an error:
+            /* tileset saved
+            qt.gui.imageio: libpng warning: iCCP: known incorrect sRGB profile
+            qt.gui.imageio: libpng warning: iCCP: cHRM chunk does not match sRGB
+
+            tileset saved
+            [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 30 x 36 x4
+            [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 50 x 48 x4
+            [Hdf5Util - createDataset] WARNING: size has changed. resizing dataset 
+            HDF5-DIAG: Error detected in HDF5 (1.10.10) thread 1:
+            #000: ../../../src/H5D.c line 861 in H5Dset_extent(): unable to set dataset extent
+                major: Dataset
+                minor: Can't set value
+            #001: ../../../src/H5Dint.c line 2801 in H5D__set_extent(): unable to modify size of dataspace
+                major: Dataset
+                minor: Unable to initialize object
+            #002: ../../../src/H5S.c line 1823 in H5S_set_extent(): dimension cannot exceed the existing maximal size (new: 65 max: 40)
+                major: Dataspace
+                minor: Bad value */
+        // otherwise if u create a file for that it works
+        // TODO: CURRENT ALTERNATIVE ... NEEDS TO BE INVESTIGATED
+        // ----------------------------------------------------------
+        // Ensure fresh HDF5 file (avoid file lock + stale datasets
+        // ----------------------------------------------------------
+        if (QFile::exists(h5Path))
+        {
+            if (!QFile::remove(h5Path))
+            {
+                qWarning() << "[LevelCanvas] Could not remove existing H5 file:" << h5Path;
+                
+            }
+
+        }
+
         io.open(h5Path.toStdString());
 
         // ----------------------------------------------------------
@@ -858,6 +907,15 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         return;
     }
 
+
+        setHeight(m_gridHeight * m_tileHeight);
+        setWidth(m_gridWidth * m_tileWidth);
+
+        emit gridHeightChanged();
+        emit gridWidthChanged();
+
+
+
     update();
 
     qDebug() << "[LevelCanvas] Loaded level:"
@@ -869,4 +927,42 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 void LevelCanvas::setExtraTiles(bool mode)
 {
     m_extraTiles = mode;
+}
+
+// Add rows to canvas
+void LevelCanvas::addRowsAbove(int rows)
+{
+    if (rows <= 0)
+        return;
+
+    // Move old Tile to the bottom
+    QMap<QPair<int,int>, int> newData;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    {
+        newData.insert(
+            qMakePair(it.key().first, it.key().second + rows),
+            it.value());
+    }
+
+    // Add new Tiles above
+    for (int y = 0; y < rows; ++y)
+    {
+        for (int x = 0; x < m_gridWidth; ++x)
+        {
+            // left and right wall
+            if (x == 0 || x == m_gridWidth - 1)
+                newData[qMakePair(x, y)] = 55;
+            // everything else stay same
+        }
+    }
+
+    // Modify Grid
+    m_levelData = newData;
+    m_gridHeight += rows;
+    setHeight(m_gridHeight * m_tileHeight);
+    emit gridHeightChanged();
+
+    update();
+
+    qDebug() << "[LevelCanvas] Added" << rows << "rows ABOVE. New height:" << m_gridHeight;
 }
