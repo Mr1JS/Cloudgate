@@ -378,7 +378,7 @@ static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &ou
     if (image.isNull())
         return false;
        // TODO: Change color format here
-    QImage img = image.convertToFormat(QImage::Format_ARGB32);
+    QImage img = image.convertToFormat(QImage::Format_RGBA8888);
 
     H = img.height();
     W = img.width();
@@ -396,7 +396,7 @@ static QImage rgbaBytesToImage(const std::vector<unsigned char> &bytes, int H, i
     if ((int)bytes.size() != H * W * 4)
         return QImage();
 
-    QImage img(W, H, QImage::Format_RGBA8888);
+    QImage img(W, H, QImage::Format_ARGB32);
     memcpy(img.bits(), bytes.data(), bytes.size());
     return img;
 }
@@ -449,20 +449,20 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         QImage img(m_tilesetPath);
         if (!img.isNull())
             // TODO: Change the Color format pls
-            //m_tilesetImage = img.convertToFormat(QImage::Format_ARGB32);
+            m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
     }
 
     // ---------- prepare background image ----------
     QImage bgImg("qrc:/resources/images/clouds2.png");
     if (!bgImg.isNull())
-        bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
+        bgImg = bgImg.convertToFormat(QImage::Format_ARGB32);
 
     const QString actorResourcePath = "qrc:/resources/images/mario1.png";
     const QString actorTextureName = "mario1";
 
     QImage actorImg(actorResourcePath);
     if (!actorImg.isNull())
-        actorImg = actorImg.convertToFormat(QImage::Format_RGBA8888);
+        actorImg = actorImg.convertToFormat(QImage::Format_ARGB32);
 
     try
     {
