@@ -23,6 +23,13 @@ Page {
             console.log("Game stopped")
         }
 
+        // Called when game over (all hearts lost or player fell)
+        onGameOver: {
+            gameView.stopGame()
+            stackView.pop()
+            myMain.page_value = -1
+        }
+
         // Initialize when component loads
         Component.onCompleted: {
             gameView.levelPath = "res/level_master.xml"

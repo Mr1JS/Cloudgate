@@ -66,6 +66,9 @@ public:
     /// Checks if actor is outside camera bounds (for game over)
     bool isActorOutsideCamera() const;
 
+    /// Checks if game is over (HP <= 0)
+    bool isGameOver() const;
+
     StateController* getStateController();
 
     /// Adds a renderable on the given layer to the level.

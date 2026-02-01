@@ -407,8 +407,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         snakeImg = snakeImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
-    const QString actorResourcePath = ":/resources/images/mario1.png";
-    const QString actorTextureName = "mario1";
+    const QString actorResourcePath = ":/resources/images/actor1.png";
+    const QString actorTextureName = "actor1";
 
     QImage actorImg(actorResourcePath);
     if (!actorImg.isNull())
@@ -665,10 +665,10 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // then this should be adapted and changed accordingly
     ts << "  <actor texture=\"" << actorTextureName << "\">\n";
     ts << "    <num_frames>2</num_frames>\n";
-    ts << "    <frame_width>18</frame_width>\n";
-    ts << "    <frame_height>32</frame_height>\n";
+    ts << "    <frame_width>36</frame_width>\n";
+    ts << "    <frame_height>48</frame_height>\n";
     ts << "    <position_x>50</position_x>\n";
-    ts << "    <position_y>1350</position_y>\n";
+    ts << "    <position_y>1250</position_y>\n";
     ts << "    <layer>2</layer>\n";
     ts << "  </actor>\n";
 
