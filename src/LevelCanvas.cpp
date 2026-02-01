@@ -374,7 +374,7 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
 // Helper: save QImage RGBA8888 into a vector<uint8_t>
 // -----------------------------------------------
 static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &outBytes, int &H, int &W)
-{
+{ // TODO: is this needed? because I do not think that we have to save the colour too to h5. The prof did not do it. 
     if (image.isNull())
         return false;
        // TODO: Change color format here
@@ -449,7 +449,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         QImage img(m_tilesetPath);
         if (!img.isNull())
             // TODO: Change the Color format pls
-            m_tilesetImage = img.convertToFormat(QImage::Format_ARGB32);
+            //m_tilesetImage = img.convertToFormat(QImage::Format_ARGB32);
     }
 
     // ---------- prepare background image ----------
