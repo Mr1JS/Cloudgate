@@ -113,10 +113,10 @@ void SDLRenderable::scaleToWindow()
     int windowW = m_mainWindow->w();
     int windowH = m_mainWindow->h();
 
-    // calculate scaling, keep aspect ratio
+    // calculate scaling, fill window 
     float scaleW = static_cast<float>(windowW) / m_sourceRect.w;
     float scaleH = static_cast<float>(windowH) / m_sourceRect.h;
-    float scale = std::min(scaleW, scaleH);
+    float scale = std::max(scaleW, scaleH);
 
     m_targetRect.w = static_cast<int>(m_sourceRect.w * scale);
     m_targetRect.h = static_cast<int>(m_sourceRect.h * scale);
