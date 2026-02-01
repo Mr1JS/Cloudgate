@@ -53,10 +53,19 @@ void SDLRenderable::render()
 {
     if(readyToRender())
     {
+    SDL_Rect dst = m_targetRect;
+    // hardcoded for testing, scaling down if new big background
+    if (m_sourceRect.w > 1500 && m_sourceRect.h > 1500)
+    {
+        dst.x = 0;
+        dst.y = 0;
+        dst.w = 618;
+        dst.h =780;
+    }
         SDL_RenderCopyEx(
                     m_mainWindow->renderer(),
                     m_texture,
-                    &m_sourceRect, &m_targetRect,
+                    &m_sourceRect, &dst,
                     0,
                     NULL, SDL_FLIP_NONE);
     }

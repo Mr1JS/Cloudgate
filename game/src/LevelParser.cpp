@@ -97,6 +97,10 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             // Load background as FULL TEXTURE (like actor loading)
                 SDL_Surface* surface = io.TextureIO::load("textures", tilesetDataset);
                 SDL_Texture* tex = SDL_CreateTextureFromSurface(m_mainWindow->renderer(),      surface);
+                
+                // transparency of background
+                SDL_SetTextureAlphaMod(tex, 255); // 200-180 is good, but 255 looks best
+
                 SDL_FreeSurface(surface);
 
                 // Create simple SDLRenderable, not TileSet

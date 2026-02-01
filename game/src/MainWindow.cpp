@@ -122,6 +122,7 @@ namespace jumper
             std::cout << "SDL could not initialize: " << SDL_GetError() << std::endl;
             return;
         }
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
         // Generate SDL main window (hidden for embedding in Qt)
         m_window = SDL_CreateWindow(

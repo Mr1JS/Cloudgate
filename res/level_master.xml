@@ -1,5 +1,5 @@
 <level resources="level_master.h5">
-  <background_tiles texture="clouds2">
+  <background_tiles texture="backgroundImg">
     <layer>0</layer>
   </background_tiles>
   <collision_tiles texture="tileset" tiles="level1">

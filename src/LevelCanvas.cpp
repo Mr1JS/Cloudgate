@@ -373,16 +373,18 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         static_cast<size_t>(gridW)};
 
     // ---------- prepare tileset image ----------
-    if (m_tilesetImage.isNull() && !m_tilesetPath.isEmpty())
+    if (!m_tilesetPath.isEmpty())
     {
+                        std::cout << "\ntileset saved\n";
         QImage img(m_tilesetPath);
         if (!img.isNull())
+                        std::cout << "\ntileset saved\n";
             // TODO: Change the Color format pls
             m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
     }
 
     // ---------- prepare background image ----------
-    QImage bgImg(":/resources/images/clouds2.png");
+    QImage bgImg(":/resources/images/backgroundMountain.png");
     if (!bgImg.isNull())
     {
         bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
@@ -472,7 +474,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
                 io.save(
                     "textures",
-                    "clouds2",
+                    "backgroundImg",
                     dims,
                     chunks,
                     arr);
@@ -639,7 +641,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     // background still references the tileset for tilemap usage
     // (If you want XML to reference the PNG instead, tell me and I adapt)
-    ts << "  <background_tiles texture=\"" << "clouds2" << "\">\n";
+    ts << "  <background_tiles texture=\"" << "backgroundImg" << "\">\n";
     ts << "    <layer>0</layer>\n";
     ts << "  </background_tiles>\n";
 
