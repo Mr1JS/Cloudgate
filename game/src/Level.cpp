@@ -370,6 +370,22 @@ bool Level::isActorOutsideCamera() const
     return false;  // Spieler ist noch innerhalb des Kamera-Bereichs
 }
 
+bool Level::isGameOver() const
+{
+    // Check if HP is 0 or below
+    if(m_stateController)
+    {
+        int hp = m_stateController->getHp();
+        if(hp <= 0)
+        {
+            return true;
+        }
+    }
+    
+    // Check if actor fell out of camera
+    return isActorOutsideCamera();
+}
+
 Level::~Level()
 {
     if(m_physics)

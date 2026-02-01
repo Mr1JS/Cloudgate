@@ -16,12 +16,12 @@
     <tileHeight>32</tileHeight>
     <layer>3</layer>
   </icons>
-  <actor texture="mario1">
+  <actor texture="actor1">
     <num_frames>2</num_frames>
-    <frame_width>18</frame_width>
-    <frame_height>32</frame_height>
+    <frame_width>36</frame_width>
+    <frame_height>48</frame_height>
     <position_x>50</position_x>
-    <position_y>1350</position_y>
+    <position_y>1250</position_y>
     <layer>2</layer>
   </actor>
   <level_forces>

@@ -87,10 +87,14 @@ void StateController::updateGameTime()
         */
     }
 
+    // REMOVED: Don't auto-reset HP when it reaches 0
+    // Game Over should be handled by GameView
+    /*
     if (m_playerHp <= 0)
     {
         resetGameTime();
     }
+    */
 }
 
 void StateController::resetGameTime()
@@ -105,10 +109,16 @@ void StateController::resetGameTime()
 
 void StateController::decrementHp(int number)
 {
-    //std::cout << "Decrementing player hp from " << m_playerHp;
     m_playerHp -= number;
-    //std::cout << " to " << m_playerHp << std::endl;
-    if (m_hearts[m_playerHp])
+    
+    // Guard against negative HP
+    if(m_playerHp < 0)
+    {
+        m_playerHp = 0;
+        return;
+    }
+    
+    if (m_playerHp >= 0 && m_playerHp < MAX_HEARTS && m_hearts[m_playerHp])
     {
         // set heart image out of bounds
         Vector v = Vector(-m_heartWidth*2, -10);
