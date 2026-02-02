@@ -164,7 +164,7 @@ void Level::update(const Uint8* keystates)
         
         if (m_stateController->isPaused() && (keystates[SDL_SCANCODE_LEFT ] || keystates[SDL_SCANCODE_RIGHT]
             || keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_SPACE])) {
-                m_stateController->startGameTime();
+                m_stateController->startGame();
         }
     }
 }

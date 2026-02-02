@@ -64,7 +64,7 @@ std::array<TimerDigit*, RUNTIME_DIGITS> StateController::addDigits(SDL_Texture* 
         
         x += 5 + frameWidth;
 
-        if (i == 1)
+        if (i == 1 || i == 3)
         {
             x += 10;
         }
@@ -78,7 +78,7 @@ bool StateController::isPaused()
     return !m_isRunning;
 }
 
-void StateController::startGameTime()
+void StateController::startGame()
 {
     m_isRunning = true;
     m_timer->start();
@@ -93,11 +93,11 @@ void StateController::updateGameTime()
 
     unsigned int runtimed = m_timer->elapsed();
     if (runtimed - m_runtime > 100) {
-        int min = m_runtime/1000/60;
-        int sec = m_runtime/1000 - min*60;
-        int ms  = m_runtime - sec*1000;
+        unsigned int min = m_runtime/1000/60;
+        unsigned int sec = m_runtime/1000 - min*60;
+        unsigned int ms  = m_runtime - sec*1000;
         std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
-        updateRuntime(runtimed);
+        updateRuntimeGraphics(runtimed);
         m_runtime = runtimed;
     }
 }
@@ -107,12 +107,31 @@ void StateController::stop()
     m_isRunning = false;
 }
 
-void StateController::updateRuntime(unsigned int runtime)
+void StateController::updateRuntimeGraphics(unsigned int runtime)
 {
+    // TODO: this would need to be changed if RUNTIME_DIGITS < 6
+    unsigned int min = m_runtime/1000/60;
+    unsigned int sec = m_runtime/1000 - min*60;
+    unsigned int ms  = m_runtime - sec*1000;
+    unsigned int digit = 0;
     for (int i = RUNTIME_DIGITS; i > 0; i--)
     {
-        m_runtimeDigits[i]->setValue(runtime % 10);
-        runtime /= 10;
+        if (i > RUNTIME_DIGITS-3)
+        {
+            digit = ms % 10;
+            ms /= 10;
+        }
+        else if (i > RUNTIME_DIGITS-5)
+        {
+            digit = sec % 10;
+            sec /= 10;
+        }
+        else
+        {
+            digit = min % 10;
+            min /= 10;
+        }
+        m_runtimeDigits[i]->setValue(digit);
     }
 }
 

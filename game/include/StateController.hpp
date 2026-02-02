@@ -15,7 +15,7 @@
 #include <QElapsedTimer>
 
 #define MAX_HEARTS 3
-#define RUNTIME_DIGITS 4
+#define RUNTIME_DIGITS 6
 
 namespace jumper
 {
@@ -33,7 +33,7 @@ public:
 
     std::array<TimerDigit*, RUNTIME_DIGITS> addDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
 
-    void startGameTime();
+    void startGame();
 
     /// Updates game time
     void updateGameTime();
@@ -61,7 +61,7 @@ private:
     void resetHeartPosition();
 
     // updates runtime visuals
-    void updateRuntime(unsigned int runtime);
+    void updateRuntimeGraphics(unsigned int runtime);
 
     /// Player hp in hearts
     int m_playerHp;
