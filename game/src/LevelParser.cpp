@@ -93,33 +93,6 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             m_level->addRenderable(ts, layer);
         }
 
-        if (v.first == "numbers")
-        {
-            // Parse attributes
-            std::string tilesDataset   = v.second.get("<xmlattr>.tiles", "");
-            std::string tilesetDataset = v.second.get("<xmlattr>.texture", "");
-            int layer                  = v.second.get<int>("layer", 0);
-            int tileWidth              = v.second.get("tileWidth", 0);
-            int tileHeight             = v.second.get("tileHeight", 0);
-            int tilesPerRow            = v.second.get("tilesPerRow", 0);
-            int numRows                = v.second.get("numRows", 0);
-            int tileOffset             = v.second.get("tileOffset", 0);
-
-            // Create and setup tile set
-            TileSet* ts = new TileSet(m_mainWindow,
-                                      io,
-                                      tilesDataset,
-                                      tilesetDataset,
-                                      tileWidth,
-                                      tileHeight,
-                                      tilesPerRow,
-                                      numRows,
-                                      tileOffset);
-
-            // Add tile set to level
-            m_level->addRenderable(ts, layer);
-        }
-
         if (v.first == "icons")
         {
             // Parse attributes
@@ -145,7 +118,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
                                             + "!");
             }
 
-            // Add tile set to level
+            // Add hearts to stateController
             std::array<SDLRenderable*, MAX_HEARTS> rs = m_level->getStateController()->addHeartTexture(tex, tileWidth, layer);
 
             for (int i = 0; i < MAX_HEARTS; i++)
@@ -154,6 +127,38 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
         }
         
+        if (v.first == "numbers")
+        {
+            // Parse attributes
+            std::string textureDataset = v.second.get("<xmlattr>.texture", "");
+            int numFrames              = v.second.get<int>("num_frames", 0);
+            int frameWidth             = v.second.get<int>("frame_width", 0);
+            int frameHeight            = v.second.get<int>("frame_height", 0);
+            int layer                  = v.second.get<int>("layer", 0);
+
+
+            // Create texture for digits
+            SDL_Surface* surface = io.TextureIO::load("textures", textureDataset);
+            if (surface == nullptr)
+            {
+                throw std::invalid_argument("The image " + textureDataset
+                                            + " could not be loaded from hdf5!");
+            }
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(mw->renderer(), surface);
+            SDL_FreeSurface(surface);
+            if (tex == nullptr)
+            {
+                throw std::invalid_argument("Could not create texture from image " + textureDataset
+                                            + "!");
+            }
+
+            // Init digits in StateController
+            std::array<TimerDigit*, RUNTIME_DIGITS> digits = m_level->getStateController()->addDigits(tex, numFrames, frameWidth, frameHeight, layer);
+            for (int i = 0; i < RUNTIME_DIGITS; i++) {
+                m_level->addRenderable(digits[i], layer);
+            }
+        }
+
         if (v.first == "actor")
         {
             // Parse attributes

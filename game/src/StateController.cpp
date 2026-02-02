@@ -7,7 +7,7 @@ namespace jumper
 {
 
 StateController::StateController(MainWindow* mainWindow, std::string& filename)
-: m_hearts{}
+: m_hearts{}, m_runtimeDigits{}
 {
     m_mainWindow = mainWindow;
     m_isRunning = false;
@@ -31,6 +31,7 @@ std::array<SDLRenderable*, MAX_HEARTS> StateController::addHeartTexture(SDL_Text
             continue;
         }
         m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
+
     }
 
     resetHeartPosition();
@@ -46,10 +47,30 @@ void StateController::resetHeartPosition()
     {
         if (m_hearts[i])
         {
-            Vector v = Vector(m_mainWindow->w() - m_heartWidth*(i+1), 10);
+            Vector v = Vector(m_mainWindow->w() - m_heartWidth * (i + 1), 10);
             m_hearts[i]->setPosition(v);
         }
     }
+}
+
+std::array<TimerDigit*, RUNTIME_DIGITS> StateController::addDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
+{
+    int x = 25;
+    for (int i = 0; i < RUNTIME_DIGITS; i++)
+    {
+        m_runtimeDigits[i] = new TimerDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        
+        m_runtimeDigits[i]->setWorldPosition(Vector2f(x, 25));
+        
+        x += 5 + frameWidth;
+
+        if (i == 1)
+        {
+            x += 10;
+        }
+    }
+
+    return m_runtimeDigits;
 }
 
 bool StateController::isPaused()
@@ -69,36 +90,30 @@ void StateController::updateGameTime()
     {
         return;
     }
-    
-    /*
-    TODO: replace everything with 
-    runtimed = currentRuntime - m_runtime;
-    if (runtimed > X)
-    {
-        // update time graphics
-        m_runtime = m_timer->elapsed();
-    }
-    */ 
-    m_runtime = m_timer->elapsed();
 
-    int runtimed = m_runtime % 100;
-    if (runtimed > 0 && runtimed < 15) {
+    unsigned int runtimed = m_timer->elapsed();
+    if (runtimed - m_runtime > 100) {
         int min = m_runtime/1000/60;
         int sec = m_runtime/1000 - min*60;
         int ms  = m_runtime - sec*1000;
         std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
-        /*
-        // testing decrementHp()
-        if (sec % 2 == 1) {
-            decrementHp();
-        }
-        */
+        updateRuntime(runtimed);
+        m_runtime = runtimed;
     }
 }
 
 void StateController::stop()
 {
     m_isRunning = false;
+}
+
+void StateController::updateRuntime(unsigned int runtime)
+{
+    for (int i = RUNTIME_DIGITS; i > 0; i--)
+    {
+        m_runtimeDigits[i]->setValue(runtime % 10);
+        runtime /= 10;
+    }
 }
 
 void StateController::resetGame()

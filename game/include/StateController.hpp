@@ -9,11 +9,13 @@
 
 #include "MainWindow.hpp"
 #include "SDLRenderable.hpp"
+#include "TimerDigit.hpp"
 
 #include <SDL.h>
 #include <QElapsedTimer>
 
 #define MAX_HEARTS 3
+#define RUNTIME_DIGITS 4
 
 namespace jumper
 {
@@ -28,6 +30,8 @@ public:
     StateController(MainWindow* mainWindow, std::string& filename);
 
     std::array<SDLRenderable*, MAX_HEARTS> addHeartTexture(SDL_Texture* heartTexture, int texWidth, int layer);
+
+    std::array<TimerDigit*, RUNTIME_DIGITS> addDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
 
     void startGameTime();
 
@@ -56,11 +60,14 @@ public:
 private:
     void resetHeartPosition();
 
+    // updates runtime visuals
+    void updateRuntime(unsigned int runtime);
+
     /// Player hp in hearts
     int m_playerHp;
 
     /// Current time elapsed in level
-    int m_runtime;
+    unsigned int m_runtime;
 
     QElapsedTimer* m_timer;
 
@@ -70,6 +77,8 @@ private:
     std::array<SDLRenderable*, MAX_HEARTS> m_hearts;
 
     int m_heartWidth;
+
+    std::array<TimerDigit*, RUNTIME_DIGITS> m_runtimeDigits;
 
     MainWindow* m_mainWindow;
 };

@@ -29,6 +29,12 @@
     <fps>12</fps>
     <layer>2</layer>
   </actor>
+  <numbers texture="numbers">
+    <num_frames>10</num_frames>
+    <frame_width>10</frame_width>
+    <frame_height>10</frame_height>
+    <layer>3</layer>
+  </numbers>
   <level_forces>
     <gravity_x>0</gravity_x>
     <gravity_y>400</gravity_y>

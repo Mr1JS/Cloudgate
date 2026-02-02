@@ -98,7 +98,6 @@ int SDLRenderable::y() const
 {
     return m_position.y();
 }
-
 Vector<int> SDLRenderable::computeTargetPosition() const
 {
 	return Vector<int>(m_position - m_offset + m_windowOffset);
