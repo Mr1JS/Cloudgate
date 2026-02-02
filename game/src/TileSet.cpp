@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <set>
 
 namespace jumper
 {
@@ -39,8 +40,15 @@ namespace jumper
         {
             throw std::invalid_argument("The image " + tilesetDataset + " could not be loaded from hdf5!");
         }
-        m_texture = SDL_CreateTextureFromSurface(mw->renderer(), surface);
+        SDL_Surface* rgbaSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
         SDL_FreeSurface(surface);
+
+        Uint32 key = SDL_MapRGB(rgbaSurface->format, 94,129,162);
+        SDL_SetColorKey(rgbaSurface, SDL_TRUE, key);
+
+        m_texture = SDL_CreateTextureFromSurface(mw->renderer(), rgbaSurface);
+        SDL_FreeSurface(rgbaSurface);
+        
         if (m_texture == nullptr)
         {
             throw std::invalid_argument("Could not create texture from image " + tilesetDataset + "!");
@@ -155,6 +163,7 @@ namespace jumper
 
             if (m_tiles)
             {
+                static std::set<int> logged_ids;
                 for (i = 0; i < m_arrayHeight; i++)
                 {
                     for (j = 0; j < m_arrayWidth; j++)
@@ -163,24 +172,31 @@ namespace jumper
                         tile_index = m_tiles->get(j, i) - 1;
                         if (tile_index >= 0)
                         {
+                            // Log each unique tile ID only once
+                            int tile_id = tile_index + 1;
+                            if (logged_ids.find(tile_id) == logged_ids.end())
+                            {
+                                logged_ids.insert(tile_id);
+                            }
+                            
                             /* Compute the position of the target on the screen */
                             // Y-Offset von 600, damit die Karte weiter unten startet
                             target.x = j * m_tileWidth - m_offset.x() + m_windowOffset.x();
                             target.y = i * m_tileHeight - m_offset.y() + m_windowOffset.y() + 600;
 
                             /* Compute the position of the source pixel data
-                             * within the texture (no offset for first tiles)
+                             * within the texture (offset for first tiles)
                              */
                             row = tile_index / m_tilesPerRow;
                             col = tile_index % m_tilesPerRow;
 
-                            source.x = col * m_tileWidth;
+                            source.x = col * m_tileWidth + m_tileOffset;
                             if (col > 0)
                             {
                                 source.x += col * m_tileOffset;
                             }
 
-                            source.y = row * m_tileHeight;
+                            source.y = row * m_tileHeight + m_tileOffset;
                             if (row > 0)
                             {
                                 source.y += row * m_tileOffset;

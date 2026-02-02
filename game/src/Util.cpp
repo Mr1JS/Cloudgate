@@ -13,6 +13,10 @@
 #include <iostream>
 #include <fstream>
 #include <SDL_image.h>
+#include <QDebug>
+// NEED for reading data from XML
+#include <QXmlStreamReader>
+#include <QFile>
 
 namespace jumper
 {
@@ -70,6 +74,54 @@ std::string GetPathFromFileName(std::string filename)
 {
     size_t position = filename.find_last_of("/\\");
     return filename.substr(0, position + 1);
+}
+
+
+/**
+ * @brief Loads tile names from an XML file
+ *
+ * Parses an XML file containing tile definitions and extracts
+ * tile IDs with their corresponding names.
+ * Example XML: <tile id="1" name="grass"/>
+ *
+ * @param xmlPath Path to the XML file
+ * @return Map of tile IDs to tile names
+ */
+// In Util.cpp
+std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath)
+{
+    std::map<int, std::pair<std::string, std::string>> tileData;
+
+    QFile file(QString::fromStdString(xmlPath));
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        qWarning() << "Could not open XML file:" << xmlPath.c_str();
+        return tileData;
+    }
+
+    QXmlStreamReader xml(&file);
+    while (!xml.atEnd())
+    {
+        xml.readNext();
+
+        // get name and type by id
+        if (xml.isStartElement() && xml.name() == QString("tile"))
+        {
+            QXmlStreamAttributes attr = xml.attributes();
+            int id = attr.value("id").toInt();
+            QString name = attr.value("name").toString();
+            QString type = attr.value("type").toString();
+            tileData[id] = {name.toStdString(), type.toStdString()};
+        }
+    }
+
+    if (xml.hasError())
+    {
+        qWarning() << "XML parsing error:" << xml.errorString();
+    }
+
+    file.close();
+    return tileData;
 }
 
 } // namespace jumper

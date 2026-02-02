@@ -25,6 +25,10 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
     std::size_t found = filename.find_last_of("/\\");
     std::string path  = filename.substr(0, found);
 
+    if (path != "")
+    {
+        m_level->setResPath(path);
+    }
     // Read property tree from xml file
     using boost::property_tree::ptree;
     ptree pt;
@@ -89,8 +93,24 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
                                       numRows,
                                       tileOffset);
 
+            /// ADDED
+            // Load background as FULL TEXTURE (like actor loading)
+                SDL_Surface* surface = io.TextureIO::load("textures", tilesetDataset);
+                SDL_Texture* tex = SDL_CreateTextureFromSurface(m_mainWindow->renderer(),      surface);
+                
+                // transparency of background
+                SDL_SetTextureAlphaMod(tex, 255); // 200-180 is good, but 255 looks best
+
+                SDL_FreeSurface(surface);
+
+                // Create simple SDLRenderable, not TileSet
+                SDLRenderable* bg = new SDLRenderable(m_mainWindow, tex);
+                bg->setPosition(Vector<int>(0, 0));
+                bg->scaleToWindow(); // fit background to window
+            ////
+
             // Add tile set to level
-            m_level->addRenderable(ts, layer);
+            m_level->addRenderable(bg, layer);
         }
 
         if (v.first == "icons")
@@ -171,13 +191,14 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
 
             int pos_x           = v.second.get<int>("position_x", 0);
             int pos_y           = v.second.get<int>("position_y", 0);
-            float jumpForceX    = v.second.get<float>("jump_force_x", 0.0);
-            float jumpForceY    = v.second.get<float>("jump_force_y", 0.0);
-            float moveForceX    = v.second.get<float>("move_force_x", 0.0);
-            float moveForceY    = v.second.get<float>("move_force_y", 0.0);
-            float maxVelRun     = v.second.get<float>("max_run_velocity", 0.0);
-            float maxVelFall    = v.second.get<float>("max_fall_velocity", 0.0);
-            float maxJumpHeight = v.second.get<float>("max_jump_height", 0.0);
+            // Standardwerte aus ActorForces, falls nicht in XML angegeben
+            float jumpForceX    = v.second.get<float>("jump_force_x", 0.0f);
+            float jumpForceY    = v.second.get<float>("jump_force_y", -440.0f);
+            float moveForceX    = v.second.get<float>("move_force_x", 800.0f);
+            float moveForceY    = v.second.get<float>("move_force_y", 0.0f);
+            float maxVelRun     = v.second.get<float>("max_run_velocity", 100.0f);
+            float maxVelFall    = v.second.get<float>("max_fall_velocity", 160.0f);
+            float maxJumpHeight = v.second.get<float>("max_jump_height", 40.0f);
 
             // TODO Jation & Pascal: the textureDataSet muust be changed. it must be dependent on the
             // Create new actor

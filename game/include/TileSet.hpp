@@ -72,6 +72,12 @@ class TileSet : public StaticRenderable
         return m_tiles;
     }
 
+    SDL_Texture* texture() const { return m_texture; }
+    int tileWidth() const { return m_tileWidth; }
+    int tileHeight() const { return m_tileHeight; }
+    int tilesPerRow() const { return m_tilesPerRow; }
+    int tileOffset() const { return m_tileOffset; }
+
   private:
     /// With of the tiles
     int m_tileWidth;

@@ -38,14 +38,6 @@ void SDLRenderable::computeSourceRect()
         int access, w, h;
         SDL_QueryTexture(m_texture, &format, &access, &w, &h);
 
-        std::cout << "[SDLRenderable] Texture format = "
-            << SDL_GetPixelFormatName(format)
-            << " (" << format << ")"
-            << " access=" << access
-            << " size=" << w << "x" << h
-            << std::endl;
-
-
         m_sourceRect.w = w;
         m_sourceRect.h = h;
 
@@ -61,10 +53,11 @@ void SDLRenderable::render()
 {
     if(readyToRender())
     {
+        SDL_Rect dst = m_targetRect;
         SDL_RenderCopyEx(
                     m_mainWindow->renderer(),
                     m_texture,
-                    &m_sourceRect, &m_targetRect,
+                    &m_sourceRect, &dst,
                     0,
                     NULL, SDL_FLIP_NONE);
     }
@@ -107,6 +100,29 @@ Vector<int> SDLRenderable::computeTargetPosition() const
 Vector<int> SDLRenderable::position() const
 {
     return m_position;
+}
+
+void SDLRenderable::scaleToWindow()
+{
+    if (!m_mainWindow || m_sourceRect.w == 0 || m_sourceRect.h == 0)
+    {
+        return;
+    }
+
+    int windowW = m_mainWindow->w();
+    int windowH = m_mainWindow->h();
+
+    // calculate scaling, fill window 
+    float scaleW = static_cast<float>(windowW) / m_sourceRect.w;
+    float scaleH = static_cast<float>(windowH) / m_sourceRect.h;
+    float scale = std::max(scaleW, scaleH);
+
+    m_targetRect.w = static_cast<int>(m_sourceRect.w * scale);
+    m_targetRect.h = static_cast<int>(m_sourceRect.h * scale);
+
+    // center in window
+    m_targetRect.x = (windowW - m_targetRect.w) / 2;
+    m_targetRect.y = (windowH - m_targetRect.h) / 2;
 }
 
 } // namespace jumper

@@ -359,8 +359,7 @@ Page {
         editorController.registerCanvas(levelCanvas)
 
         // Load tileset through controller
-        editorController.loadTileset("../res/level_master.xml", 32,
-                                     32, 4, 105)
+        editorController.loadTileset("res/level_master.xml")
 
         // Set focus when page loads
         levelEditorPage.forceActiveFocus()

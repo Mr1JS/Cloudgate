@@ -12,6 +12,7 @@
 #define UTILS_H
 
 #include <SDL.h>
+#include <map> // Needed for saving data from XML
 #include <string>
 
 #include "TileArray.hpp"
@@ -57,6 +58,18 @@ std::string GetExtensionFromFileName(std::string filename);
  * "../test/bla.xml" becomes "../test/".
  */
 std::string GetPathFromFileName(std::string filename);
+
+
+/**
+ * @brief Loads tile names from an XML file
+ *
+ * Parses an XML file containing tile definitions and extracts
+ * tile IDs with their corresponding names.
+ *
+ * @param xmlPath Path to the XML file
+ * @return Map of tile IDs to tile names
+ */
+std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath);
 
 } // namespace jumper
 

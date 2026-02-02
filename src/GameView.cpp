@@ -256,7 +256,8 @@ void GameView::updateGame()
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
     if(m_running && m_gameWindow && m_gameWindow->level())
     {
-        if(m_gameWindow->level()->isActorDead())
+        // Use the new isGameOver() method that checks both HP and camera bounds
+        if(m_gameWindow->level()->isGameOver())
         {
             // Game Over: Stoppe das Spiel
             stopGame();

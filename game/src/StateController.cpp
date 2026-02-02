@@ -133,6 +133,7 @@ void StateController::updateRuntimeGraphics(unsigned int runtime)
         }
         m_runtimeDigits[i]->setValue(digit);
     }
+    */
 }
 
 void StateController::resetGame()
@@ -152,10 +153,16 @@ int StateController::getHp()
 
 void StateController::decrementHp(int number)
 {
-    //std::cout << "Decrementing player hp from " << m_playerHp;
     m_playerHp -= number;
-    //std::cout << " to " << m_playerHp << std::endl;
-    if (m_hearts[m_playerHp])
+    
+    // Guard against negative HP
+    if(m_playerHp < 0)
+    {
+        m_playerHp = 0;
+        return;
+    }
+    
+    if (m_playerHp >= 0 && m_playerHp < MAX_HEARTS && m_hearts[m_playerHp])
     {
         // set heart image out of bounds
         Vector v = Vector(-m_heartWidth*2, -10);

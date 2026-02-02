@@ -20,6 +20,9 @@
 #include "TileSet.hpp"
 #include "LevelForces.hpp"
 #include "StateController.hpp"
+#include "Monster.hpp"
+
+#include <vector>
 
 namespace jumper
 {
@@ -65,6 +68,9 @@ public:
     /// Checks if actor is outside camera bounds (for game over)
     bool isActorOutsideCamera() const;
 
+    /// Checks if game is over (HP <= 0)
+    bool isGameOver() const;
+
     StateController* getStateController();
 
     /// Adds a renderable on the given layer to the level.
@@ -83,6 +89,10 @@ public:
 
     /// Sets the current forces
     void setForces(const LevelForces& f);
+    /// set res path to access RulesTiles.xml
+    void setResPath(std::string path);
+    /// get res path
+    std::string getResPath();
 
 private:
 
@@ -115,6 +125,14 @@ private:
 
     /// For managing level states such as hp, time elapsed and other things
     StateController*        m_stateController;
+
+    /// Monster-Liste für Update (Renderables werden von LayerManager verwaltet)
+    std::vector<Monster*>   m_monsters;
+
+    void spawnMonsters();
+
+    /// set res path to access RulesTiles.xml
+    std::string m_resPath = "";
 };
 
 } /* namespace jumper */

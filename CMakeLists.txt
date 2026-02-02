@@ -35,6 +35,9 @@ set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
 set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
 add_subdirectory(ext/HighFive)
 
+# Box2D Physics Engine (System-Paket: sudo apt install libbox2d-dev)
+find_package(box2d CONFIG REQUIRED)
+
 
 # Print SDL2 information for debugging
 if(SDL2_FOUND)
@@ -61,6 +64,10 @@ if(HDF5_FOUND)
     message(STATUS "HDF5 libraries: ${HDF5_LIBRARIES}")
 endif()
 
+if(box2d_FOUND)
+    message(STATUS "Box2D found (System-Paket libbox2d-dev)")
+endif()
+
 # Game source files from uebung10 - INCLUDE ACTUAL .CPP FILES
 set(GAME_SOURCES
     # Headers
@@ -74,6 +81,7 @@ set(GAME_SOURCES
     game/include/LevelForces.hpp
     game/include/LevelParser.hpp
     game/include/MainWindow.hpp
+    game/include/Monster.hpp
     game/include/MovingRenderable.hpp
     game/include/Physics.hpp
     game/include/SDLRenderable.hpp
@@ -97,6 +105,7 @@ set(GAME_SOURCES
     game/src/LevelForces.cpp
     game/src/LevelParser.cpp
     game/src/MainWindow.cpp
+    game/src/Monster.cpp
     game/src/MovingRenderable.cpp
     game/src/Physics.cpp
     game/src/SDLRenderable.cpp
@@ -169,6 +178,7 @@ target_link_libraries(appCloudgate_game PRIVATE
     ${Boost_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${HDF5_HL_LIBRARIES}
+    box2d::box2d
 )
 
 # Windows DLL copying
