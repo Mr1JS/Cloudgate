@@ -29,15 +29,20 @@ Dieses Projekt kombiniert eine moderne Qt/QML-Benutzeroberfläche mit der vollst
 ### Installation der Abhängigkeiten (Ubuntu/Debian)
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y \
+sudo apt update
+sudo apt install -y \
     qt6-base-dev \
     qt6-declarative-dev \
     libsdl2-dev \
     libsdl2-image-dev \
+    libboost-all-dev \
     libhdf5-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev
+    libbox2d-dev \
+    qml6-module-qtquick-controls \
+    qml6-module-qtquick-templates \
+    qml6-module-qtqml-workerscript \
+    qml6-module-qtquick-window \
+    qml6-module-qtquick-layouts
 ```
 
 ## Kompilierung

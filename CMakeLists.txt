@@ -27,7 +27,6 @@ find_package(SDL2_IMAGE REQUIRED)
 # Boost
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
-
 # Find HDF5
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 # Add HighFive (header-only library)
@@ -35,9 +34,36 @@ set(HIGHFIVE_EXAMPLES FALSE CACHE INTERNAL "")
 set(HIGHFIVE_UNIT_TESTS FALSE CACHE INTERNAL "")
 add_subdirectory(ext/HighFive)
 
-# Box2D Physics Engine (System-Paket: sudo apt install libbox2d-dev)
-find_package(box2d CONFIG REQUIRED)
+string (REGEX MATCH "\\arch[1-9]-[1-9]" arch_version_suffix ${CMAKE_SYSTEM})
 
+# Box2D Physics Engine (System-Paket: sudo apt install libbox2d-dev)
+if(arch_version_suffix)
+    # apparenty arch uses the C libraries for box2d, so we need to manually download the correct lib for arch
+    include(FetchContent)
+
+    # ---- Build dependencies static ----
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build static libraries" FORCE)
+
+    # ---- Box2D 2.4.x: disable extras that cause trouble (unit tests, samples) ----
+    set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+    set(BOX2D_BUILD_TESTBED    OFF CACHE BOOL "" FORCE)
+    set(BOX2D_BUILD_DOCS       OFF CACHE BOOL "" FORCE)
+    # (if contained in version) set(BOX2D_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        box2d
+        GIT_REPOSITORY https://github.com/erincatto/box2d.git
+        GIT_TAG v2.4.1
+    )
+    FetchContent_MakeAvailable(box2d)
+
+
+    if(NOT TARGET box2d::box2d)
+        add_library(box2d::box2d ALIAS box2d)
+    endif()
+else()
+    find_package(box2d CONFIG REQUIRED)
+endif()
 
 # Print SDL2 information for debugging
 if(SDL2_FOUND)
