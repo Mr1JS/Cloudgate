@@ -113,7 +113,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             m_level->addRenderable(bg, layer);
         }
 
-        if (v.first == "icons")
+        if (v.first == "heart")
         {
             // Parse attributes
             std::string textureDataset = v.second.get("<xmlattr>.texture", "");

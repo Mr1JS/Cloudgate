@@ -500,7 +500,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
                 io.save(
                     "textures",
-                    "icons",
+                    "heart",
                     dims,
                     chunks,
                     arr);
@@ -655,12 +655,12 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
 
-    // icons like heart
-    ts << "  <icons texture=\"icons\">\n";
+    // hp hearts
+    ts << "  <heart texture=\"heart\">\n";
     ts << "    <tileWidth>" << 32 << "</tileWidth>\n";
     ts << "    <tileHeight>" << 32 << "</tileHeight>\n";
     ts << "    <layer>3</layer>\n";
-    ts << "  </icons>\n";
+    ts << "  </heart>\n";
     // Actor block (Dummy values for now) //TODO: if there are actor settings to save
     // then this should be adapted and changed accordingly
     ts << "  <actor texture=\"" << actorTextureName << "\">\n";

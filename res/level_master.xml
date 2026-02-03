@@ -11,11 +11,11 @@
     <switchIndex>140</switchIndex>
     <layer>1</layer>
   </collision_tiles>
-  <icons texture="icons">
+  <heart texture="heart">
     <tileWidth>32</tileWidth>
     <tileHeight>32</tileHeight>
     <layer>3</layer>
-  </icons>
+  </heart>
   <actor texture="actor1">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
