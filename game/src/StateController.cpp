@@ -133,7 +133,6 @@ void StateController::updateRuntimeGraphics(unsigned int runtime)
         }
         m_runtimeDigits[i]->setValue(digit);
     }
-    */
 }
 
 void StateController::resetGame()
