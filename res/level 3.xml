@@ -7,14 +7,14 @@
     <tileHeight>32</tileHeight>
     <tilesPerRow>9</tilesPerRow>
     <numRows>17</numRows>
-    <gridHeight>25</gridHeight>
+    <gridHeight>50</gridHeight>
     <tileOffset>4</tileOffset>
     <switchIndex>140</switchIndex>
     <layer>1</layer>
   </collision_tiles>
   <heart texture="heart">
-    <tileWidth>32</tileWidth>
-    <tileHeight>32</tileHeight>
+    <tileWidth>16</tileWidth>
+    <tileHeight>16</tileHeight>
     <layer>3</layer>
   </heart>
   <numbers texture="numbers">
@@ -36,7 +36,7 @@
     <gravity_y>400</gravity_y>
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
-    <scrollSpeed>24</scrollSpeed>
+    <scrollSpeed>16</scrollSpeed>
   </level_forces>
   <goal>
     <type>2</type>

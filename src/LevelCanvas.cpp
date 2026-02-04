@@ -80,8 +80,8 @@ void LevelCanvas::clearLevel()
     // left and right + ground
     for (int y = 0; y < m_gridHeight; ++y)
     {
-        m_levelData[QPair<int, int>(0, y)] = 55;               // left wall
-        m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 55; // right wall
+        m_levelData[QPair<int, int>(0, y)] = 84;               // left wall
+        m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 84; // right wall
     }
 
     // ground
@@ -763,12 +763,12 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
     ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
     ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <gridHeight>" << 25 << "</gridHeight>\n"; // switch with code from develop branch
+    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; // switch with code from develop branch
     ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
     ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
-
+qDebug() << m_gridHeight;
     // hp hearts
     ts << "  <heart texture=\"heart\">\n";
     ts << "    <tileWidth>" << 16 << "</tileWidth>\n";
@@ -1078,6 +1078,130 @@ void LevelCanvas::setExtraTiles(bool mode)
     m_extraTiles = mode;
 }
 
+void LevelCanvas::setQML(QObject* root)
+{
+    m_qmlRoot = root;
+}
+
+std::array<int, 3> LevelCanvas::getQMLValues()
+{
+    // basic values
+    int scrollValue = 8;
+    // type 0 = no condition  type 1 = coins  type 2 = time
+    int type = 0;
+    bool selected = false;
+
+    // scrollSpeed
+    QObject* slider = m_qmlRoot->findChild<QObject*>("scrollSpeed");
+    if (slider) 
+    {
+        scrollValue = slider->property("value").toInt() * 4;
+    }
+
+    // no win condition
+    QObject* buttonNone = m_qmlRoot->findChild<QObject*>("buttonNone");
+    if (buttonNone) 
+    {
+        selected = buttonNone->property("checked").toBool();
+        if (selected)
+        {
+            type = 0;
+            return {scrollValue, type, 0};
+        }
+    }
+
+    // coin win condition
+    QObject* buttonCoins = m_qmlRoot->findChild<QObject*>("buttonCoins");
+    if (buttonCoins) 
+    {
+        selected = buttonCoins->property("checked").toBool();
+        if (selected)
+        {
+            type = 1;
+            QObject* coins = m_qmlRoot->findChild<QObject*>("coinInput");
+            if (coins) 
+            {
+                int coinVal = coins->property("text").toInt();
+                return {scrollValue, type, coinVal};
+            }
+        }
+    }
+
+    // time win condition
+    QObject* buttonTime = m_qmlRoot->findChild<QObject*>("buttonTime");
+    if (buttonTime) 
+    {
+        selected = buttonTime->property("checked").toBool();
+        if (selected)
+        {
+            type = 2;
+            QObject* time = m_qmlRoot->findChild<QObject*>("timeInput");
+            if (time) 
+            {
+                int timeVal = time->property("text").toInt();
+                return {scrollValue, type, timeVal};
+            }
+        }
+    }
+    // if error -> no win condition and base scrollValue
+    return {(scrollValue), 0, 0};
+
+}
+
+void LevelCanvas::setQMLValues(std::array<int, 3> qmlValues)
+{
+    int scrollSpeed = qmlValues[0] / 4;
+    int type = qmlValues[1];
+    int value = qmlValues[2];
+
+    // scroll slider
+    QObject* slider = m_qmlRoot->findChild<QObject*>("scrollSpeed");
+    if (slider) 
+    {
+        slider->setProperty("value", scrollSpeed);
+    }
+
+    // no win condition
+    if (type == 0)
+    {
+        QObject* buttonNone = m_qmlRoot->findChild<QObject*>("buttonNone");
+        if (buttonNone) 
+        {
+            buttonNone->setProperty("checked", true);
+        }
+    }
+    // coin win condition
+    else if (type == 1)
+    {
+        QObject* buttonCoins = m_qmlRoot->findChild<QObject*>("buttonCoins");
+        if (buttonCoins) 
+        {
+            buttonCoins->setProperty("checked", true);
+        }        
+        QObject* coins = m_qmlRoot->findChild<QObject*>("coinInput");
+        if (coins) 
+        {
+            coins->setProperty("text", QString::number(value));
+        }
+
+    }
+    // time win condition
+    else if (type == 2)
+    {
+        QObject* buttonTime = m_qmlRoot->findChild<QObject*>("buttonTime");
+        if (buttonTime) 
+        {
+            buttonTime->setProperty("checked", true);
+        }
+        QObject* time = m_qmlRoot->findChild<QObject*>("timeInput");
+        if (time) 
+        {
+            time->setProperty("text", QString::number(value));
+        }
+    }
+}
+
+
 // Add rows to canvas
 void LevelCanvas::addRowsAbove(int rows)
 {
@@ -1100,7 +1224,7 @@ void LevelCanvas::addRowsAbove(int rows)
         {
             // left and right wall
             if (x == 0 || x == m_gridWidth - 1)
-                newData[qMakePair(x, y)] = 55;
+                newData[qMakePair(x, y)] = 84;
             // everything else stay same
         }
     }
