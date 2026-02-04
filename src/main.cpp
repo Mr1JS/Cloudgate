@@ -11,6 +11,7 @@
 #include "include/LevelCanvas.hpp"
 #include "include/GameController.hpp"
 #include "include/GameView.hpp"
+#include "include/LevelSelector.hpp"
 
 
 int main(int argc, char *argv[])
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<LevelCanvas>("Cloudgate_game", 1, 0, "LevelCanvas");
     qmlRegisterType<GameController>("Cloudgate_game", 1, 0, "GameController");
     qmlRegisterType<GameView>("Cloudgate_game", 1, 0, "GameView");
+    qmlRegisterType<LevelSelector>("Cloudgate_game", 1, 0, "LevelSelector");
 
     QObject::connect(
         &engine,

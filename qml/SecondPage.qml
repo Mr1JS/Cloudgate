@@ -4,6 +4,14 @@ import Cloudgate_game 1.0
 
 Page {
     id: secondPage
+    
+    // start game with level selected
+    function initLevel(file) {
+        console.log("SecondPage initLevel called:", file)
+        gameView.levelPath = file
+        gameView.startGame()
+        forceActiveFocus()
+    }
 
     // GameView fills the entire window
     GameView {
@@ -28,13 +36,6 @@ Page {
             gameView.stopGame()
             stackView.pop()
             myMain.page_value = -1
-        }
-
-        // Initialize when component loads
-        Component.onCompleted: {
-            gameView.levelPath = "res/level_master.xml"
-            forceActiveFocus()
-            gameView.startGame()
         }
 
         // ESC key handler
