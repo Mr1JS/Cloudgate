@@ -39,7 +39,7 @@
     <scrollSpeed>12</scrollSpeed>
   </level_forces>
   <goal>
-    <type>0</type>
-    <value>0</value>
+    <type>2</type>
+    <value>20</value>
   </goal>
 </level>
