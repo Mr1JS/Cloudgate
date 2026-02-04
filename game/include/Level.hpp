@@ -30,6 +30,12 @@ namespace jumper
 class Physics;
 class Actor;
 
+/***
+ * Type of goal condition. \\
+ * NONE  = no specific condition, just reach the goal. \\
+ * COINS = reach the goal with a certain number of coins. \\
+ * TIME  = reach the goal within a certain number of seconds.
+ */
 enum GoalType
 {
     GOAL_NONE = 0,
@@ -38,18 +44,18 @@ enum GoalType
 };
 
 /**
- * Represents the level's clear status.
- * GOALSTATE_NONE           = goal condition not met
- * GOALSTATE_GAME_OVER      = goal condition failed
- * GOALSTATE_LEVEL_FINISHED = finished the level
- * GOALSTATE_WINNABLE       = goal condition met, but not yet done
+ * Represents the level's clear status. \\
+ * GOALSTATE_NONE           = goal condition not met. \\
+ * GOALSTATE_GAME_OVER      = goal condition failed. \\
+ * GOALSTATE_WINNABLE       = goal condition met, but not yet done.
+ * GOALSTATE_LEVEL_FINISHED = finished the level. \\
  */
 enum GoalState
 {
     GOALSTATE_NONE,
     GOALSTATE_GAME_OVER,
-    GOALSTATE_LEVEL_FINISHED,
-    GOALSTATE_WINNABLE
+    GOALSTATE_WINNABLE,
+    GOALSTATE_LEVEL_FINISHED
 };
 
 /**
@@ -116,9 +122,14 @@ public:
     /// set goalState to GOALSTATE_LEVEL_FINISHED
     void win();
 
+    /// whether player has reached the exit and level should be exited.
+    /// Returns true when goalState is GOALSTATE_LEVEL_FINISHED
     bool isLevelFinished();
 
-    void setGoalCondition(int type, int targetNumber);
+    /// @brief configure the type of goal for the level
+    /// @param type instance of \ref GoalType
+    /// @param targetValue value to meet for goal type, if necessary
+    void setGoalCondition(int type, int targetValue);
 
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
@@ -163,11 +174,13 @@ private:
     /// Monster-Liste für Update (Renderables werden von LayerManager verwaltet)
     std::vector<Monster*>   m_monsters;
 
-    /// Type of goal
+    /// Type of goal requirement, e.g. time, coins, etc.
     GoalType                m_goalType;
 
-    int                     m_goalTargetNumber;
+    /// Value to reach the target, if necessary. E.g. coin count, time limit in sec, etc.
+    int                     m_goalTargetValue;
 
+    /// Whether player has met the goal requirements, or not, or failed, or finished the level
     GoalState               m_goalState;
 
     /// set res path to access RulesTiles.xml

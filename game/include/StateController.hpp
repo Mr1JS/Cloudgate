@@ -29,35 +29,41 @@ public:
     /// Create an instance of StateController
     StateController(MainWindow* mainWindow, std::string& filename);
 
-    std::array<SDLRenderable*, MAX_HEARTS> addHeartTexture(SDL_Texture* heartTexture, int texWidth, int layer);
+    /// Initialize display of player hp as hearts in the top right corner
+    std::array<SDLRenderable*, MAX_HEARTS> initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int layer);
 
-    std::array<TimerDigit*, RUNTIME_DIGITS> addDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
+    /// Initialize display of level time display in the top left corner
+    std::array<TimerDigit*, RUNTIME_DIGITS> initTimerDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
 
+    /// Start or resume game
     void startGame();
 
-    /// Updates game time
+    /// Updates game time, including display
     void updateGameTime();
 
     /// Reset runtime back to 0
     void resetGame();
 
+    /// Stop and pause game
     void stop();
 
+    /// Returns current hp count
     int getHp();
 
+    /// Decrement hp by optionally given number
+    /// @param number (optional) amount of hp to decrease (default: 1)
     void decrementHp(int number = 1);
 
+    /// Reset hp to default value
     void resetHp();
 
+    /// Returns true if game is paused
     bool isPaused();
 
     /// Returns current player HP
     int getHp() const;
 
     unsigned int getRuntime() const;
-
-    /// renders hearts and game time on screen
-    void render();
 
     /// Destructor of class StateController
     virtual ~StateController();
@@ -83,12 +89,16 @@ private:
     /// Whether level has started and runtime should be logged or not
     bool m_isRunning;
 
+    /// heart sprites
     std::array<SDLRenderable*, MAX_HEARTS> m_hearts;
 
+    /// width of a heart sprite - used in calculating position of the sprites
     int m_heartWidth;
 
+    /// sprites of the individual timer digits
     std::array<TimerDigit*, RUNTIME_DIGITS> m_runtimeDigits;
 
+    /// reference to MainWindow class
     MainWindow* m_mainWindow;
 };
 

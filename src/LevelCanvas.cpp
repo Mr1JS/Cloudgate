@@ -375,12 +375,14 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // ---------- prepare tileset image ----------
     if (!m_tilesetPath.isEmpty())
     {
-                        std::cout << "\ntileset saved\n";
+        std::cout << "\ntileset saved\n";
         QImage img(m_tilesetPath);
         if (!img.isNull())
-                        std::cout << "\ntileset saved\n";
+        {
+            std::cout << "\ntileset saved\n";
             // TODO: Change the Color format pls
             m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
+        }
     }
 
     // ---------- prepare background image ----------

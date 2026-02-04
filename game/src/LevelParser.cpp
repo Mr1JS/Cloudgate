@@ -139,7 +139,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Add hearts to stateController
-            std::array<SDLRenderable*, MAX_HEARTS> rs = m_level->getStateController()->addHeartTexture(tex, tileWidth, layer);
+            std::array<SDLRenderable*, MAX_HEARTS> rs = m_level->getStateController()->initHeartDisplay(tex, tileWidth, layer);
 
             for (int i = 0; i < MAX_HEARTS; i++)
             {
@@ -173,7 +173,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Init digits in StateController
-            std::array<TimerDigit*, RUNTIME_DIGITS> digits = m_level->getStateController()->addDigits(tex, numFrames, frameWidth, frameHeight, layer);
+            std::array<TimerDigit*, RUNTIME_DIGITS> digits = m_level->getStateController()->initTimerDigits(tex, numFrames, frameWidth, frameHeight, layer);
             for (int i = 0; i < RUNTIME_DIGITS; i++) {
                 m_level->addRenderable(digits[i], layer);
             }
@@ -251,9 +251,9 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
         if (v.first == "goal")
         {
             int type   = v.second.get<int>("type", 0);
-            int number      = v.second.get<int>("number", 0);
+            int value      = v.second.get<int>("value", 0);
 
-            m_level->setGoalCondition(type, number);
+            m_level->setGoalCondition(type, value);
         }
     }
 }

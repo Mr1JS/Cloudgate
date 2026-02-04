@@ -10,6 +10,7 @@
     <file>images/snake.png</file>
     <file>images/ghost.png</file>
     <file>images/heart3.png</file>
+    <file>images/numbers.png</file>
     <file>images/backgroundMountain.png</file>
   </qresource>
 </RCC>

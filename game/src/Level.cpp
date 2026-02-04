@@ -41,7 +41,7 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     m_actor             = 0;
     m_tiles             = 0;
     m_goalType          = GOAL_NONE;
-    m_goalTargetNumber  = 0;
+    m_goalTargetValue  = 0;
     m_goalState         = GOALSTATE_NONE;
 
     m_stateController = new StateController(mainWindow, filename);
@@ -417,7 +417,7 @@ GoalState Level::checkAndUpdateGoalState() {
     switch (m_goalType)
     {
     case GOAL_TIME:
-        if (m_stateController->getRuntime() > m_goalTargetNumber)
+        if (m_stateController->getRuntime() > m_goalTargetValue*1000)
         {
             state = GOALSTATE_GAME_OVER;
         }
@@ -452,10 +452,10 @@ bool Level::isLevelFinished()
     return finished;
 }
 
-void Level::setGoalCondition(int type, int targetNumber)
+void Level::setGoalCondition(int type, int targetValue)
 {
     m_goalType = GoalType(type);
-    m_goalTargetNumber = targetNumber;
+    m_goalTargetValue = targetValue;
 }
 
 Level::~Level()

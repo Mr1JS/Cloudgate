@@ -19,7 +19,7 @@ StateController::StateController(MainWindow* mainWindow, std::string& filename)
 }
 
 
-std::array<SDLRenderable*, MAX_HEARTS> StateController::addHeartTexture(SDL_Texture* heartTexture, int texWidth, int layer)
+std::array<SDLRenderable*, MAX_HEARTS> StateController::initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int layer)
 {
 //    m_hearts = new SDLRenderable[MAX_HEARTS];
     std::cout << "Loading heart textures" << std::endl;
@@ -54,7 +54,7 @@ void StateController::resetHeartPosition()
     }
 }
 
-std::array<TimerDigit*, RUNTIME_DIGITS> StateController::addDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
+std::array<TimerDigit*, RUNTIME_DIGITS> StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
 {
     int x = 25;
     for (int i = 0; i < RUNTIME_DIGITS; i++)
@@ -119,7 +119,7 @@ void StateController::updateRuntime(unsigned int runtime)
     unsigned int sec = m_runtime/1000 - min*60;
     unsigned int ms  = m_runtime - sec*1000;
     unsigned int digit = 0;
-    for (int i = RUNTIME_DIGITS; i > 0; i--)
+    for (int i = RUNTIME_DIGITS-1; i >= 0; i--)
     {
         if (i > RUNTIME_DIGITS-3)
         {
@@ -166,16 +166,25 @@ void StateController::decrementHp(int number)
         return;
     }
     
-    if (m_playerHp >= 0 && m_playerHp < MAX_HEARTS && m_hearts[m_playerHp])
+    if (m_playerHp >= 0 && m_playerHp < MAX_HEARTS)
     {
-        // set heart image out of bounds
+        // set lost heart images out of bounds
         Vector v = Vector(-m_heartWidth*2, -10);
-        m_hearts[m_playerHp]->setPosition(v);
+        if (number == 1)
+        {
+            m_hearts[m_playerHp]->setPosition(v);
+        }
+        else
+        {
+            for (int i = m_playerHp + number - 1; i > m_playerHp; i--)
+            {
+                if (m_hearts[i])
+                {
+                    m_hearts[i]->setPosition(v);
+                }
+            }
+        }
     }
-}
-
-void StateController::render()
-{
 }
 
 int StateController::getHp() const
