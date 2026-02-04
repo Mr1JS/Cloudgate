@@ -11,9 +11,10 @@ StateController::StateController(MainWindow* mainWindow, std::string& filename)
 {
     m_mainWindow = mainWindow;
     m_isRunning = false;
-    m_runtime = 0;
-    m_playerHp = MAX_HEARTS;
     m_timer = new QElapsedTimer();
+    m_runtime = 0;
+    m_lastTimer = 0;
+    m_playerHp = MAX_HEARTS;
     m_heartWidth = -1;
 }
 
@@ -82,6 +83,7 @@ void StateController::startGame()
 {
     m_isRunning = true;
     m_timer->start();
+    m_lastTimer = 0;
 }
 
 void StateController::updateGameTime()
@@ -91,14 +93,15 @@ void StateController::updateGameTime()
         return;
     }
 
-    unsigned int runtimed = m_timer->elapsed();
-    if (runtimed - m_runtime > 100) {
+    unsigned int currentTimer = m_timer->elapsed();
+    unsigned int runtimed = currentTimer - m_lastTimer;
+    if (runtimed > 100) {
         unsigned int min = m_runtime/1000/60;
         unsigned int sec = m_runtime/1000 - min*60;
         unsigned int ms  = m_runtime - sec*1000;
         std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
-        updateRuntimeGraphics(runtimed);
-        m_runtime = runtimed;
+        updateRuntime(m_runtime + runtimed);
+        m_lastTimer = currentTimer;
     }
 }
 
@@ -107,8 +110,10 @@ void StateController::stop()
     m_isRunning = false;
 }
 
-void StateController::updateRuntimeGraphics(unsigned int runtime)
+void StateController::updateRuntime(unsigned int runtime)
 {
+    m_runtime = runtime;
+
     // TODO: this would need to be changed if RUNTIME_DIGITS < 6
     unsigned int min = m_runtime/1000/60;
     unsigned int sec = m_runtime/1000 - min*60;

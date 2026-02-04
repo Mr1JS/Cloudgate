@@ -64,14 +64,18 @@ private:
     void resetHeartPosition();
 
     // updates runtime visuals
-    void updateRuntimeGraphics(unsigned int runtime);
+    void updateRuntime(unsigned int runtime);
 
     /// Player hp in hearts
     int m_playerHp;
 
-    /// Current time elapsed in level
+    /// Current time elapsed in level, as will be displayed on screen
     unsigned int m_runtime;
 
+    /// Last time stored in m_timer (will be reset after a pause)
+    unsigned int m_lastTimer;
+
+    /// QElapsedTimer is used to measure time elapsed since game start
     QElapsedTimer* m_timer;
 
     /// Whether level has started and runtime should be logged or not
