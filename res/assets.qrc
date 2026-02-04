@@ -12,5 +12,6 @@
     <file>images/heart3.png</file>
     <file>images/numbers.png</file>
     <file>images/backgroundMountain.png</file>
+    <file>images/LevelSelectorBackground.jpg</file>
   </qresource>
 </RCC>
