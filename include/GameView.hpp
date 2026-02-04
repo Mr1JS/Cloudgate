@@ -52,6 +52,7 @@ signals:
     void gameStarted();
     void gameStopped();
     void gameOver();
+    void levelFinished();
 
 protected:
     void componentComplete() override;

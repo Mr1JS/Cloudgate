@@ -37,9 +37,12 @@ Level::Level(MainWindow* mainWindow, std::string filename)
       m_camera(322, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera)
 {
-    m_physics   = 0;
-    m_actor     = 0;
-    m_tiles     = 0;
+    m_physics           = 0;
+    m_actor             = 0;
+    m_tiles             = 0;
+    m_goalType          = GOAL_NONE;
+    m_goalTargetValue  = 0;
+    m_goalState         = GOALSTATE_NONE;
 
     m_stateController = new StateController(mainWindow, filename);
 
@@ -223,54 +226,69 @@ void Level::update(const Uint8* keystates)
     // Update camera (automatisches Scrollen nach oben)
     // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
     double dt = 1.0 / 60.0;
-    if (m_stateController->isPaused())
+    if (!m_stateController->isPaused())
     {
-        dt = 0;
-    }
-
-    m_camera.update(dt);
+        m_camera.update(dt);
     
-    if(m_physics)
-    {
-        // Update actor according to given key states
-        updateActor(keystates);
-        
-        // Run physics
-        m_physics->update();
-
-        // Monster-Kollision: Schaden + Knockback
-        unsigned int now = SDL_GetTicks();
-        const unsigned int damageCooldownMs = 1000;
-        if(m_actor && now - m_physics->getLastHazardDamageTicks() >= damageCooldownMs)
+        if(m_physics)
         {
-            double ax = m_actor->worldPosition().x(), ay = m_actor->worldPosition().y();
-            int aw = m_actor->w(), ah = m_actor->h();
-            for(Monster* mon : m_monsters)
+            // Update actor according to given key states
+            updateActor(keystates);
+            
+            // Run physics
+            m_physics->update();
+
+            // Monster-Kollision: Schaden + Knockback
+            unsigned int now = SDL_GetTicks();
+            const unsigned int damageCooldownMs = 1000;
+            if(m_actor && now - m_physics->getLastHazardDamageTicks() >= damageCooldownMs)
             {
-                double mx = mon->worldPosition().x(), my = mon->worldPosition().y();
-                int mw = mon->w(), mh = mon->h();
-                if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
+                double ax = m_actor->worldPosition().x(), ay = m_actor->worldPosition().y();
+                int aw = m_actor->w(), ah = m_actor->h();
+                for(Monster* mon : m_monsters)
                 {
-                    m_physics->setLastHazardDamageTicks(now);
-                    if(m_stateController) m_stateController->decrementHp(1);
-                    double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
-                    m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));
-                    break;
+                    double mx = mon->worldPosition().x(), my = mon->worldPosition().y();
+                    int mw = mon->w(), mh = mon->h();
+                    if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
+                    {
+                        m_physics->setLastHazardDamageTicks(now);
+                        if(m_stateController) m_stateController->decrementHp(1);
+                        double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
+                        m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    for(Monster* m : m_monsters)
-        m->update(dt, m_actor);
+        for(Monster* m : m_monsters)
+        {
+            m->update(dt, m_actor);
+        }
+    }
         
     if (m_stateController)
     {
+        // advance game timer - except if game is paused
         m_stateController->updateGameTime();
+
+        if (m_goalType == GOAL_TIME)
+        {
+            checkAndUpdateGoalState();
+        }
         
+        // unpause game if any key is pressed
         if (m_stateController->isPaused() && (keystates[SDL_SCANCODE_LEFT ] || keystates[SDL_SCANCODE_RIGHT]
-            || keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_SPACE])) {
-                m_stateController->startGameTime();
+            || keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_SPACE]
+            || keystates[SDL_SCANCODE_P]))
+        {
+                m_stateController->startGame();
+        }
+
+        if (keystates[SDL_SCANCODE_P])
+        {
+            std::cout << "Pausing game" << std::endl;
+            m_stateController->stop();
         }
     }
 }
@@ -383,7 +401,61 @@ bool Level::isGameOver() const
     }
     
     // Check if actor fell out of camera
-    return isActorOutsideCamera();
+    return isActorOutsideCamera() || m_goalState == GOALSTATE_GAME_OVER;
+}
+
+GoalState Level::checkAndUpdateGoalState() {
+    // if we already won or lost, there's no need to check for anything anmore
+    switch (m_goalState)
+    {
+    case GOALSTATE_GAME_OVER:
+    case GOALSTATE_LEVEL_FINISHED:
+        return m_goalState;
+    }
+
+    GoalState state = m_goalState;
+    switch (m_goalType)
+    {
+    case GOAL_TIME:
+        if (m_stateController->getRuntime() > m_goalTargetValue*1000)
+        {
+            state = GOALSTATE_GAME_OVER;
+        }
+        else
+        {
+            state = GOALSTATE_WINNABLE;
+        }
+        break;
+
+    // TODO: implement once there are coins in this game
+    //case GOAL_COINS:
+        
+    default:
+        state = GOALSTATE_WINNABLE;
+        break;
+    }
+
+    m_goalState = state;
+
+    return m_goalState;
+}
+
+void Level::win()
+{
+    m_goalState = GOALSTATE_LEVEL_FINISHED;
+}
+
+bool Level::isLevelFinished()
+{
+    bool finished = m_goalState == GOALSTATE_LEVEL_FINISHED;
+//    std::cout << "Level is finished? " << finished << std::endl;
+    return finished;
+}
+
+void Level::setGoalCondition(int type, int targetValue)
+{
+    m_goalType = GoalType(type);
+    m_goalTargetValue = targetValue;
 }
 
 void Level::setCameraSettings(float scrollSpeed, float pos_y)
@@ -399,7 +471,10 @@ Level::~Level()
         delete m_physics;
     }
 
-
+    if (m_stateController)
+    {
+        delete m_stateController;
+    }
 }
 
 

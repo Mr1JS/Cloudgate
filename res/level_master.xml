@@ -12,11 +12,17 @@
     <switchIndex>140</switchIndex>
     <layer>1</layer>
   </collision_tiles>
-  <icons texture="icons">
+  <heart texture="heart">
     <tileWidth>32</tileWidth>
     <tileHeight>32</tileHeight>
     <layer>3</layer>
-  </icons>
+  </heart>
+  <numbers texture="numbers">
+    <num_frames>10</num_frames>
+    <frame_width>10</frame_width>
+    <frame_height>10</frame_height>
+    <layer>3</layer>
+  </numbers>
   <actor texture="actor1">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
@@ -33,7 +39,7 @@
     <scrollSpeed>12</scrollSpeed>
   </level_forces>
   <goal>
-    <type>0</type>
-    <value>0</value>
+    <type>2</type>
+    <value>20</value>
   </goal>
 </level>

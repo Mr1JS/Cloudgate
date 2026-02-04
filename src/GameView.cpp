@@ -263,6 +263,12 @@ void GameView::updateGame()
             stopGame();
             emit gameOver();
         }
+
+        if(m_gameWindow->level()->isLevelFinished())
+        {
+            stopGame();
+            emit levelFinished();
+        }
     }
 
     delete[] keystates;
@@ -413,6 +419,7 @@ SDL_Keycode GameView::convertQtKeyToSDL(int qtKey)
     case Qt::Key_Space: return SDLK_SPACE;
     case Qt::Key_A: return SDLK_a;
     case Qt::Key_D: return SDLK_d;
+    case Qt::Key_P: return SDLK_p;
     default: return SDLK_UNKNOWN;
     }
 }
@@ -428,6 +435,7 @@ SDL_Scancode GameView::convertQtKeyToSDLScancode(int qtKey)
     case Qt::Key_Space: return SDL_SCANCODE_SPACE;
     case Qt::Key_A: return SDL_SCANCODE_A;
     case Qt::Key_D: return SDL_SCANCODE_D;
+    case Qt::Key_P: return SDL_SCANCODE_P;
     default: return SDL_SCANCODE_UNKNOWN;
     }
 }

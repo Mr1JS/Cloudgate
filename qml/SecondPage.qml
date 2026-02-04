@@ -7,7 +7,6 @@ Page {
     
     // start game with level selected
     function initLevel(file) {
-        console.log("SecondPage initLevel called:", file)
         gameView.levelPath = file
         gameView.startGame()
         forceActiveFocus()
@@ -33,6 +32,12 @@ Page {
 
         // Called when game over (all hearts lost or player fell)
         onGameOver: {
+            gameView.stopGame()
+            stackView.pop()
+            myMain.page_value = -1
+        }
+
+        onLevelFinished: {
             gameView.stopGame()
             stackView.pop()
             myMain.page_value = -1

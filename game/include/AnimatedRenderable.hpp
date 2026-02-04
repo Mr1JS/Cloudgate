@@ -61,7 +61,7 @@ public:
     /**
      * Moves the source rect to the next frame
      */
-    void nextFrame();
+    virtual void nextFrame();
 
     /**
      * Sets frames per second for animation
