@@ -120,11 +120,6 @@ Page {
                 }
 
                 Button {
-                    text: "+ 5 Tile above"
-                    onClicked: editorController.addRowsAbove(5)
-                }
-
-                Button {
                     id: menuButton
                     text: "Menu ▼"
                     onClicked: dropdownMenu.open()
@@ -144,6 +139,11 @@ Page {
                         MenuItem {
                             text: "Load"
                             onTriggered: editorController.loadLevel()
+                        }
+
+                        MenuItem {
+                            text: "+ 5 Tile above"
+                            onClicked: editorController.addRowsAbove(5)
                         }
                     }
                 }
