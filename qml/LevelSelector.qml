@@ -117,7 +117,7 @@ Page {
                         console.log("Level gewählt:", file)
 
                         // switch to SecondPage (created as Component to send file path too)
-                        var comp = Qt.createComponent("qrc:/qt/qml/Cloudgate_game/qml/SecondPage.qml")
+                        var comp = Qt.createComponent("SecondPage.qml")
                         if (comp.status === Component.Ready) 
                         {
                             var page = comp.createObject(stackView)
