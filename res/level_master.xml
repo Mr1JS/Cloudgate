@@ -7,6 +7,7 @@
     <tileHeight>32</tileHeight>
     <tilesPerRow>9</tilesPerRow>
     <numRows>17</numRows>
+    <gridHeight>25</gridHeight>
     <tileOffset>4</tileOffset>
     <switchIndex>140</switchIndex>
     <layer>1</layer>
@@ -21,7 +22,7 @@
     <frame_width>36</frame_width>
     <frame_height>48</frame_height>
     <position_x>50</position_x>
-    <position_y>1250</position_y>
+    <position_y>450</position_y>
     <layer>2</layer>
   </actor>
   <level_forces>
@@ -29,5 +30,10 @@
     <gravity_y>400</gravity_y>
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
+    <scrollSpeed>12</scrollSpeed>
   </level_forces>
+  <goal>
+    <type>0</type>
+    <value>0</value>
+  </goal>
 </level>

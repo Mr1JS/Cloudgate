@@ -40,6 +40,11 @@ void Camera::moveY(int pixels)
     m_position -= Vector<int>(0, pixels);
 }
 
+void Camera::setY(int pixels)
+{
+    m_position = Vector<int>(x(), pixels);
+}
+
 Vector<int> Camera::getPosition() const
 {
     return Vector<int>(x(), y());
@@ -61,11 +66,9 @@ int Camera::y() const
 void Camera::update(double dt)
 {
     // Kamera scrollt langsam nach oben (Y-Position verringern)
-    // Geschwindigkeit: 10 Pixel pro Sekunde nach oben (langsam für besseres Gameplay)
-    double scrollSpeed = 8.0;  // Pixel pro Sekunde
     
     // Akkumuliere die Bewegung (für smooth scrolling bei kleinen Werten)
-    m_scrollAccumulator += scrollSpeed * dt;
+    m_scrollAccumulator += m_scrollSpeed * dt;
     
     // Wenn wir mindestens 1 Pixel bewegt haben, wende die Bewegung an
     if(m_scrollAccumulator >= 1.0)
@@ -74,6 +77,11 @@ void Camera::update(double dt)
         m_position.setY(m_position.y() - pixelsToMove);
         m_scrollAccumulator -= pixelsToMove;  // Behalte den Rest für den nächsten Frame
     }
+}
+
+void Camera::setScrollSpeed(float scrollSpeed)
+{
+    m_scrollSpeed = scrollSpeed;
 }
 
 int Camera::width() const

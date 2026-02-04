@@ -43,6 +43,8 @@ public:
      */
     void moveY(int pixels);
 
+    void setY(int pixels);
+
     Vector<int> getPosition() const;
 
     /// Returns the current x-position
@@ -66,6 +68,9 @@ public:
     /// Updates the camera (for automatic scrolling)
     void update(double dt);
 
+    /// set scroll speed for camera
+    void setScrollSpeed(float scrollSpeed);
+
 private:
 
     /// Position of the camera
@@ -82,6 +87,9 @@ private:
     
     /// Accumulator for smooth scrolling (stores fractional pixels)
     double m_scrollAccumulator;
+
+    /// speed of Camera scrolling up
+    float m_scrollSpeed = 8;
 };
 
 } /* namespace jumper */
