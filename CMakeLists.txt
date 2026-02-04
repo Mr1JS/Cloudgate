@@ -37,7 +37,7 @@ add_subdirectory(ext/HighFive)
 string (REGEX MATCH "\\arch[1-9]-[1-9]" arch_version_suffix ${CMAKE_SYSTEM})
 
 # Box2D Physics Engine (System-Paket: sudo apt install libbox2d-dev)
-if(arch_version_suffix)
+if(APPLE OR arch_version_suffix)
     # apparenty arch uses the C libraries for box2d, so we need to manually download the correct lib for arch
     include(FetchContent)
 
