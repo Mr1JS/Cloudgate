@@ -78,19 +78,12 @@ std::string GetPathFromFileName(std::string filename)
 
 
 /**
- * @brief Loads tile names from an XML file
- *
- * Parses an XML file containing tile definitions and extracts
- * tile IDs with their corresponding names.
- * Example XML: <tile id="1" name="grass"/>
- *
- * @param xmlPath Path to the XML file
- * @return Map of tile IDs to tile names
+ * @brief Loads tile definitions from XML including collision shape.
+ * Optional attribute: shape="full"|"half_bottom"|"half_left"|"half_right"|"half_top"|"diag_tl_br"|"diag_tr_bl"
  */
-// In Util.cpp
-std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath)
+std::map<int, TileInfo> ParseXMLData(const std::string& xmlPath)
 {
-    std::map<int, std::pair<std::string, std::string>> tileData;
+    std::map<int, TileInfo> tileData;
 
     QFile file(QString::fromStdString(xmlPath));
     if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -104,14 +97,16 @@ std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::strin
     {
         xml.readNext();
 
-        // get name and type by id
         if (xml.isStartElement() && xml.name() == QString("tile"))
         {
             QXmlStreamAttributes attr = xml.attributes();
             int id = attr.value("id").toInt();
-            QString name = attr.value("name").toString();
-            QString type = attr.value("type").toString();
-            tileData[id] = {name.toStdString(), type.toStdString()};
+            TileInfo info;
+            info.name  = attr.value("name").toString().toStdString();
+            info.type  = attr.value("type").toString().toStdString();
+            QString sh = attr.value("shape").toString();
+            info.shape = sh.isEmpty() ? "full" : sh.toStdString();
+            tileData[id] = info;
         }
     }
 

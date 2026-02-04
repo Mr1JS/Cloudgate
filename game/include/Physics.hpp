@@ -15,9 +15,11 @@
 
 #include "TileSetRepresentation.hpp"
 #include "ActorForces.hpp"
+#include "Util.hpp"
 #include "Vector.hpp"
 
 #include <map>
+#include <vector>
 #include <box2d/box2d.h>
 
 namespace jumper {
@@ -70,6 +72,9 @@ public:
     // get Tile Data in ContactListener
     std::pair<std::string, std::string> getTileData(int tileId);
 
+    /// Body nach Kontakt-Callback zerstören (z.B. gesammelte Münze)
+    void queueBodyForDestruction(b2Body* body);
+
 private:
 
     /// Erstellt statische Box2D-Bodies aus den Level-Tiles
@@ -116,8 +121,11 @@ private:
 
     /// Y-Offset der Tile-Welt in Pixel
     static constexpr float  TILE_Y_OFFSET = 600.0f;
-    /// list of tileNames and tileTypes for each tileID
-    std::map<int, std::pair<std::string, std::string>> m_tileData;
+    /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
+    std::map<int, TileInfo> m_tileData;
+
+    /// Bodies, die nach dem Kontakt-Callback zerstört werden (z.B. Collectibles)
+    std::vector<b2Body*> m_bodiesToDestroy;
 };
 
 } // namespace jumper

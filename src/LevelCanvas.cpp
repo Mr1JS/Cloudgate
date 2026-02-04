@@ -7,7 +7,6 @@
 #include <QDir>
 #include <QDataStream>
 #include <QFileInfo>
-#include <QTextStream>
 #include <QXmlStreamReader>
 #include <QPair>
 #include <QMap>
@@ -72,18 +71,31 @@ void LevelCanvas::clearLevel()
     {
         m_levelData.remove(key);
     }
+    // Change grid to standard values
+    m_gridWidth = 20;
+    m_gridHeight = 25;
 
-    // Create frame on first call only
-    if (m_levelData.isEmpty())
+    int floorY = m_gridHeight - 1;
+
+    // left and right + ground
+    for (int y = 0; y < m_gridHeight; ++y)
     {
-        for (int x = 1; x < m_gridWidth - 1; x++)
-            m_levelData[QPair<int, int>(x, m_gridHeight - 1)] = 1;
-        for (int y = 0; y < m_gridHeight; y++)
-        {
-            m_levelData[QPair<int, int>(0, y)] = 84;
-            m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 84;
-        }
+        m_levelData[QPair<int, int>(0, y)] = 84;               // left wall
+        m_levelData[QPair<int, int>(m_gridWidth - 1, y)] = 84; // right wall
     }
+
+    // ground
+    for (int x = 1; x < m_gridWidth - 1; ++x)
+    {
+        m_levelData[QPair<int, int>(x, floorY)] = 1;
+    }
+
+    // Modify canvas
+    setHeight(m_gridHeight * m_tileHeight);
+    setWidth(m_gridWidth * m_tileWidth);
+
+    emit gridHeightChanged();
+    emit gridWidthChanged();
     update();
 }
 
@@ -314,16 +326,15 @@ static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &ou
     // Qt to SDL fix by manually switching rgba values
     for (int i = 0; i < H * W; ++i)
     {
-        unsigned char a = src[4*i + 3];
-        unsigned char r = src[4*i + 2];
-        unsigned char g = src[4*i + 1];
-        unsigned char b = src[4*i + 0];
+        unsigned char a = src[4 * i + 3];
+        unsigned char r = src[4 * i + 2];
+        unsigned char g = src[4 * i + 1];
+        unsigned char b = src[4 * i + 0];
 
-        dst[4*i + 0] = b; 
-        dst[4*i + 1] = g; 
-        dst[4*i + 2] = r; 
-        dst[4*i + 3] = a; 
-
+        dst[4 * i + 0] = b;
+        dst[4 * i + 1] = g;
+        dst[4 * i + 2] = r;
+        dst[4 * i + 3] = a;
     }
 
     return true;
@@ -345,15 +356,15 @@ static QImage rgbaBytesToImage(const std::vector<unsigned char> &bytes, int H, i
     for (int i = 0; i < H * W; ++i)
     {
         // same fix as above
-        unsigned char b = bytes[4*i + 0];
-        unsigned char g = bytes[4*i + 1];
-        unsigned char r = bytes[4*i + 2];
-        unsigned char a = bytes[4*i + 3];
+        unsigned char b = bytes[4 * i + 0];
+        unsigned char g = bytes[4 * i + 1];
+        unsigned char r = bytes[4 * i + 2];
+        unsigned char a = bytes[4 * i + 3];
 
-        dst[4*i + 0] = b;
-        dst[4*i + 1] = g;
-        dst[4*i + 2] = r;
-        dst[4*i + 3] = a;
+        dst[4 * i + 0] = b;
+        dst[4 * i + 1] = g;
+        dst[4 * i + 2] = r;
+        dst[4 * i + 3] = a;
     }
 
     return img;
@@ -377,8 +388,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     const QString h5Path = outDir + "/" + baseName + ".h5";
 
     // ---------- collision data ----------
-    const int gridH = 32;
-    const int gridW = 73;
+    // Changed standard values to the actual values of the Grid
+    int gridW = m_gridWidth;
+    int gridH = m_gridHeight;
 
     std::vector<int> flatCollision =
         flattenTileMap(m_levelData, gridW, gridH, 0);
@@ -445,6 +457,38 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         // ==========================================================
         using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
+        // TODO: when file is replaced then we have an error:
+        /* tileset saved
+        qt.gui.imageio: libpng warning: iCCP: known incorrect sRGB profile
+        qt.gui.imageio: libpng warning: iCCP: cHRM chunk does not match sRGB
+
+        tileset saved
+        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 30 x 36 x4
+        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 50 x 48 x4
+        [Hdf5Util - createDataset] WARNING: size has changed. resizing dataset
+        HDF5-DIAG: Error detected in HDF5 (1.10.10) thread 1:
+        #000: ../../../src/H5D.c line 861 in H5Dset_extent(): unable to set dataset extent
+            major: Dataset
+            minor: Can't set value
+        #001: ../../../src/H5Dint.c line 2801 in H5D__set_extent(): unable to modify size of dataspace
+            major: Dataset
+            minor: Unable to initialize object
+        #002: ../../../src/H5S.c line 1823 in H5S_set_extent(): dimension cannot exceed the existing maximal size (new: 65 max: 40)
+            major: Dataspace
+            minor: Bad value */
+        // otherwise if u create a file for that it works
+        // TODO: CURRENT ALTERNATIVE ... NEEDS TO BE INVESTIGATED
+        // ----------------------------------------------------------
+        // Ensure fresh HDF5 file (avoid file lock + stale datasets
+        // ----------------------------------------------------------
+        if (QFile::exists(h5Path))
+        {
+            if (!QFile::remove(h5Path))
+            {
+                qWarning() << "[LevelCanvas] Could not remove existing H5 file:" << h5Path;
+            }
+        }
+
         io.open(h5Path.toStdString());
 
         // ----------------------------------------------------------
@@ -456,7 +500,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
             int h = 0, w = 0;
             if (imageToRgbaBytes(m_tilesetImage, bytes, h, w))
             {
-            
+
                 std::vector<size_t> dims = {
                     static_cast<size_t>(h),
                     static_cast<size_t>(w),
@@ -533,7 +577,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
                     arr);
             }
         }
-        
+
         // ----------------------------------------------------------
         // Save number texture as RAW DATASET
         // ----------------------------------------------------------
@@ -679,8 +723,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     int goalType = qmlValues[1];
     int goalValue = qmlValues[2];
     // prevent a win condition being collect more coins than possible
-    if (goalType == 1) 
-    {   
+    if (goalType == 1)
+    {
         int maxCoins = countCoins(m_levelData);
         if (maxCoins < goalValue)
         {
@@ -719,24 +763,24 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
     ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
     ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <gridHeight>" << 25 << "</gridHeight>\n";             // switch with code from develop branch
+    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; // switch with code from develop branch
     ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
     ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
-
+qDebug() << m_gridHeight;
     // hp hearts
     ts << "  <heart texture=\"heart\">\n";
-    ts << "    <tileWidth>"     << 32 << "</tileWidth>\n";
-    ts << "    <tileHeight>"    << 32 << "</tileHeight>\n";
+    ts << "    <tileWidth>" << 16 << "</tileWidth>\n";
+    ts << "    <tileHeight>" << 16 << "</tileHeight>\n";
     ts << "    <layer>3</layer>\n";
     ts << "  </heart>\n";
 
     // numbers
     ts << "  <numbers texture=\"numbers\">\n";
-    ts << "    <num_frames>"    << 10 << "</num_frames>\n";
-    ts << "    <frame_width>"   << 10 << "</frame_width>\n";
-    ts << "    <frame_height>"  << 10 << "</frame_height>\n";
+    ts << "    <num_frames>" << 10 << "</num_frames>\n";
+    ts << "    <frame_width>" << 10 << "</frame_width>\n";
+    ts << "    <frame_height>" << 10 << "</frame_height>\n";
     ts << "    <layer>3</layer>\n";
     ts << "  </numbers>\n";
 
@@ -814,7 +858,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     }
 
     QXmlStreamReader xml(&f);
-    
+
     while (!xml.atEnd())
     {
         xml.readNext();
@@ -836,36 +880,36 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
                 colTextureName = xml.attributes().value("texture").toString();
                 colTilesDataset = xml.attributes().value("tiles").toString();
 
-                while (!(xml.isEndElement() && xml.name() == "collision_tiles")) 
+                while (!(xml.isEndElement() && xml.name().toString() == "collision_tiles"))
                 {
                     xml.readNext();
-                    if (xml.isStartElement()) 
+                    if (xml.isStartElement())
                     {
                         QString childName = xml.name().toString();
 
-                        if (childName == "tileWidth") 
+                        if (childName == "tileWidth")
                         {
                             bool ok = false;
                             int v = xml.readElementText().toInt(&ok);
-                            if (ok) 
+                            if (ok)
                             {
                                 m_tileWidth = v;
                             }
                         }
-                        else if (childName == "tileHeight") 
+                        else if (childName == "tileHeight")
                         {
                             bool ok = false;
                             int v = xml.readElementText().toInt(&ok);
-                            if (ok) 
-                            { 
+                            if (ok)
+                            {
                                 m_tileHeight = v;
                             }
                         }
-                        else if (childName == "tileOffset") 
+                        else if (childName == "tileOffset")
                         {
                             bool ok = false;
                             int v = xml.readElementText().toInt(&ok);
-                            if (ok) 
+                            if (ok)
                             {
                                 m_tileOffset = v;
                             }
@@ -875,28 +919,28 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             }
             else if (elementName == "goal")
             {
-                while (!(xml.isEndElement() && xml.name() == "goal")) 
+                while (!(xml.isEndElement() && xml.name().toString() == "goal"))
                 {
                     xml.readNext();
-                    if (xml.isStartElement()) 
+                    if (xml.isStartElement())
                     {
                         QString childName = xml.name().toString();
 
-                        if (childName == "type") 
+                        if (childName == "type")
                         {
                             bool ok = false;
                             int v = xml.readElementText().toInt(&ok);
-                            if (ok) 
+                            if (ok)
                             {
                                 goalType = v;
                             }
                         }
-                        else if (childName == "value") 
+                        else if (childName == "value")
                         {
                             bool ok = false;
                             int v = xml.readElementText().toInt(&ok);
-                            if (ok) 
-                            { 
+                            if (ok)
+                            {
                                 goalValue = v;
                             }
                         }
@@ -905,18 +949,18 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             }
             else if (elementName == "level_forces")
             {
-                while (!(xml.isEndElement() && xml.name() == "level_forces")) 
+                while (!(xml.isEndElement() && xml.name().toString() == "level_forces"))
                 {
                     xml.readNext();
-                    if (xml.isStartElement()) 
+                    if (xml.isStartElement())
                     {
                         QString childName = xml.name().toString();
 
-                        if (childName == "scrollSpeed") 
+                        if (childName == "scrollSpeed")
                         {
                             bool ok = false;
                             int v = xml.readElementText().toInt(&ok);
-                            if (ok) 
+                            if (ok)
                             {
                                 scrollSpeed = v;
                             }
@@ -1014,6 +1058,12 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         qWarning() << "[LevelCanvas] H5 load failed:" << e.what();
         return;
     }
+
+    setHeight(m_gridHeight * m_tileHeight);
+    setWidth(m_gridWidth * m_tileWidth);
+
+    emit gridHeightChanged();
+    emit gridWidthChanged();
 
     update();
 
@@ -1149,4 +1199,43 @@ void LevelCanvas::setQMLValues(std::array<int, 3> qmlValues)
             time->setProperty("text", QString::number(value));
         }
     }
+}
+
+
+// Add rows to canvas
+void LevelCanvas::addRowsAbove(int rows)
+{
+    if (rows <= 0)
+        return;
+
+    // Move old Tile to the bottom
+    QMap<QPair<int, int>, int> newData;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    {
+        newData.insert(
+            qMakePair(it.key().first, it.key().second + rows),
+            it.value());
+    }
+
+    // Add new Tiles above
+    for (int y = 0; y < rows; ++y)
+    {
+        for (int x = 0; x < m_gridWidth; ++x)
+        {
+            // left and right wall
+            if (x == 0 || x == m_gridWidth - 1)
+                newData[qMakePair(x, y)] = 84;
+            // everything else stay same
+        }
+    }
+
+    // Modify Grid
+    m_levelData = newData;
+    m_gridHeight += rows;
+    setHeight(m_gridHeight * m_tileHeight);
+    emit gridHeightChanged();
+
+    update();
+
+    qDebug() << "[LevelCanvas] Added" << rows << "rows ABOVE. New height:" << m_gridHeight;
 }

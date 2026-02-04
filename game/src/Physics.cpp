@@ -62,6 +62,22 @@ void ContactListener::BeginContact(b2Contact* contact)
         return;
     }
     std::string tileType = m_physics->getTileData(tileId).second;
+
+    // Collectible (Münze etc.): von Karte entfernen, Münzzähler erhöhen, Body später zerstören
+    if (tileType == "collectible")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+                m_level->getStateController()->addCoin(1);
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
     
     // take dmg (monster and traps)
     if (tileType == "hazard" || tileType == "enemy")
@@ -125,13 +141,18 @@ Physics::Physics(Actor* actor, Level* level)
         m_actorBody = nullptr;
         return;
     }
-    // get names and types of each tile
-    std::string rulesPath = m_level->getResPath();
-    if (rulesPath != "")
+    // Tile-Formen aus RulesTiles.xml (für Halb- und Diagonal-Tiles)
+    std::string resPath = m_level->getResPath();
+    if (!resPath.empty() && resPath.back() != '/' && resPath.back() != '\\')
+        resPath += "/";
+    std::string rulesPath = resPath + "tileDefinition/RulesTiles.xml";
+    m_tileData = jumper::ParseXMLData(rulesPath);
+    if (m_tileData.empty())
     {
-        rulesPath = rulesPath + "/tileDefinition/RulesTiles.xml";
-        m_tileData = jumper::ParseXMLData(rulesPath);
+        m_tileData = jumper::ParseXMLData("res/tileDefinition/RulesTiles.xml");
     }
+    std::cout << "[Physics] Tile shapes: " << m_tileData.size()
+              << " (" << (m_tileData.empty() ? "using full boxes" : rulesPath) << ")" << std::endl;
 
     // Box2D-Gravitation: Level hat gravity_y=400 (nach unten), Box2D Y+ ist oben
     const LevelForces& lf = m_level->forces();
@@ -211,6 +232,9 @@ void Physics::buildLevelBodies()
     int levelW = m_tiles->width();
     int levelH = m_tiles->height();
 
+    const float hwM = (tw / 2.0f) / PIXELS_PER_METER;
+    const float hhM = (th / 2.0f) / PIXELS_PER_METER;
+
     for (int gy = 0; gy < levelH; ++gy)
     {
         for (int gx = 0; gx < levelW; ++gx)
@@ -221,28 +245,90 @@ void Physics::buildLevelBodies()
                 continue;
             }
 
-            // Tile-Rechteck in Pixel: (gx*tw, gy*th + 600), Größe (tw, th)
             float px = gx * tw;
             float py = gy * th + TILE_Y_OFFSET;
-            b2Vec2 center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f));
 
+            std::string shapeType = "full";
+            auto it = m_tileData.find(tileId);
+            if (it != m_tileData.end())
+                shapeType = it->second.shape;
+
+            b2Vec2 center;
+            b2PolygonShape shape;
+            b2FixtureDef fixtureDef;
+            fixtureDef.friction = 0.05f;
+            fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
+
+            if (shapeType == "half_bottom")
+            {
+                center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f + th/4.0f));
+                float hw = (tw / 2.0f) / PIXELS_PER_METER;
+                float hh = (th / 4.0f) / PIXELS_PER_METER;
+                shape.SetAsBox(hw, hh);
+            }
+            else if (shapeType == "half_top")
+            {
+                center = toBox2D(Vector2f(px + tw/2.0f, py + th/4.0f));
+                float hw = (tw / 2.0f) / PIXELS_PER_METER;
+                float hh = (th / 4.0f) / PIXELS_PER_METER;
+                shape.SetAsBox(hw, hh);
+            }
+            else if (shapeType == "half_left")
+            {
+                center = toBox2D(Vector2f(px + tw/4.0f, py + th/2.0f));
+                float hw = (tw / 4.0f) / PIXELS_PER_METER;
+                float hh = (th / 2.0f) / PIXELS_PER_METER;
+                shape.SetAsBox(hw, hh);
+            }
+            else if (shapeType == "half_right")
+            {
+                center = toBox2D(Vector2f(px + 3.0f*tw/4.0f, py + th/2.0f));
+                float hw = (tw / 4.0f) / PIXELS_PER_METER;
+                float hh = (th / 2.0f) / PIXELS_PER_METER;
+                shape.SetAsBox(hw, hh);
+            }
+            else if (shapeType == "diag_tl_br" || shapeType == "diag_tr_bl")
+            {
+                center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f));
+                b2Vec2 verts[3];
+                if (shapeType == "diag_tl_br")
+                {
+                    // Slope \ (Linie oben-links → unten-rechts): begehbar = Dreieck unten-links
+                    verts[0].Set(-hwM, -hhM);
+                    verts[1].Set(-hwM,  hhM);
+                    verts[2].Set( hwM, -hhM);
+                }
+                else
+                {
+                    // diag_tr_bl: Slope / (Linie oben-rechts → unten-links): begehbar = Dreieck unten-rechts
+                    verts[0].Set( hwM, -hhM);
+                    verts[1].Set( hwM,  hhM);
+                    verts[2].Set(-hwM, -hhM);
+                }
+                shape.Set(verts, 3);
+            }
+            else
+            {
+                // full (Standard)
+                center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f));
+                shape.SetAsBox(hwM, hhM);
+            }
+
+            fixtureDef.shape = &shape;
             b2BodyDef bodyDef;
             bodyDef.type = b2_staticBody;
             bodyDef.position = center;
+            bodyDef.userData.pointer = (static_cast<uintptr_t>(gx) << 16) | (static_cast<uintptr_t>(gy) & 0xFFFFu);
             b2Body* body = m_world->CreateBody(&bodyDef);
-
-            b2PolygonShape shape;
-            float hw = (tw / 2.0f) / PIXELS_PER_METER;
-            float hh = (th / 2.0f) / PIXELS_PER_METER;
-            shape.SetAsBox(hw, hh);
-
-            b2FixtureDef fixtureDef;
-            fixtureDef.shape = &shape;
-            fixtureDef.friction = 0.05f;
-            fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
             body->CreateFixture(&fixtureDef);
         }
     }
+}
+
+void Physics::queueBodyForDestruction(b2Body* body)
+{
+    if (body)
+        m_bodiesToDestroy.push_back(body);
 }
 
 void Physics::update()
@@ -251,6 +337,11 @@ void Physics::update()
     {
         return;
     }
+
+    // Bodies zerstören, die im Kontakt-Callback (z.B. Collectibles) markiert wurden
+    for (b2Body* body : m_bodiesToDestroy)
+        m_world->DestroyBody(body);
+    m_bodiesToDestroy.clear();
 
     unsigned int currentTicks = SDL_GetTicks();
     double dt = (currentTicks - m_lastTicks) / 1000.0;
@@ -410,7 +501,8 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 
 std::pair<std::string, std::string> Physics::getTileData(int tileId)
 {
-    return m_tileData[tileId];
+    const TileInfo& t = m_tileData[tileId];
+    return { t.name, t.type };
 }
 
 

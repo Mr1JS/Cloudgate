@@ -79,6 +79,11 @@ Page {
                 }
 
                 Button {
+                    text: "+ 5 Tile above"
+                    onClicked: editorController.addRowsAbove(5)
+                }
+
+                Button {
                     text: "Clear Level"
                     onClicked: editorController.clearLevel()
                 }
@@ -134,6 +139,11 @@ Page {
                         MenuItem {
                             text: "Load"
                             onTriggered: editorController.loadLevel()
+                        }
+
+                        MenuItem {
+                            text: "+ 5 Tile above"
+                            onClicked: editorController.addRowsAbove(5)
                         }
                     }
                 }

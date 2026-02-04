@@ -222,6 +222,16 @@ StateController* Level::getStateController()
     return m_stateController;
 }
 
+void Level::removeTileAt(int gx, int gy)
+{
+    if (m_tiles && m_tiles->tiles())
+    {
+        TileSetRepresentation* rep = m_tiles->tiles();
+        if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+            rep->insert(gx, gy, 0);
+    }
+}
+
 void Level::update(const Uint8* keystates)
 {
     // Update camera (automatisches Scrollen nach oben)
@@ -327,10 +337,13 @@ void Level::updateActor(const Uint8* keystates)
         {
             (*m_actor) *= 1;
         }
-        if(keystates[SDL_SCANCODE_SPACE])
+        // Sprung nur bei Tastendruck (Flanke), nicht bei gehaltener Taste – verhindert Doppelsprung
+        bool spaceNow = (keystates[SDL_SCANCODE_SPACE] != 0);
+        if (spaceNow && !m_prevSpacePressed)
         {
             m_actor->setWantsToJump(true);
         }
+        m_prevSpacePressed = spaceNow;
     }
 }
 
@@ -429,16 +442,10 @@ GoalState Level::checkAndUpdateGoalState() {
         break;
 
     case GOAL_COINS:
-        if (m_coin_count >= m_goalTargetValue)
-        {
+        if (m_stateController->getCoins() >= m_goalTargetValue)
             state = GOALSTATE_WINNABLE;
-        }
-        else
-        {
-            state = GOALSTATE_NONE;
-        }
         break;
-        
+
     default:
         state = GOALSTATE_WINNABLE;
         break;

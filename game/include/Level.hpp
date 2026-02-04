@@ -143,6 +143,9 @@ public:
     /// set scroll speed in camera
     void setCameraSettings(float scrollSpeed, float pos_y);
 
+    /// Entfernt Tile an (gx, gy) aus der Karte (z.B. gesammelte Münze)
+    void removeTileAt(int gx, int gy);
+
 private:
 
     /// Updates the actor accordint to the given keyboard states
@@ -191,6 +194,9 @@ private:
 
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";
+
+    /// Space war im vorherigen Frame gedrückt (für Flanken-Erkennung beim Sprung)
+    bool                    m_prevSpacePressed = false;
 
     int                     m_coin_count;
 };

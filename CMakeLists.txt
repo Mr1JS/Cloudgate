@@ -159,6 +159,7 @@ qt_add_qml_module(appCloudgate_game
         qml/SecondPage.qml
         qml/LevelEditor.qml
         qml/SettingsPage.qml
+        qml/LevelSelector.qml
 
     SOURCES
         include/pages.h
@@ -173,6 +174,8 @@ qt_add_qml_module(appCloudgate_game
         src/GameView.cpp
         include/GameController.hpp
         src/GameController.cpp
+        include/LevelSelector.hpp
+        src/LevelSelector.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

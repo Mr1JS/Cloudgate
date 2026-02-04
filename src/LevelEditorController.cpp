@@ -59,7 +59,7 @@ void LevelEditorController::loadTileset(const QString &path)
     {
         //m_palette->loadTileset(path, tileWidth, tileHeight, offset, endIndex);
         // Load the Tile-names from the XML file
-        m_palette->loadTileNames("res/RulesTiles.xml");
+        m_palette->loadTileNames("res/tileDefinition/RulesTiles.xml");
         qDebug() << "[LevelEditorController] Tileset loaded into palette";
     }
 
@@ -384,4 +384,13 @@ void LevelEditorController::toggleExtraTileset(bool enabled)
     }
     m_palette->setExtraTiles(enabled);
     m_canvas->setExtraTiles(enabled);
+}
+
+// Add Rows to the canvas
+void LevelEditorController::addRowsAbove(int rows)
+{
+    if (!m_canvas || rows <= 0)
+        return;
+
+    m_canvas->addRowsAbove(rows);
 }
