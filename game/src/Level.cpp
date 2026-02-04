@@ -221,6 +221,16 @@ StateController* Level::getStateController()
     return m_stateController;
 }
 
+void Level::removeTileAt(int gx, int gy)
+{
+    if (m_tiles && m_tiles->tiles())
+    {
+        TileSetRepresentation* rep = m_tiles->tiles();
+        if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+            rep->insert(gx, gy, 0);
+    }
+}
+
 void Level::update(const Uint8* keystates)
 {
     // Update camera (automatisches Scrollen nach oben)
@@ -430,9 +440,11 @@ GoalState Level::checkAndUpdateGoalState() {
         }
         break;
 
-    // TODO: implement once there are coins in this game
-    //case GOAL_COINS:
-        
+    case GOAL_COINS:
+        if (m_stateController->getCoins() >= m_goalTargetValue)
+            state = GOALSTATE_WINNABLE;
+        break;
+
     default:
         state = GOALSTATE_WINNABLE;
         break;

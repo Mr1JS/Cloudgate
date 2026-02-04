@@ -65,6 +65,10 @@ public:
 
     unsigned int getRuntime() const;
 
+    /// Münzen: gesammelte Anzahl erhöhen / abfragen
+    void addCoin(int n = 1);
+    int getCoins() const;
+
     /// Destructor of class StateController
     virtual ~StateController();
 
@@ -100,6 +104,9 @@ private:
 
     /// reference to MainWindow class
     MainWindow* m_mainWindow;
+
+    /// Gesammelte Münzen im Level
+    int m_coins = 0;
 };
 
 } /* namespace jumper */

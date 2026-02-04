@@ -197,6 +197,16 @@ unsigned int StateController::getRuntime() const
     return m_runtime;
 }
 
+void StateController::addCoin(int n)
+{
+    m_coins += n;
+}
+
+int StateController::getCoins() const
+{
+    return m_coins;
+}
+
 StateController::~StateController()
 {
     if (m_timer)

@@ -60,6 +60,22 @@ void ContactListener::BeginContact(b2Contact* contact)
         return;
     }
     std::string tileType = m_physics->getTileData(tileId).second;
+
+    // Collectible (Münze etc.): von Karte entfernen, Münzzähler erhöhen, Body später zerstören
+    if (tileType == "collectible")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+                m_level->getStateController()->addCoin(1);
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
     
     // take dmg (monster and traps)
     if (tileType == "hazard" || tileType == "enemy")
@@ -279,15 +295,27 @@ void Physics::buildLevelBodies()
             b2BodyDef bodyDef;
             bodyDef.type = b2_staticBody;
             bodyDef.position = center;
+            bodyDef.userData.pointer = (static_cast<uintptr_t>(gx) << 16) | (static_cast<uintptr_t>(gy) & 0xFFFFu);
             b2Body* body = m_world->CreateBody(&bodyDef);
             body->CreateFixture(&fixtureDef);
         }
     }
 }
 
+void Physics::queueBodyForDestruction(b2Body* body)
+{
+    if (body)
+        m_bodiesToDestroy.push_back(body);
+}
+
 void Physics::update()
 {
     if (!m_world || !m_actorBody || !m_actor) return;
+
+    // Bodies zerstören, die im Kontakt-Callback (z.B. Collectibles) markiert wurden
+    for (b2Body* body : m_bodiesToDestroy)
+        m_world->DestroyBody(body);
+    m_bodiesToDestroy.clear();
 
     unsigned int currentTicks = SDL_GetTicks();
     double dt = (currentTicks - m_lastTicks) / 1000.0;

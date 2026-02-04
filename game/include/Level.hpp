@@ -139,6 +139,9 @@ public:
     /// set scroll speed in camera
     void setCameraSettings(float scrollSpeed, float pos_y);
 
+    /// Entfernt Tile an (gx, gy) aus der Karte (z.B. gesammelte Münze)
+    void removeTileAt(int gx, int gy);
+
 private:
 
     /// Updates the actor accordint to the given keyboard states
