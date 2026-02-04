@@ -727,8 +727,8 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     // hp hearts
     ts << "  <heart texture=\"heart\">\n";
-    ts << "    <tileWidth>"     << 32 << "</tileWidth>\n";
-    ts << "    <tileHeight>"    << 32 << "</tileHeight>\n";
+    ts << "    <tileWidth>"     << 16 << "</tileWidth>\n";
+    ts << "    <tileHeight>"    << 16 << "</tileHeight>\n";
     ts << "    <layer>3</layer>\n";
     ts << "  </heart>\n";
 
