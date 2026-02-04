@@ -836,7 +836,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
                 colTextureName = xml.attributes().value("texture").toString();
                 colTilesDataset = xml.attributes().value("tiles").toString();
 
-                while (!(xml.isEndElement() && xml.name() == "collision_tiles")) 
+                while (!(xml.isEndElement() && xml.name().toString() == "collision_tiles")) 
                 {
                     xml.readNext();
                     if (xml.isStartElement()) 
@@ -875,7 +875,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             }
             else if (elementName == "goal")
             {
-                while (!(xml.isEndElement() && xml.name() == "goal")) 
+                while (!(xml.isEndElement() && xml.name().toString() == "goal")) 
                 {
                     xml.readNext();
                     if (xml.isStartElement()) 
@@ -905,7 +905,7 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             }
             else if (elementName == "level_forces")
             {
-                while (!(xml.isEndElement() && xml.name() == "level_forces")) 
+                while (!(xml.isEndElement() && xml.name().toString() == "level_forces")) 
                 {
                     xml.readNext();
                     if (xml.isStartElement()) 
