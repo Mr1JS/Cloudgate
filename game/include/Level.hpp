@@ -30,6 +30,28 @@ namespace jumper
 class Physics;
 class Actor;
 
+enum GoalType
+{
+    GOAL_NONE = 0,
+    GOAL_COINS,
+    GOAL_TIME
+};
+
+/**
+ * Represents the level's clear status.
+ * GOALSTATE_NONE           = goal condition not met
+ * GOALSTATE_GAME_OVER      = goal condition failed
+ * GOALSTATE_LEVEL_FINISHED    = finished the level
+ * GOALSTATE_WINNABLE       = goal condition met, but not yet done
+ */
+enum GoalState
+{
+    GOALSTATE_NONE,
+    GOALSTATE_GAME_OVER,
+    GOALSTATE_LEVEL_FINISHED,
+    GOALSTATE_WINNABLE
+};
+
 /**
  * @brief Represents a level in the jumper game.
  */
@@ -63,8 +85,6 @@ public:
 
     const Camera& getCamera();
 
-    bool isActorDead() const;
-    
     /// Checks if actor is outside camera bounds (for game over)
     bool isActorOutsideCamera() const;
 
@@ -89,8 +109,20 @@ public:
 
     /// Sets the current forces
     void setForces(const LevelForces& f);
+
+    /// checks and updates the GoalState depending on current conditions, then returns it
+    GoalState checkAndUpdateGoalState();
+
+    /// set goalState to GOALSTATE_LEVEL_FINISHED
+    void win();
+
+    bool isLevelFinished();
+
+    void setGoalCondition(int type, int targetNumber);
+
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
+    
     /// get res path
     std::string getResPath();
 
@@ -98,6 +130,8 @@ private:
 
     /// Updates the actor accordint to the given keyboard states
     void updateActor(const Uint8* keystates);
+
+    void spawnMonsters();
 
     /// A SDL texture for the actor
     SDL_Texture*        	m_actorTexture;
@@ -129,10 +163,15 @@ private:
     /// Monster-Liste für Update (Renderables werden von LayerManager verwaltet)
     std::vector<Monster*>   m_monsters;
 
-    void spawnMonsters();
+    /// Type of goal
+    GoalType                m_goalType;
+
+    int                     m_goalTargetNumber;
+
+    GoalState               m_goalState;
 
     /// set res path to access RulesTiles.xml
-    std::string m_resPath = "";
+    std::string             m_resPath = "";
 };
 
 } /* namespace jumper */

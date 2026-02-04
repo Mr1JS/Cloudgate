@@ -85,6 +85,10 @@ void ContactListener::BeginContact(b2Contact* contact)
     if (tileType == "door")
     {
         std::cout << "\nwhy can't I leave?? help!\n";
+        if (m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE)
+        {
+            m_level->win();
+        }
     }
 }
 

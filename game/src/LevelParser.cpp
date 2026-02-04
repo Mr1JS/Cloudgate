@@ -247,6 +247,14 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
 
             m_level->setForces(f);
         }
+
+        if (v.first == "goal")
+        {
+            int type   = v.second.get<int>("type", 0);
+            int number      = v.second.get<int>("number", 0);
+
+            m_level->setGoalCondition(type, number);
+        }
     }
 }
 

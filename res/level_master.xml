@@ -36,4 +36,8 @@
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
   </level_forces>
+  <goal>
+    <type>2</type>
+    <number>10000</number>
+  </goal>
 </level>

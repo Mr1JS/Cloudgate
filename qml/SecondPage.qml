@@ -30,6 +30,12 @@ Page {
             myMain.page_value = -1
         }
 
+        onLevelFinished: {
+            gameView.stopGame()
+            stackView.pop()
+            myMain.page_value = -1
+        }
+
         // Initialize when component loads
         Component.onCompleted: {
             gameView.levelPath = "res/level_master.xml"

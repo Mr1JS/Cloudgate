@@ -263,6 +263,12 @@ void GameView::updateGame()
             stopGame();
             emit gameOver();
         }
+
+        if(m_gameWindow->level()->isLevelFinished())
+        {
+            stopGame();
+            emit levelFinished();
+        }
     }
 
     delete[] keystates;

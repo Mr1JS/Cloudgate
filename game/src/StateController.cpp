@@ -178,6 +178,16 @@ void StateController::render()
 {
 }
 
+int StateController::getHp() const
+{
+    return m_playerHp;
+}
+
+unsigned int StateController::getRuntime() const
+{
+    return m_runtime;
+}
+
 StateController::~StateController()
 {
     if (m_timer)

@@ -52,7 +52,9 @@ public:
     bool isPaused();
 
     /// Returns current player HP
-    int getHp() const { return m_playerHp; }
+    int getHp() const;
+
+    unsigned int getRuntime() const;
 
     /// renders hearts and game time on screen
     void render();

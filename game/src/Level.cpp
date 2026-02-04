@@ -37,9 +37,12 @@ Level::Level(MainWindow* mainWindow, std::string filename)
       m_camera(322, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera)
 {
-    m_physics   = 0;
-    m_actor     = 0;
-    m_tiles     = 0;
+    m_physics           = 0;
+    m_actor             = 0;
+    m_tiles             = 0;
+    m_goalType          = GOAL_NONE;
+    m_goalTargetNumber  = 0;
+    m_goalState         = GOALSTATE_NONE;
 
     m_stateController = new StateController(mainWindow, filename);
 
@@ -268,6 +271,11 @@ void Level::update(const Uint8* keystates)
     {
         // advance game timer - except if game is paused
         m_stateController->updateGameTime();
+
+        if (m_goalType == GOAL_TIME)
+        {
+            checkAndUpdateGoalState();
+        }
         
         // unpause game if any key is pressed
         if (m_stateController->isPaused() && (keystates[SDL_SCANCODE_LEFT ] || keystates[SDL_SCANCODE_RIGHT]
@@ -340,16 +348,6 @@ const Camera& Level::getCamera()
     return m_camera;
 }
 
-bool Level::isActorDead() const
-{
-    if (m_stateController->getHp() <= 0 || isActorOutsideCamera())
-    {
-        return true;
-    }
-
-    return false;
-}
-
 bool Level::isActorOutsideCamera() const
 {
     if(!m_actor)
@@ -403,7 +401,61 @@ bool Level::isGameOver() const
     }
     
     // Check if actor fell out of camera
-    return isActorOutsideCamera();
+    return isActorOutsideCamera() || m_goalState == GOALSTATE_GAME_OVER;
+}
+
+GoalState Level::checkAndUpdateGoalState() {
+    // if we already won or lost, there's no need to check for anything anmore
+    switch (m_goalState)
+    {
+    case GOALSTATE_GAME_OVER:
+    case GOALSTATE_LEVEL_FINISHED:
+        return m_goalState;
+    }
+
+    GoalState state = m_goalState;
+    switch (m_goalType)
+    {
+    case GOAL_TIME:
+        if (m_stateController->getRuntime() > m_goalTargetNumber)
+        {
+            state = GOALSTATE_GAME_OVER;
+        }
+        else
+        {
+            state = GOALSTATE_WINNABLE;
+        }
+        break;
+
+    // TODO: implement once there are coins in this game
+    //case GOAL_COINS:
+        
+    default:
+        state = GOALSTATE_WINNABLE;
+        break;
+    }
+
+    m_goalState = state;
+
+    return m_goalState;
+}
+
+void Level::win()
+{
+    m_goalState = GOALSTATE_LEVEL_FINISHED;
+}
+
+bool Level::isLevelFinished()
+{
+    bool finished = m_goalState == GOALSTATE_LEVEL_FINISHED;
+//    std::cout << "Level is finished? " << finished << std::endl;
+    return finished;
+}
+
+void Level::setGoalCondition(int type, int targetNumber)
+{
+    m_goalType = GoalType(type);
+    m_goalTargetNumber = targetNumber;
 }
 
 Level::~Level()
