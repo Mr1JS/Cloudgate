@@ -412,6 +412,11 @@ Level::~Level()
     {
         delete m_physics;
     }
+
+    if (m_stateController)
+    {
+        delete m_stateController;
+    }
 }
 
 

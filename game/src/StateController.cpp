@@ -185,24 +185,21 @@ StateController::~StateController()
         delete m_timer;
     }
 
-//    if (m_hearts)
-//    {
-        for (int i; i < MAX_HEARTS; i++)
-        {
-            if (m_hearts[i]) {
-                delete m_hearts[i];
-            }
-        }
-        
-//        delete m_hearts;
-//    }
-
-/*
-    if (m_heartTexture)
+    for (int i = 0; i < MAX_HEARTS; i++)
     {
-        delete m_heartTexture;
+        if (m_hearts[i])
+        {
+            delete m_hearts[i];
+        }
     }
-*/
+
+    for (int i = 0; i < RUNTIME_DIGITS; i++)
+    {
+        if (m_runtimeDigits[i])
+        {
+            delete m_runtimeDigits[i];
+        }
+    }
 }
 
 } /* namespace jumper */
