@@ -236,7 +236,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             // Setup actor
             actor->setFPS(fps);
             actor->setPhysics(f);
-            actor->setWorldPosition(Vector2f(pos_x, (pos_y + 32 * gridH)));
+            actor->setWorldPosition(Vector2f(pos_x, (pos_y + 32 * (gridH+2))));
 
             // Add tile set to level
             m_level->addActor(actor, layer);

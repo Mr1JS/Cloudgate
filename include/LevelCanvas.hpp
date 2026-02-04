@@ -14,7 +14,6 @@
 #include "game/io/TileSetIO.hpp"
 #include "game/io/TextureIO.hpp"
 
-
 // Level canvas for placing tiles
 class LevelCanvas : public QQuickPaintedItem
 {
@@ -30,19 +29,23 @@ public:
     explicit LevelCanvas(QQuickItem *parent = nullptr);
     void setExtraTiles(bool mode);
 
-    //Q_INVOKABLE void setTileset(const QImage &path, int tileW = 34, int tileH = 34, int offset = 0, int endIndex = 20);
-    Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
-    
+    // Q_INVOKABLE void setTileset(const QImage &path, int tileW = 34, int tileH = 34, int offset = 0, int endIndex = 20);
+    Q_INVOKABLE void setTileset(const QList<Tile> &tiles, int tileW, int tileH, int offset, int endIndex);
+
     Q_INVOKABLE void placeTile(int tileIndex);
     Q_INVOKABLE void clearLevel();
     Q_INVOKABLE void saveLevel(const QString &path);
     Q_INVOKABLE void loadLevel(const QString &path);
-    Q_INVOKABLE void setQML(QObject* root);
+    Q_INVOKABLE void setQML(QObject *root);
+    // Add Rows to Canvas
+    Q_INVOKABLE void addRowsAbove(int rows);
 
     int gridWidth() const { return m_gridWidth; }
     void setGridWidth(int w)
     {
         m_gridWidth = w;
+        // Fix
+        setWidth(m_gridWidth * m_tileWidth);
         emit gridWidthChanged();
         update();
     }
@@ -51,6 +54,8 @@ public:
     void setGridHeight(int h)
     {
         m_gridHeight = h;
+        // Fix
+        setHeight(m_gridHeight * m_tileHeight);
         emit gridHeightChanged();
         update();
     }
@@ -70,12 +75,12 @@ private:
     void setQMLValues(std::array<int, 3> qmlValues);
     QList<Tile> m_tiles;
     QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
-    QObject* m_qmlRoot;
+    QObject *m_qmlRoot;
 
     int m_tileWidth = 32;
     int m_tileHeight = 32;
-    int m_gridWidth = 20; // not changeable in xml
-    int m_gridHeight = 25;// not changeable in xml
+    int m_gridWidth = 20;  // not changeable in xml
+    int m_gridHeight = 25; // not changeable in xml
     int m_currentTileIndex = -1;
     int m_tileOffset = 4;
     QColor m_backgroundColor;
@@ -91,7 +96,8 @@ private:
     int m_endIndex = 140; // at which point do the tiles split up between normal Tiles and extraTiles
 
     // method to find if we are in the drawing area
-    inline bool isFrameTile(int x, int y) const {
+    inline bool isFrameTile(int x, int y) const
+    {
         return (x == 0 || x == m_gridWidth - 1 || y == m_gridHeight - 1);
     }
 };

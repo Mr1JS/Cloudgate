@@ -13,8 +13,8 @@
     <layer>1</layer>
   </collision_tiles>
   <heart texture="heart">
-    <tileWidth>32</tileWidth>
-    <tileHeight>32</tileHeight>
+    <tileWidth>16</tileWidth>
+    <tileHeight>16</tileHeight>
     <layer>3</layer>
   </heart>
   <numbers texture="numbers">
@@ -36,7 +36,7 @@
     <gravity_y>400</gravity_y>
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
-    <scrollSpeed>8</scrollSpeed>
+    <scrollSpeed>16</scrollSpeed>
   </level_forces>
   <goal>
     <type>0</type>

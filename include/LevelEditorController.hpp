@@ -46,6 +46,9 @@ public:
     Q_INVOKABLE void registerPalette(TilesetPalette *palette);
     Q_INVOKABLE void registerCanvas(LevelCanvas *canvas);
 
+    // Add Rows to canvas
+    Q_INVOKABLE void addRowsAbove(int rows);
+
     // Property getters
     QString currentTilesetPath() const { return m_tilesetPath; }
     int selectedTileIndex() const { return m_selectedTileIndex; }
