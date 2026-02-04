@@ -60,7 +60,7 @@ void LevelSelector::scanFolder()
 
                     if (elem == "goal") 
                     {
-                        while (!(xml.isEndElement() && xml.name() == "goal")) 
+                        while (!(xml.isEndElement() && xml.name().toString() == "goal")) 
                         {
                             xml.readNext();
 
