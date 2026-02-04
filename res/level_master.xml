@@ -16,6 +16,12 @@
     <tileHeight>32</tileHeight>
     <layer>3</layer>
   </heart>
+  <numbers texture="numbers">
+    <num_frames>10</num_frames>
+    <frame_width>10</frame_width>
+    <frame_height>10</frame_height>
+    <layer>3</layer>
+  </numbers>
   <actor texture="actor1">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
@@ -24,20 +30,10 @@
     <position_y>1250</position_y>
     <layer>2</layer>
   </actor>
-  <numbers texture="numbers">
-    <num_frames>10</num_frames>
-    <frame_width>10</frame_width>
-    <frame_height>10</frame_height>
-    <layer>3</layer>
-  </numbers>
   <level_forces>
     <gravity_x>0</gravity_x>
     <gravity_y>400</gravity_y>
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
   </level_forces>
-  <goal>
-    <type>2</type>
-    <number>10000</number>
-  </goal>
 </level>

@@ -41,7 +41,7 @@ enum GoalType
  * Represents the level's clear status.
  * GOALSTATE_NONE           = goal condition not met
  * GOALSTATE_GAME_OVER      = goal condition failed
- * GOALSTATE_LEVEL_FINISHED    = finished the level
+ * GOALSTATE_LEVEL_FINISHED = finished the level
  * GOALSTATE_WINNABLE       = goal condition met, but not yet done
  */
 enum GoalState

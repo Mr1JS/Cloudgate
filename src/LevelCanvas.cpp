@@ -390,10 +390,10 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
-    QImage iconImg(":/resources/images/heart3.png");
-    if (!iconImg.isNull())
+    QImage heartImg(":/resources/images/heart3.png");
+    if (!heartImg.isNull())
     {
-        iconImg = iconImg.convertToFormat(QImage::Format_RGBA8888);
+        heartImg = heartImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
     QImage ghostImg(":/resources/images/ghost.png");
@@ -412,7 +412,14 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     QImage actorImg(actorResourcePath);
     if (!actorImg.isNull())
+    {
         actorImg = actorImg.convertToFormat(QImage::Format_RGBA8888);
+    }
+    QImage numberImg(":/resources/images/numbers.png");
+    if (!numberImg.isNull())
+    {
+        numberImg = numberImg.convertToFormat(QImage::Format_RGBA8888);
+    }
 
     try
     {
@@ -481,12 +488,15 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
             }
         }
 
-        if (!iconImg.isNull())
+        // ----------------------------------------------------------
+        // Save hp heart texture as RAW DATASET
+        // ----------------------------------------------------------
+        if (!heartImg.isNull())
         {
             std::vector<unsigned char> bytes;
             int h = 0, w = 0;
 
-            if (imageToRgbaBytes(iconImg, bytes, h, w))
+            if (imageToRgbaBytes(heartImg, bytes, h, w))
             {
                 std::vector<size_t> dims = {
                     static_cast<size_t>(h),
@@ -501,6 +511,35 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
                 io.save(
                     "textures",
                     "heart",
+                    dims,
+                    chunks,
+                    arr);
+            }
+        }
+        
+        // ----------------------------------------------------------
+        // Save number texture as RAW DATASET
+        // ----------------------------------------------------------
+        if (!numberImg.isNull())
+        {
+            std::vector<unsigned char> bytes;
+            int h = 0, w = 0;
+
+            if (imageToRgbaBytes(numberImg, bytes, h, w))
+            {
+                std::vector<size_t> dims = {
+                    static_cast<size_t>(h),
+                    static_cast<size_t>(w),
+                    static_cast<size_t>(4)};
+
+                std::vector<hsize_t> chunks = {
+                    dims[0], dims[1], dims[2]};
+
+                auto arr = makeSharedArrayCopy(bytes);
+
+                io.save(
+                    "textures",
+                    "numbers",
                     dims,
                     chunks,
                     arr);
@@ -657,10 +696,19 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
 
     // hp hearts
     ts << "  <heart texture=\"heart\">\n";
-    ts << "    <tileWidth>" << 32 << "</tileWidth>\n";
-    ts << "    <tileHeight>" << 32 << "</tileHeight>\n";
+    ts << "    <num_frames>"    << 10 << "</num_frames>\n";
+    ts << "    <frame_width>"   << 10 << "</frame_width>\n";
+    ts << "    <frame_height>"  << 10 << "</frame_height>\n";
     ts << "    <layer>3</layer>\n";
     ts << "  </heart>\n";
+
+    // numbers
+    ts << "  <numbers texture=\"numbers\">\n";
+    ts << "    <tileWidth>"     << 32 << "</tileWidth>\n";
+    ts << "    <tileHeight>"    << 32 << "</tileHeight>\n";
+    ts << "    <layer>3</layer>\n";
+    ts << "  </numbers>\n";
+
     // Actor block (Dummy values for now) //TODO: if there are actor settings to save
     // then this should be adapted and changed accordingly
     ts << "  <actor texture=\"" << actorTextureName << "\">\n";
