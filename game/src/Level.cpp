@@ -458,6 +458,12 @@ void Level::setGoalCondition(int type, int targetValue)
     m_goalTargetValue = targetValue;
 }
 
+void Level::setCameraSettings(float scrollSpeed, float pos_y)
+{
+    m_camera.setScrollSpeed(scrollSpeed);
+    m_camera.setY(pos_y);
+}
+
 Level::~Level()
 {
     if(m_physics)

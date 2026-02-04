@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE void clearLevel();
     Q_INVOKABLE void saveLevel(const QString &path);
     Q_INVOKABLE void loadLevel(const QString &path);
+    Q_INVOKABLE void setQML(QObject* root);
 
     int gridWidth() const { return m_gridWidth; }
     void setGridWidth(int w)
@@ -65,8 +66,11 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+    std::array<int, 3> getQMLValues();
+    void setQMLValues(std::array<int, 3> qmlValues);
     QList<Tile> m_tiles;
     QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
+    QObject* m_qmlRoot;
 
     int m_tileWidth = 32;
     int m_tileHeight = 32;

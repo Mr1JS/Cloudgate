@@ -50,7 +50,8 @@ void TilesetPalette::loadTileNames(const QString &xmlPath)
     QFile file(absolutePath);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        qWarning() << "Could not open RulesTiles.xml:" << absolutePath;
+        // names not needed currently?
+        //qWarning() << "Could not open RulesTiles.xml:" << absolutePath;
         return;
     }
 

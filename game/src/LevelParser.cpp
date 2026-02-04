@@ -34,6 +34,9 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
     ptree pt;
     read_xml(filename, pt);
 
+    int gridH = 25;
+    float startPos_Y = 450;
+
     LevelHdf5IO io;
     io.open(path + "/" + pt.get<std::string>("level.<xmlattr>.resources"));
 
@@ -49,9 +52,10 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             int tileWidth              = v.second.get("tileWidth", 0);
             int tileHeight             = v.second.get("tileHeight", 0);
             int tilesPerRow            = v.second.get("tilesPerRow", 0);
+            int gridHeight             = v.second.get("gridHeight", 0);
             int numRows                = v.second.get("numRows", 0);
             int tileOffset             = v.second.get("tileOffset", 0);
-
+            
             // Create and setup tile set
             TileSet* ts = new TileSet(m_mainWindow,
                                       io,
@@ -63,6 +67,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
                                       numRows,
                                       tileOffset);
 
+            gridH = gridHeight;
             // Add tile set to level
             m_level->addLevelTiles(ts, layer);
         }
@@ -200,6 +205,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float maxVelFall    = v.second.get<float>("max_fall_velocity", 160.0f);
             float maxJumpHeight = v.second.get<float>("max_jump_height", 40.0f);
 
+            startPos_Y = pos_y;
             // TODO Jation & Pascal: the textureDataSet muust be changed. it must be dependent on the
             // Create new actor
             SDL_Surface* surface = io.TextureIO::load("textures", textureDataset);
@@ -230,7 +236,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             // Setup actor
             actor->setFPS(fps);
             actor->setPhysics(f);
-            actor->setWorldPosition(Vector2f(pos_x, pos_y));
+            actor->setWorldPosition(Vector2f(pos_x, (pos_y + 32 * gridH)));
 
             // Add tile set to level
             m_level->addActor(actor, layer);
@@ -242,10 +248,15 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float gravity_y = v.second.get<float>("gravity_y", 0.0);
             float damping_x = v.second.get<float>("damping_x", 1.0);
             float damping_y = v.second.get<float>("damping_y", 1.0);
+            
+            float scrollSpeed = v.second.get<float>("scrollSpeed", 8);
 
             LevelForces f(Vector2f(gravity_x, gravity_y), Vector2f(damping_x, damping_y));
 
             m_level->setForces(f);
+
+            // camera position depends on level height
+            m_level->setCameraSettings(scrollSpeed, gridH * 32 + startPos_Y - 250);
         }
 
         if (v.first == "goal")
