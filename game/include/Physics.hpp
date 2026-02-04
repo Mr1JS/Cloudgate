@@ -15,6 +15,7 @@
 
 #include "TileSetRepresentation.hpp"
 #include "ActorForces.hpp"
+#include "Util.hpp"
 #include "Vector.hpp"
 
 #include <map>
@@ -116,8 +117,8 @@ private:
 
     /// Y-Offset der Tile-Welt in Pixel
     static constexpr float  TILE_Y_OFFSET = 600.0f;
-    /// list of tileNames and tileTypes for each tileID
-    std::map<int, std::pair<std::string, std::string>> m_tileData;
+    /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
+    std::map<int, TileInfo> m_tileData;
 };
 
 } // namespace jumper

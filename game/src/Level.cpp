@@ -326,10 +326,13 @@ void Level::updateActor(const Uint8* keystates)
         {
             (*m_actor) *= 1;
         }
-        if(keystates[SDL_SCANCODE_SPACE])
+        // Sprung nur bei Tastendruck (Flanke), nicht bei gehaltener Taste – verhindert Doppelsprung
+        bool spaceNow = (keystates[SDL_SCANCODE_SPACE] != 0);
+        if (spaceNow && !m_prevSpacePressed)
         {
             m_actor->setWantsToJump(true);
         }
+        m_prevSpacePressed = spaceNow;
     }
 }
 

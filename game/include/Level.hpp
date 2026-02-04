@@ -187,6 +187,9 @@ private:
 
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";
+
+    /// Space war im vorherigen Frame gedrückt (für Flanken-Erkennung beim Sprung)
+    bool                    m_prevSpacePressed = false;
 };
 
 } /* namespace jumper */
