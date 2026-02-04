@@ -79,6 +79,11 @@ Page {
                 }
 
                 Button {
+                    text: "+ 5 Tile above"
+                    onClicked: editorController.addRowsAbove(5)
+                }
+
+                Button {
                     text: "Clear Level"
                     onClicked: editorController.clearLevel()
                 }
@@ -112,6 +117,11 @@ Page {
                 Button {
                     text: "Back"
                     onClicked: stackView.pop()
+                }
+
+                Button {
+                    text: "+ 5 Tile above"
+                    onClicked: editorController.addRowsAbove(5)
                 }
 
                 Button {
