@@ -61,15 +61,23 @@ std::string GetPathFromFileName(std::string filename);
 
 
 /**
- * @brief Loads tile names from an XML file
- *
- * Parses an XML file containing tile definitions and extracts
- * tile IDs with their corresponding names.
- *
- * @param xmlPath Path to the XML file
- * @return Map of tile IDs to tile names
+ * @brief Tile-Infos aus RulesTiles.xml (name, type, Kollisionsform)
+ * shape: "full" | "half_bottom" | "half_left" | "half_right" | "half_top"
+ *        | "diag_tl_br" | "diag_tr_bl" (Diagonalen für Rampen/Hügel)
  */
-std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath);
+struct TileInfo
+{
+    std::string name;
+    std::string type;
+    std::string shape = "full";
+};
+
+/**
+ * @brief Lädt Tile-Definitionen aus einer XML-Datei inkl. Kollisionsform.
+ * @param xmlPath Pfad zur RulesTiles.xml
+ * @return Map Tile-ID -> TileInfo (name, type, shape)
+ */
+std::map<int, TileInfo> ParseXMLData(const std::string& xmlPath);
 
 } // namespace jumper
 
