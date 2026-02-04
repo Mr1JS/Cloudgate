@@ -237,10 +237,13 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float gravity_y = v.second.get<float>("gravity_y", 0.0);
             float damping_x = v.second.get<float>("damping_x", 1.0);
             float damping_y = v.second.get<float>("damping_y", 1.0);
+            
+            float scrollSpeed = v.second.get<float>("scrollSpeed", 8);
 
             LevelForces f(Vector2f(gravity_x, gravity_y), Vector2f(damping_x, damping_y));
 
             m_level->setForces(f);
+            m_level->setScrollSpeed(scrollSpeed);
         }
     }
 }

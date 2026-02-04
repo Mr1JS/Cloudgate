@@ -58,6 +58,7 @@ void LevelCanvas::placeTile(int tileIndex)
 
 void LevelCanvas::clearLevel()
 {
+
     // Only remove inner tiles, keep frame
     QList<QPair<int, int>> toRemove;
     for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
@@ -277,6 +278,20 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     }
 
     return out;
+}
+// count how many tiles have coins in them
+static int countCoins(const QMap<QPair<int, int>, int> &map)
+{
+    int coinsAmount = 0;
+    for (auto it = map.begin(); it != map.end(); ++it)
+    {
+        if (it.value() == 132 || it.value() == 133 || it.value() == 134)
+        {
+            coinsAmount++;
+        }
+    }
+
+    return coinsAmount;
 }
 
 // -----------------------------------------------
@@ -618,6 +633,19 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         qWarning() << "[LevelCanvas] HDF5 save failed:" << e.what();
         return;
     }
+    std::array<int, 3> qmlValues = LevelCanvas::getQMLValues();
+    int scrollSpeed = qmlValues[0];
+    int goalType = qmlValues[1];
+    int goalValue = qmlValues[2];
+    // prevent a win condition being collect more coins than possible
+    if (goalType == 1) 
+    {   
+        int maxCoins = countCoins(m_levelData);
+        if (maxCoins < goalValue)
+        {
+            goalValue = maxCoins;
+        }
+    }
 
     // ---- XML SAVE ----
     QFile f(p);
@@ -678,7 +706,13 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <gravity_y>400</gravity_y>\n";
     ts << "    <damping_x>0.7</damping_x>\n";
     ts << "    <damping_y>1.0</damping_y>\n";
+    ts << "    <scrollSpeed>" << scrollSpeed << "</scrollSpeed>\n";
     ts << "  </level_forces>\n";
+
+    ts << "  <goal>\n";
+    ts << "    <type>" << goalType << "</type>\n";
+    ts << "    <value>" << goalValue << "</value>\n";
+    ts << "  </goal>\n";
 
     ts << "</level>\n";
     f.close();
@@ -716,6 +750,9 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     QString bgTextureName;
     QString colTextureName;
     QString colTilesDataset;
+    int goalType = 0;
+    int goalValue = 0;
+    int scrollSpeed = 0;
 
     // -------- parse XML (simple line-based) --------
     QFile f(p);
@@ -747,30 +784,99 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             {
                 colTextureName = xml.attributes().value("texture").toString();
                 colTilesDataset = xml.attributes().value("tiles").toString();
+
+                while (!(xml.isEndElement() && xml.name() == "collision_tiles")) 
+                {
+                    xml.readNext();
+                    if (xml.isStartElement()) 
+                    {
+                        QString childName = xml.name().toString();
+
+                        if (childName == "tileWidth") 
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok) 
+                            {
+                                m_tileWidth = v;
+                            }
+                        }
+                        else if (childName == "tileHeight") 
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok) 
+                            { 
+                                m_tileHeight = v;
+                            }
+                        }
+                        else if (childName == "tileOffset") 
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok) 
+                            {
+                                m_tileOffset = v;
+                            }
+                        }
+                    }
+                }
             }
-            else if (elementName == "tileWidth")
+            else if (elementName == "goal")
             {
-                bool ok = false;
-                int v = xml.readElementText().toInt(&ok);
-                if (ok)
-                    m_tileWidth = v;
+                while (!(xml.isEndElement() && xml.name() == "goal")) 
+                {
+                    xml.readNext();
+                    if (xml.isStartElement()) 
+                    {
+                        QString childName = xml.name().toString();
+
+                        if (childName == "type") 
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok) 
+                            {
+                                goalType = v;
+                            }
+                        }
+                        else if (childName == "value") 
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok) 
+                            { 
+                                goalValue = v;
+                            }
+                        }
+                    }
+                }
             }
-            else if (elementName == "tileHeight")
+            else if (elementName == "level_forces")
             {
-                bool ok = false;
-                int v = xml.readElementText().toInt(&ok);
-                if (ok)
-                    m_tileHeight = v;
-            }
-            else if (elementName == "tileOffset")
-            {
-                bool ok = false;
-                int v = xml.readElementText().toInt(&ok);
-                if (ok)
-                    m_tileOffset = v;
+                while (!(xml.isEndElement() && xml.name() == "level_forces")) 
+                {
+                    xml.readNext();
+                    if (xml.isStartElement()) 
+                    {
+                        QString childName = xml.name().toString();
+
+                        if (childName == "scrollSpeed") 
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok) 
+                            {
+                                scrollSpeed = v;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
+    // set slider and buttons to values of loaded level
+    setQMLValues({scrollSpeed, goalType, goalValue});
 
     if (xml.hasError())
     {
@@ -869,4 +975,127 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 void LevelCanvas::setExtraTiles(bool mode)
 {
     m_extraTiles = mode;
+}
+
+void LevelCanvas::setQML(QObject* root)
+{
+    m_qmlRoot = root;
+}
+
+std::array<int, 3> LevelCanvas::getQMLValues()
+{
+    // basic values
+    int scrollValue = 8;
+    // type 0 = no condition  type 1 = coins  type 2 = time
+    int type = 0;
+    bool selected = false;
+
+    // scrollSpeed
+    QObject* slider = m_qmlRoot->findChild<QObject*>("scrollSpeed");
+    if (slider) 
+    {
+        scrollValue = slider->property("value").toInt() * 4;
+    }
+
+    // no win condition
+    QObject* buttonNone = m_qmlRoot->findChild<QObject*>("buttonNone");
+    if (buttonNone) 
+    {
+        selected = buttonNone->property("checked").toBool();
+        if (selected)
+        {
+            type = 0;
+            return {scrollValue, type, 0};
+        }
+    }
+
+    // coin win condition
+    QObject* buttonCoins = m_qmlRoot->findChild<QObject*>("buttonCoins");
+    if (buttonCoins) 
+    {
+        selected = buttonCoins->property("checked").toBool();
+        if (selected)
+        {
+            type = 1;
+            QObject* coins = m_qmlRoot->findChild<QObject*>("coinInput");
+            if (coins) 
+            {
+                int coinVal = coins->property("text").toInt();
+                return {scrollValue, type, coinVal};
+            }
+        }
+    }
+
+    // time win condition
+    QObject* buttonTime = m_qmlRoot->findChild<QObject*>("buttonTime");
+    if (buttonTime) 
+    {
+        selected = buttonTime->property("checked").toBool();
+        if (selected)
+        {
+            type = 2;
+            QObject* time = m_qmlRoot->findChild<QObject*>("timeInput");
+            if (time) 
+            {
+                int timeVal = time->property("text").toInt();
+                return {scrollValue, type, timeVal};
+            }
+        }
+    }
+    // if error -> no win condition and base scrollValue
+    return {(scrollValue), 0, 0};
+
+}
+
+void LevelCanvas::setQMLValues(std::array<int, 3> qmlValues)
+{
+    int scrollSpeed = qmlValues[0] / 4;
+    int type = qmlValues[1];
+    int value = qmlValues[2];
+
+    // scroll slider
+    QObject* slider = m_qmlRoot->findChild<QObject*>("scrollSpeed");
+    if (slider) 
+    {
+        slider->setProperty("value", scrollSpeed);
+    }
+
+    // no win condition
+    if (type == 0)
+    {
+        QObject* buttonNone = m_qmlRoot->findChild<QObject*>("buttonNone");
+        if (buttonNone) 
+        {
+            buttonNone->setProperty("checked", true);
+        }
+    }
+    // coin win condition
+    else if (type == 1)
+    {
+        QObject* buttonCoins = m_qmlRoot->findChild<QObject*>("buttonCoins");
+        if (buttonCoins) 
+        {
+            buttonCoins->setProperty("checked", true);
+        }        
+        QObject* coins = m_qmlRoot->findChild<QObject*>("coinInput");
+        if (coins) 
+        {
+            coins->setProperty("text", QString::number(value));
+        }
+
+    }
+    // time win condition
+    else if (type == 2)
+    {
+        QObject* buttonTime = m_qmlRoot->findChild<QObject*>("buttonTime");
+        if (buttonTime) 
+        {
+            buttonTime->setProperty("checked", true);
+        }
+        QObject* time = m_qmlRoot->findChild<QObject*>("timeInput");
+        if (time) 
+        {
+            time->setProperty("text", QString::number(value));
+        }
+    }
 }

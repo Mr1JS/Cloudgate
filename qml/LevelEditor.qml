@@ -17,6 +17,11 @@ Page {
         }
     }
 
+    ButtonGroup {
+        id: buttonGroup
+        exclusive: true
+    }
+
     // The "brain" - Controller coordinates everything
     LevelEditorController {
         id: editorController
@@ -101,6 +106,8 @@ Page {
                 anchors.centerIn: parent
                 spacing: 15
                 visible: !topBar.showAllButtons
+                anchors.horizontalCenterOffset: -161
+                anchors.verticalCenterOffset: 0
 
                 Button {
                     text: "Back"
@@ -136,6 +143,159 @@ Page {
                     text: "Tile Editor"
                     color: "white"
                     font.pixelSize: 14
+                }
+            }
+
+            Text {
+                id: text1
+                y: 8
+                width: 82
+                height: 17
+                color: "#ffffff"
+                text: qsTr("Scroll Speed")
+                font.pixelSize: 14
+                anchors.right: parent.right
+                anchors.rightMargin: 247
+            }
+
+            Slider {
+                id: scrollSpeed
+                objectName: "scrollSpeed"
+                y: 31
+                width: 76
+                height: 13
+                value: 4
+                transformOrigin: Item.Center
+                snapMode: RangeSlider.SnapAlways
+                stepSize: 1
+                to: 10
+                from: 1
+                anchors.right: parent.right
+                anchors.rightMargin: 253
+            }
+
+            Text {
+                id: text2
+                y: 23
+                width: 82
+                height: 17
+                color: "#ffffff"
+                text: qsTr("Win Condition")
+                font.pixelSize: 14
+                anchors.right: parent.right
+                anchors.rightMargin: 136
+            }
+
+            Button {
+                id: timed
+                objectName: "buttonTime"
+                y: 41
+                width: 25
+                height: 19
+                text: qsTr("⏳")
+                checkable: true
+                ButtonGroup.group: buttonGroup
+                background: Rectangle {
+                    border.color: parent.checked ? "green" : "#404040"
+                    border.width: 2
+                    radius: 6
+                }
+                anchors.right: parent.right
+                anchors.rightMargin: 90
+            }
+
+            Button {
+                id: coins
+                objectName: "buttonCoins"
+                x: 525
+                y: 20
+                width: 25
+                height: 20
+                text: qsTr("🪙")
+                checkable: true
+                ButtonGroup.group: buttonGroup
+                background: Rectangle {
+                    border.color: parent.checked ? "green" : "#404040"
+                    border.width: 2
+                    radius: 6
+                }
+                anchors.right: parent.right
+                anchors.rightMargin: 90
+            }
+
+            Button {
+                id: none
+                objectName: "buttonNone"
+                x: 525
+                y: 0
+                width: 25
+                height: 19
+                text: qsTr("⌀")
+                checkable: true
+                ButtonGroup.group: buttonGroup
+                background: Rectangle {
+                    border.color: parent.checked ? "green" : "#404040"
+                    border.width: 2
+                    radius: 6
+                }
+                anchors.right: parent.right
+                anchors.rightMargin: 90
+                checked: true
+            }
+            Item {
+                y: 44
+                width: 24
+                height: 13
+                anchors.right: parent.right
+                anchors.rightMargin: 60
+
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.rightMargin: -5
+                    color: "white"
+                    radius: 2
+                    border.color: "gray"
+                    border.width: 1
+                }
+                TextInput {
+                    id: timeInput
+                    objectName: "timeInput"
+                    text: qsTr("999")
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignHCenter
+                    inputMask: "000"
+                    anchors.fill: parent
+                    anchors.margins: 1
+                    anchors.rightMargin: -5
+                }
+            }
+
+            Item {
+                x: 556
+                y: 23
+                width: 24
+                height: 13
+                anchors.right: parent.right
+                anchors.rightMargin: 60
+                Rectangle {
+                    color: "#ffffff"
+                    radius: 2
+                    border.color: "#808080"
+                    border.width: 1
+                    anchors.fill: parent
+                    anchors.rightMargin: -5
+                }
+
+                TextInput {
+                    id: coinInput
+                    objectName: "coinInput"
+                    text: qsTr("99")
+                    anchors.fill: parent
+                    anchors.margins: 1
+                    anchors.rightMargin: -5
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignHCenter
+                    inputMask: "00"
                 }
             }
         }
@@ -350,6 +510,32 @@ Page {
                 }
             }
         }
+
+        Text {
+            id: text3
+            x: 588
+            y: 45
+            width: 82
+            height: 13
+            color: "#ffffff"
+            text: qsTr("seconds")
+            anchors.right: parent.right
+            anchors.rightMargin: -30
+            font.pixelSize: 11
+        }
+
+        Text {
+            id: text4
+            x: 588
+            y: 24
+            width: 82
+            height: 12
+            color: "#ffffff"
+            text: qsTr("coins")
+            anchors.right: parent.right
+            anchors.rightMargin: -30
+            font.pixelSize: 11
+        }
     }
 
     // Initialize AFTER all components are created
@@ -360,6 +546,8 @@ Page {
 
         // Load tileset through controller
         editorController.loadTileset("res/level_master.xml")
+        // to access slider and goal condition in levelCanvas
+        levelCanvas.setQML(levelEditorPage)
 
         // Set focus when page loads
         levelEditorPage.forceActiveFocus()

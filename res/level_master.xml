@@ -29,5 +29,10 @@
     <gravity_y>400</gravity_y>
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
+    <scrollSpeed>12</scrollSpeed>
   </level_forces>
+  <goal>
+    <type>0</type>
+    <value>0</value>
+  </goal>
 </level>

@@ -386,6 +386,11 @@ bool Level::isGameOver() const
     return isActorOutsideCamera();
 }
 
+void Level::setScrollSpeed(float scrollSpeed) 
+{
+    m_camera.setScrollSpeed(scrollSpeed);
+}
+
 Level::~Level()
 {
     if(m_physics)
