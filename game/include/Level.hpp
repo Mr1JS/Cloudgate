@@ -92,7 +92,7 @@ public:
     /// get res path
     std::string getResPath();
     /// set scroll speed in camera
-    void setScrollSpeed(float scrollSpeed);
+    void setCameraSettings(float scrollSpeed, float pos_y);
 
 private:
 

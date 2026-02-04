@@ -678,6 +678,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
     ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
     ts << "    <numRows>" << numRows << "</numRows>\n";
+    ts << "    <gridHeight>" << 25 << "</gridHeight>\n";             // switch with code from develop branch
     ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
     ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
     ts << "    <layer>1</layer>\n";
@@ -696,7 +697,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <frame_width>36</frame_width>\n";
     ts << "    <frame_height>48</frame_height>\n";
     ts << "    <position_x>50</position_x>\n";
-    ts << "    <position_y>1250</position_y>\n";
+    ts << "    <position_y>450</position_y>\n";
     ts << "    <layer>2</layer>\n";
     ts << "  </actor>\n";
 

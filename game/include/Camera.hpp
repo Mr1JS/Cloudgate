@@ -43,6 +43,8 @@ public:
      */
     void moveY(int pixels);
 
+    void setY(int pixels);
+
     Vector<int> getPosition() const;
 
     /// Returns the current x-position

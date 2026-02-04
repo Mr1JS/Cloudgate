@@ -40,6 +40,11 @@ void Camera::moveY(int pixels)
     m_position -= Vector<int>(0, pixels);
 }
 
+void Camera::setY(int pixels)
+{
+    m_position = Vector<int>(x(), pixels);
+}
+
 Vector<int> Camera::getPosition() const
 {
     return Vector<int>(x(), y());
