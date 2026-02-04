@@ -51,7 +51,9 @@ void ContactListener::BeginContact(b2Contact* contact)
         tileBody = bodyA;
     }
     else
+    {
         return;
+    }
     int tileId = static_cast<int>(tileFixture->GetUserData().pointer);
 
     // invalid tileID
@@ -67,7 +69,9 @@ void ContactListener::BeginContact(b2Contact* contact)
         unsigned int now = SDL_GetTicks();
         const unsigned int hazardCooldownMs = 1000;
         if (now - m_physics->getLastHazardDamageTicks() < hazardCooldownMs)
+        {
             return;
+        }
 
         m_physics->setLastHazardDamageTicks(now);
         if (m_level && m_level->getStateController())
@@ -89,6 +93,19 @@ void ContactListener::BeginContact(b2Contact* contact)
             std::cout << "Dobby is free!" << std::endl;
             m_level->win();
         }
+    }
+
+    // pick up collectables
+    if (tileType == "collectable")
+    {
+        b2Vec2 tilePoint = tileBody->GetPosition();
+        std::cout << "Collectible coordinates: " << tilePoint.x << "/" << tilePoint.y << std::endl;
+
+        b2Vec2 actorPoint = actorBody->GetPosition();
+        std::cout << "Collectible coordinates: " << actorPoint.x << "/" << actorPoint.y << std::endl;
+        std::cout << "Collectible coordinates: " << m_actor->x() << "/" << m_actor->y() << std::endl;
+
+        m_level->collect(tileId);
     }
 }
 
@@ -184,7 +201,10 @@ Vector2f Physics::fromBox2D(const b2Vec2& world) const
 
 void Physics::buildLevelBodies()
 {
-    if (!m_tiles || !m_world) return;
+    if (!m_tiles || !m_world)
+    {
+        return;
+    }
 
     int tw = m_tiles->tileWidth();
     int th = m_tiles->tileHeight();
@@ -196,7 +216,10 @@ void Physics::buildLevelBodies()
         for (int gx = 0; gx < levelW; ++gx)
         {
             int tileId = m_tiles->get(gx, gy) - 1;
-            if (tileId < 0) continue;
+            if (tileId < 0)
+            {
+                continue;
+            }
 
             // Tile-Rechteck in Pixel: (gx*tw, gy*th + 600), Größe (tw, th)
             float px = gx * tw;
@@ -224,12 +247,21 @@ void Physics::buildLevelBodies()
 
 void Physics::update()
 {
-    if (!m_world || !m_actorBody || !m_actor) return;
+    if (!m_world || !m_actorBody || !m_actor)
+    {
+        return;
+    }
 
     unsigned int currentTicks = SDL_GetTicks();
     double dt = (currentTicks - m_lastTicks) / 1000.0;
-    if (dt <= 0) dt = 1.0 / 60.0;
-    if (dt > 0.1) dt = 0.1;
+    if (dt <= 0)
+    {
+        dt = 1.0 / 60.0;
+    }
+    if (dt > 0.1)
+    {
+        dt = 0.1;
+    }
 
     // Spielereingabe anwenden (vor Step)
     applyPlayerInput(dt);
@@ -256,7 +288,9 @@ void Physics::update()
         float ReportFixture(b2Fixture* fixture, const b2Vec2&, const b2Vec2&, float) override
         {
             if (fixture->GetBody()->GetType() == b2_staticBody)
+            {
                 hit = true;
+            }
             return 0;
         }
     };
@@ -268,7 +302,9 @@ void Physics::update()
     m_actor->setOnGround(onGround);
 
     if (onGround)
+    {
         m_actor->setJumping(false);
+    }
 
     enforceCameraBounds();
 

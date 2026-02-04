@@ -103,7 +103,7 @@ private:
     b2Body*                 m_actorBody;
 
     /// Contact-Listener (Ownership)
-    ContactListener*  m_contactListener;
+    ContactListener*        m_contactListener;
 
     /// Letzter Ticks-Wert für Delta-Zeit
     unsigned int            m_lastTicks;

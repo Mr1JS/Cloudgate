@@ -24,9 +24,24 @@ LayerManager::LayerManager(Camera* cam)
 
 void LayerManager::addRenderable(SDLRenderable *r, int LayerID)
 {
-    m_renderables.insert(Layer(r,LayerID));
+    m_renderables.insert(Layer(r, LayerID));
 }
 
+/*
+void LayerManager::removeRenderable(int x, int y, int LayerID)
+{
+    auto it = std::find_if(m_renderables.begin(), m_renderables.end(),
+    [x, y, layer](const auto& pair) {
+        return pair.second == layer && 
+                pair.first->getX() == x && 
+                pair.first->getY() == y;
+    });
+    
+    if (it != m_renderables.end()) {
+        m_renderables.erase(it);
+    }
+}
+*/
 
 void LayerManager::render()
 {

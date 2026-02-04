@@ -37,12 +37,13 @@ Level::Level(MainWindow* mainWindow, std::string filename)
       m_camera(322, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera)
 {
-    m_physics           = 0;
-    m_actor             = 0;
-    m_tiles             = 0;
-    m_goalType          = GOAL_NONE;
-    m_goalTargetValue  = 0;
-    m_goalState         = GOALSTATE_NONE;
+    m_physics         = 0;
+    m_actor           = 0;
+    m_tiles           = 0;
+    m_goalType        = GOAL_NONE;
+    m_goalTargetValue = 0;
+    m_goalState       = GOALSTATE_NONE;
+    m_coin_count      = 0;
 
     m_stateController = new StateController(mainWindow, filename);
 
@@ -427,8 +428,16 @@ GoalState Level::checkAndUpdateGoalState() {
         }
         break;
 
-    // TODO: implement once there are coins in this game
-    //case GOAL_COINS:
+    case GOAL_COINS:
+        if (m_coin_count >= m_goalTargetValue)
+        {
+            state = GOALSTATE_WINNABLE;
+        }
+        else
+        {
+            state = GOALSTATE_NONE;
+        }
+        break;
         
     default:
         state = GOALSTATE_WINNABLE;
@@ -462,6 +471,16 @@ void Level::setCameraSettings(float scrollSpeed, float pos_y)
 {
     m_camera.setScrollSpeed(scrollSpeed);
     m_camera.setY(pos_y);
+}
+
+void Level::collect(int tileId)
+{
+    // get tile at actor x / y
+    TileSetRepresentation* tileRep = tiles();
+    int idx = tileRep->get(m_actor->x(), m_actor->y());
+    std::cout << "TileID: " << tileId << ", " << idx << std::endl;
+    
+    //m_layers->removeRenderable();
 }
 
 Level::~Level()

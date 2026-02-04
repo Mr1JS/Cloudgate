@@ -131,11 +131,15 @@ public:
     /// @param targetValue value to meet for goal type, if necessary
     void setGoalCondition(int type, int targetValue);
 
+    // collect a pickup
+    void collect(int tileId);
+
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
     
     /// get res path
     std::string getResPath();
+
     /// set scroll speed in camera
     void setCameraSettings(float scrollSpeed, float pos_y);
 
@@ -187,6 +191,8 @@ private:
 
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";
+
+    int                     m_coin_count;
 };
 
 } /* namespace jumper */
