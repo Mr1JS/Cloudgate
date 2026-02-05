@@ -235,30 +235,6 @@ StateController::~StateController()
     {
         delete m_timer;
     }
-
-    for (int i = 0; i < MAX_HEARTS; i++)
-    {
-        if (m_hearts[i])
-        {
-            delete m_hearts[i];
-        }
-    }
-
-    for (int i = 0; i < RUNTIME_DIGITS; i++)
-    {
-        if (m_runtimeDigits[i])
-        {
-            delete m_runtimeDigits[i];
-        }
-    }
-
-    for (int i = 0; i < COIN_DIGITS; i++)
-    {
-        if (m_coinTextures[i])
-        {
-            delete m_coinTextures[i];
-        }
-    }
 }
 
 } /* namespace jumper */
