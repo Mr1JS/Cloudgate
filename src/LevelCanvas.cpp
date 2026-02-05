@@ -11,6 +11,7 @@
 #include <QPair>
 #include <QMap>
 #include <QDebug>
+#include <QVariant>
 
 #include <vector>
 #include <algorithm> // std::copy
@@ -25,9 +26,133 @@ static jumper::shared_array<T> makeSharedArrayCopy(const std::vector<T> &v)
 }
 
 LevelCanvas::LevelCanvas(QQuickItem *parent)
-    : QQuickPaintedItem(parent), m_backgroundColor(92, 130, 161)
+    : QQuickPaintedItem(parent),
+      m_qmlRoot(nullptr),
+      m_backgroundColor(92, 130, 161)
 {
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+}
+
+void LevelCanvas::setQML(QObject *root)
+{
+    m_qmlRoot = root;
+    if (!m_qmlRoot)
+    {
+        qWarning() << "[LevelCanvas] setQML called with null root.";
+    }
+}
+
+std::array<int, 3> LevelCanvas::getQMLValues()
+{
+    // Default to sane values if QML isn't available
+    std::array<int, 3> values{8, 0, 0};
+
+    if (!m_qmlRoot)
+    {
+        qWarning() << "[LevelCanvas] QML root not set; using defaults.";
+        return values;
+    }
+
+    auto findObject = [this](const char *name) -> QObject *
+    {
+        return m_qmlRoot->findChild<QObject *>(name);
+    };
+
+    if (QObject *scrollSpeed = findObject("scrollSpeed"))
+    {
+        QVariant v = scrollSpeed->property("value");
+        if (v.isValid())
+        {
+            values[0] = v.toInt();
+        }
+    }
+
+    int goalType = 0;
+    if (QObject *buttonCoins = findObject("buttonCoins"))
+    {
+        if (buttonCoins->property("checked").toBool())
+        {
+            goalType = 1;
+        }
+    }
+    if (QObject *buttonTime = findObject("buttonTime"))
+    {
+        if (buttonTime->property("checked").toBool())
+        {
+            goalType = 2;
+        }
+    }
+    values[1] = goalType;
+
+    int goalValue = 0;
+    if (goalType == 1)
+    {
+        if (QObject *coinInput = findObject("coinInput"))
+        {
+            goalValue = coinInput->property("text").toString().toInt();
+        }
+    }
+    else if (goalType == 2)
+    {
+        if (QObject *timeInput = findObject("timeInput"))
+        {
+            goalValue = timeInput->property("text").toString().toInt();
+        }
+    }
+    values[2] = goalValue;
+
+    return values;
+}
+
+void LevelCanvas::setQMLValues(std::array<int, 3> qmlValues)
+{
+    if (!m_qmlRoot)
+    {
+        qWarning() << "[LevelCanvas] QML root not set; cannot apply values.";
+        return;
+    }
+
+    const int scrollSpeed = qmlValues[0];
+    const int goalType = qmlValues[1];
+    const int goalValue = qmlValues[2];
+
+    auto findObject = [this](const char *name) -> QObject *
+    {
+        return m_qmlRoot->findChild<QObject *>(name);
+    };
+
+    if (QObject *scrollSpeedObj = findObject("scrollSpeed"))
+    {
+        scrollSpeedObj->setProperty("value", scrollSpeed);
+    }
+
+    if (QObject *buttonNone = findObject("buttonNone"))
+    {
+        buttonNone->setProperty("checked", goalType == 0);
+    }
+    if (QObject *buttonCoins = findObject("buttonCoins"))
+    {
+        buttonCoins->setProperty("checked", goalType == 1);
+    }
+    if (QObject *buttonTime = findObject("buttonTime"))
+    {
+        buttonTime->setProperty("checked", goalType == 2);
+    }
+
+    if (goalType == 1)
+    {
+        if (QObject *coinInput = findObject("coinInput"))
+        {
+            coinInput->setProperty("text", QString::number(goalValue));
+        }
+    }
+    else if (goalType == 2)
+    {
+        if (QObject *timeInput = findObject("timeInput"))
+        {
+            timeInput->setProperty("text", QString::number(goalValue));
+        }
+    }
 }
 
 void LevelCanvas::setTileset(const QList<Tile> &tiles, int tileW, int tileH, int offset, int endIndex)

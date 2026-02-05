@@ -408,6 +408,9 @@ GoalState Level::checkAndUpdateGoalState() {
     // if we already won or lost, there's no need to check for anything anmore
     switch (m_goalState)
     {
+    case GOALSTATE_NONE:
+    case GOALSTATE_WINNABLE:
+        break;
     case GOALSTATE_GAME_OVER:
     case GOALSTATE_LEVEL_FINISHED:
         return m_goalState;
