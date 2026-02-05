@@ -144,12 +144,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Add hearts to stateController
-            std::array<SDLRenderable*, MAX_HEARTS> rs = m_level->getStateController()->initHeartDisplay(tex, tileWidth, layer);
-
-            for (int i = 0; i < MAX_HEARTS; i++)
-            {
-                level->addRenderable(rs[i], layer);
-            }
+            m_level->getStateController()->initHeartDisplay(tex, tileWidth, tileHeight, layer);
         }
         
         if (v.first == "numbers")
@@ -178,10 +173,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Init digits in StateController
-            std::array<TimerDigit*, RUNTIME_DIGITS> digits = m_level->getStateController()->initTimerDigits(tex, numFrames, frameWidth, frameHeight, layer);
-            for (int i = 0; i < RUNTIME_DIGITS; i++) {
-                m_level->addRenderable(digits[i], layer);
-            }
+            m_level->getStateController()->initTimerDigits(tex, numFrames, frameWidth, frameHeight, layer);
         }
 
         if (v.first == "actor")

@@ -131,9 +131,6 @@ public:
     /// @param targetValue value to meet for goal type, if necessary
     void setGoalCondition(int type, int targetValue);
 
-    // collect a pickup
-    void collect(int tileId);
-
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
     
@@ -197,8 +194,6 @@ private:
 
     /// Space war im vorherigen Frame gedrückt (für Flanken-Erkennung beim Sprung)
     bool                    m_prevSpacePressed = false;
-
-    int                     m_coin_count;
 };
 
 } /* namespace jumper */

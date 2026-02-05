@@ -16,9 +16,12 @@
 
 #define MAX_HEARTS 3
 #define RUNTIME_DIGITS 6
+#define COIN_DIGITS 3
 
 namespace jumper
 {
+
+class Level;
 
 /**
  * @brief Handles different game states.
@@ -27,13 +30,13 @@ class StateController
 {
 public:
     /// Create an instance of StateController
-    StateController(MainWindow* mainWindow, std::string& filename);
+    StateController(MainWindow* mainWindow, Level* level, std::string& filename);
 
     /// Initialize display of player hp as hearts in the top right corner
-    std::array<SDLRenderable*, MAX_HEARTS> initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int layer);
+    void initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int texHeight, int layer);
 
     /// Initialize display of level time display in the top left corner
-    std::array<TimerDigit*, RUNTIME_DIGITS> initTimerDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
+    void initTimerDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
 
     /// Start or resume game
     void startGame();
@@ -65,8 +68,10 @@ public:
 
     unsigned int getRuntime() const;
 
-    /// Münzen: gesammelte Anzahl erhöhen / abfragen
-    void addCoin(int n = 1);
+    /// Increase coin count
+    void addCoin(int coinCount = 1);
+
+    /// Get current coin count
     int getCoins() const;
 
     /// Destructor of class StateController
@@ -96,8 +101,11 @@ private:
     /// heart sprites
     std::array<SDLRenderable*, MAX_HEARTS> m_hearts;
 
-    /// width of a heart sprite - used in calculating position of the sprites
+    /// width of a heart sprite - used in calculating position of the heart sprites
     int m_heartWidth;
+
+    /// height of a heart sprite - used in calculating position of the coin sprites
+    int m_heartHeight;
 
     /// sprites of the individual timer digits
     std::array<TimerDigit*, RUNTIME_DIGITS> m_runtimeDigits;
@@ -105,8 +113,14 @@ private:
     /// reference to MainWindow class
     MainWindow* m_mainWindow;
 
-    /// Gesammelte Münzen im Level
-    int m_coins = 0;
+    /// reference to Level class
+    Level* m_level;
+    
+    /// sprites of the coin counter digits
+    std::array<TimerDigit*, COIN_DIGITS> m_coinTextures;
+
+    /// Coins collected in level
+    int m_coins;
 };
 
 } /* namespace jumper */

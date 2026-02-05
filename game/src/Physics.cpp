@@ -73,7 +73,9 @@ void ContactListener::BeginContact(b2Contact* contact)
         {
             m_level->removeTileAt(gx, gy);
             if (m_level->getStateController())
-                m_level->getStateController()->addCoin(1);
+            {
+                m_level->getStateController()->addCoin();
+            }
         }
         m_physics->queueBodyForDestruction(tileBody);
         return;
@@ -109,19 +111,6 @@ void ContactListener::BeginContact(b2Contact* contact)
             std::cout << "Dobby is free!" << std::endl;
             m_level->win();
         }
-    }
-
-    // pick up collectables
-    if (tileType == "collectable")
-    {
-        b2Vec2 tilePoint = tileBody->GetPosition();
-        std::cout << "Collectible coordinates: " << tilePoint.x << "/" << tilePoint.y << std::endl;
-
-        b2Vec2 actorPoint = actorBody->GetPosition();
-        std::cout << "Collectible coordinates: " << actorPoint.x << "/" << actorPoint.y << std::endl;
-        std::cout << "Collectible coordinates: " << m_actor->x() << "/" << m_actor->y() << std::endl;
-
-        m_level->collect(tileId);
     }
 }
 

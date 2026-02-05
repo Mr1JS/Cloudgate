@@ -16,6 +16,8 @@
 #include "game/include/Physics.hpp"
 #include "game/include/LevelParser.hpp"
 #include "game/include/Monster.hpp"
+#include "game/include/StateController.hpp"
+
 
 #include <iostream>
 #include <fstream>
@@ -43,9 +45,8 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     m_goalType        = GOAL_NONE;
     m_goalTargetValue = 0;
     m_goalState       = GOALSTATE_NONE;
-    m_coin_count      = 0;
 
-    m_stateController = new StateController(mainWindow, filename);
+    m_stateController = new StateController(mainWindow, this, filename);
 
     // Setup level attributes from config file
     LevelParser p(filename, this, m_mainWindow);
@@ -478,16 +479,6 @@ void Level::setCameraSettings(float scrollSpeed, float pos_y)
 {
     m_camera.setScrollSpeed(scrollSpeed);
     m_camera.setY(pos_y);
-}
-
-void Level::collect(int tileId)
-{
-    // get tile at actor x / y
-    TileSetRepresentation* tileRep = tiles();
-    int idx = tileRep->get(m_actor->x(), m_actor->y());
-    std::cout << "TileID: " << tileId << ", " << idx << std::endl;
-    
-    //m_layers->removeRenderable();
 }
 
 Level::~Level()

@@ -55,8 +55,6 @@ public:
     /// Adds a renderable to the given layer
     void addRenderable(SDLRenderable* r, int LayerID);
 
-//    void removeRenderable(SDLRenderable* r, int LayerID);
-
     /// Renders all incrementally starting with layer 0
     void render();
 

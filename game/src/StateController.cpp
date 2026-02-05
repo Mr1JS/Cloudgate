@@ -2,28 +2,31 @@
 
 #include <fstream>
 #include "game/include/Util.hpp"
+#include "game/include/Level.hpp"
 
 namespace jumper
 {
 
-StateController::StateController(MainWindow* mainWindow, std::string& filename)
+StateController::StateController(MainWindow* mainWindow, Level* level, std::string& filename)
 : m_hearts{}, m_runtimeDigits{}
 {
-    m_mainWindow = mainWindow;
-    m_isRunning = false;
-    m_timer = new QElapsedTimer();
-    m_runtime = 0;
-    m_lastTimer = 0;
-    m_playerHp = MAX_HEARTS;
-    m_heartWidth = -1;
+    m_mainWindow    = mainWindow;
+    m_level         = level;
+    m_isRunning     = false;
+    m_timer         = new QElapsedTimer();
+    m_runtime       = 0;
+    m_lastTimer     = 0;
+    m_playerHp      = MAX_HEARTS;
+    m_heartWidth    = 0;
+    m_heartHeight   = 0;
+    m_coins         = 0;
 }
 
 
-std::array<SDLRenderable*, MAX_HEARTS> StateController::initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int layer)
+void StateController::initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int texHeight, int layer)
 {
-//    m_hearts = new SDLRenderable[MAX_HEARTS];
-    std::cout << "Loading heart textures" << std::endl;
     m_heartWidth = texWidth;
+    m_heartHeight = texHeight;
     for (int i = 0; i < MAX_HEARTS; i++)
     {
         if (m_hearts[i])
@@ -33,13 +36,10 @@ std::array<SDLRenderable*, MAX_HEARTS> StateController::initHeartDisplay(SDL_Tex
         }
         m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
 
+        m_level->addRenderable(m_hearts[i], layer);
     }
 
     resetHeartPosition();
-
-    std::cout << "Loading hearts done" << std::endl;
-
-    return m_hearts;
 }
 
 void StateController::resetHeartPosition()
@@ -54,8 +54,9 @@ void StateController::resetHeartPosition()
     }
 }
 
-std::array<TimerDigit*, RUNTIME_DIGITS> StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
+void StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
 {
+    // init textures for the runtime display
     int x = 25;
     for (int i = 0; i < RUNTIME_DIGITS; i++)
     {
@@ -69,9 +70,23 @@ std::array<TimerDigit*, RUNTIME_DIGITS> StateController::initTimerDigits(SDL_Tex
         {
             x += 10;
         }
+        m_level->addRenderable(m_runtimeDigits[i], layer);
     }
 
-    return m_runtimeDigits;
+    // init textures for the coin counter
+    x = m_mainWindow->w() - frameWidth - 5;
+    int y = m_heartHeight+10;
+    if (m_heartHeight == 0)
+    {
+        y = 42;
+    }
+    for (int i = 0; i < COIN_DIGITS; i++)
+    {
+        m_coinTextures[i] = new TimerDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_coinTextures[i]->setWorldPosition(Vector2f(x, y));
+        x -= 5 + frameWidth;
+        m_level->addRenderable(m_coinTextures[i], layer);
+    }
 }
 
 bool StateController::isPaused()
@@ -197,9 +212,16 @@ unsigned int StateController::getRuntime() const
     return m_runtime;
 }
 
-void StateController::addCoin(int n)
+void StateController::addCoin(int coinCount)
 {
-    m_coins += n;
+    m_coins += coinCount;
+
+    int j = m_coins;
+    for (int i = 0; i < COIN_DIGITS; i++)
+    {
+        m_coinTextures[i]->setValue(j % 10);
+        j /= 10;
+    }
 }
 
 int StateController::getCoins() const
@@ -227,6 +249,14 @@ StateController::~StateController()
         if (m_runtimeDigits[i])
         {
             delete m_runtimeDigits[i];
+        }
+    }
+
+    for (int i = 0; i < COIN_DIGITS; i++)
+    {
+        if (m_coinTextures[i])
+        {
+            delete m_coinTextures[i];
         }
     }
 }
