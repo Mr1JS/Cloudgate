@@ -297,7 +297,7 @@ static int countCoins(const QMap<QPair<int, int>, int> &map)
     int coinsAmount = 0;
     for (auto it = map.begin(); it != map.end(); ++it)
     {
-        if (it.value() == 132 || it.value() == 133 || it.value() == 134)
+        if (it.value() == 118)
         {
             coinsAmount++;
         }

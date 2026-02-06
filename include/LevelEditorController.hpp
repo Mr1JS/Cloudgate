@@ -72,7 +72,7 @@ private:
     int m_selectedTileIndex = -1;
     int m_gridWidth = 20; // not changed in xml
     int m_gridHeight = 25; // not changed in xml
-    int m_endIndex = 140; // at which point do the tiles split up between normal Tiles and extraTiles
+    int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
 };
 
 #endif // LEVELEDITORCONTROLLER_HPP

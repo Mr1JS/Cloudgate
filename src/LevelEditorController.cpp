@@ -112,22 +112,44 @@ void LevelEditorController::loadTileset(const QString &path)
             else if (xml.name() == QString("collision_tiles"))
             {
                 texDataset = xml.attributes().value("texture").toString().toStdString();
-            }
-            else if (xml.name() == QString("tileWidth"))
-            {
-                m_tileWidth = xml.readElementText().toInt();
-            }
-            else if (xml.name() == QString("tileHeight"))
-            {
-                m_tileHeight = xml.readElementText().toInt();
-            }
-            else if (xml.name() == QString("tileOffset"))
-            {
-                m_tileOffset = xml.readElementText().toInt();
-            }
-            else if (xml.name() == QString("switchIndex"))
-            {
-                m_endIndex = xml.readElementText().toInt();
+                
+                while (!(xml.isEndElement() && xml.name().toString() == "collision_tiles"))
+                {
+                    xml.readNext();
+                    if (xml.isStartElement())
+                    {
+                        QString childName = xml.name().toString();
+
+                        if (childName == "tileWidth")
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok)
+                            {
+                                m_tileWidth = v;
+                            }
+                        }
+                        else if (childName == "tileHeight")
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok)
+                            {
+                                m_tileHeight = v;
+                            }
+                        }
+                        else if (childName == "tileOffset")
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok)
+                            {
+                                m_tileOffset = v;
+                            }
+                        }
+                    }
+                }
+            
             }
         }
     }

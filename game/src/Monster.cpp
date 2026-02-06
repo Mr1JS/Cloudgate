@@ -40,9 +40,9 @@ Monster::Monster(MainWindow* mw, SDL_Texture* tilesetTexture,
     , m_groundY(0.0)
     , m_chaseTimer(0.0)
 {
-    // Ghost: 144 Top, 145 Bottom | Snake: 146 Top, 147 Bottom (0-basiert: 143/144, 145/146)
-    int tileTop = (type == Type::Ghost) ? 144 : 146;
-    int tileBottom = (type == Type::Ghost) ? 145 : 147;
+    // Ghost: 131 Top, 132 Bottom | Snake: 133 Top, 134 Bottom (0-basiert: 131/132, 133/134)
+    int tileTop = (type == Type::Ghost) ? 131 : 133;
+    int tileBottom = (type == Type::Ghost) ? 132 : 134;
     setTileSourceRect(m_sourceRectTop, tileTop, tileWidth, tileHeight);
     setTileSourceRect(m_sourceRectBottom, tileBottom, tileWidth, tileHeight);
     m_targetRect.w = tileWidth;

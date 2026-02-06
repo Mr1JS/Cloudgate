@@ -151,54 +151,37 @@
 
 
 
-    <!-- ROW 13: Special Items (IDs 108-115) -->
-    <tile id="108" name="Box Item" type="interactive"/>
-    <tile id="109" name="Box Item Alt" type="interactive"/>
-    <tile id="110" name="Box Coin" type="collectible"/>
-    <tile id="111" name="Box Item Disabled" type="decoration"/>
-    <tile id="112" name="Box Item Alt Disabled" type="decoration"/>
-    <tile id="113" name="Box Coin Disabled" type="decoration"/>
-    <tile id="114" name="Box Coin Alt Disabled" type="decoration"/>
-    <tile id="115" name="Box" type="decoration"/>
+    <!-- ROW 13: Special Items (IDs 108-116) -->
+    <tile id="108" name="Box" type="random"/>
+    <tile id="109" name="Bridge" type="platform"/>
+    <tile id="110" name="Bridge Logs" type="platform"/>
+    <tile id="111" name="Ladder Top" type="platform"/>
+    <tile id="112" name="Fence" type="platform"/>
+    <tile id="113" name="Spikes" type="hazard" shape="half_bottom"/>
+    <tile id="114" name="Sign Exit" type="decoration"/>
+    <tile id="115" name="Sign" type="decoration"/>
+    <tile id="116" name="Sign Right" type="decoration"/>
 
-    <!-- ROW 14: Decorations & Objects (IDs 116-124) -->
-    <tile id="116" name="Box Alt" type="decoration"/>
-    <tile id="117" name="Box Empty" type="decoration"/>
-    <tile id="118" name="Box Warning" type="decoration"/>
-    <tile id="119" name="Box Explosive" type="hazard"/>
-    <tile id="120" name="Box Explosive Disabled" type="decoration"/>
-    <tile id="121" name="Box Explosive Alt" type="decoration"/>
-    <tile id="122" name="Bridge" type="platform"/>
-    <tile id="123" name="Bridge Logs" type="platform"/>
-    <tile id="124" name="Ladder Top" type="platform"/>
+    <!-- ROW 14: Special Items 2 (IDs 117-125) -->
+    <tile id="117" name="Sign Left" type="decoration"/>
+    <tile id="118" name="Coin Gold" type="collectible"/>
+    <tile id="119" name="Key Yellow" type="key"/>
+    <tile id="120" name="Spring Board Down" type="jump"/>
+    <tile id="121" name="Spring Board Up" type="decoration"/>
+    <tile id="122" name="Bush Green" type="decoration"/>
+    <tile id="123" name="Bush White" type="decoration"/>
+    <tile id="124" name="Red Potion" type=" red_potion"/>
+    <tile id="125" name="Blue Potion" type="blue_potion"/>
 
-    <!-- ROW 15: Structures (IDs 125-134) -->
-    <tile id="125" name="Fence" type="platform"/>
-    <tile id="126" name="Fence2" type="platform"/>
-    <tile id="127" name="Spikes" type="hazard" shape="half_bottom"/>
-    <tile id="128" name="Sign Exit" type="decoration"/>
-    <tile id="129" name="Sign" type="decoration"/>
-    <tile id="130" name="Sign Right" type="decoration"/>
-    <tile id="131" name="Sign Left" type="decoration"/>
-    <tile id="132" name="Coin Bronze" type="collectible"/>
-    <tile id="133" name="Coin Silver" type="collectible"/>
-    <tile id="134" name="Coin Gold" type="collectible"/>
-
-    <!-- ROW 16: Tools & Items (IDs 135-143) -->
-    <tile id="135" name="Key Yellow" type="key"/>
-    <tile id="136" name="Spring Board Down" type="jump"/>
-    <tile id="137" name="Spring Board Up" type="decoration"/>
-    <tile id="138" name="Bush Green" type="decoration"/>
-    <tile id="139" name="Bush White" type="decoration"/>
-    <tile id="140" name="Door Open Top" type="door"/>
-    <tile id="141" name="Door Open Mid" type="door"/>
-    <tile id="142" name="Door Closed Top" type="door"/>
-    <tile id="143" name="Door Closed Mid" type="door"/>
-
-    <!-- ROW 17: Enemies -->
-    <tile id="144" name="Ghost White Top" type="enemy"/>
-    <tile id="145" name="Ghost White Bottom" type="enemy"/>
-    <tile id="146" name="Snake Slime Top" type="enemy"/>
-    <tile id="147" name="Snake Slime Bottom" type="enemy"/>
+    <!-- ROW 17: Potion and 1x2 Tiles -->
+    <tile id="126" name="Green Potion" type="green_potion"/>
+    <tile id="127" name="Door Open Top" type="door"/>
+    <tile id="128" name="Door Open Mid" type="door"/>
+    <tile id="129" name="Door Closed Top" type="closed_door"/>
+    <tile id="130" name="Door Closed Mid" type="closed_door"/>
+    <tile id="131" name="Ghost White Top" type="enemy"/>
+    <tile id="132" name="Ghost White Bottom" type="enemy"/>
+    <tile id="133" name="Snake Slime Top" type="enemy"/>
+    <tile id="134" name="Snake Slime Bottom" type="enemy"/>
 
 </tileset>

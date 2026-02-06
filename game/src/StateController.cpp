@@ -114,7 +114,7 @@ void StateController::updateGameTime()
         unsigned int min = m_runtime/1000/60;
         unsigned int sec = m_runtime/1000 - min*60;
         unsigned int ms  = m_runtime - sec*1000;
-        std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
+        //std::cout << "Current time: " << min << ":" << sec << ":" << ms << std::endl;
         updateRuntime(m_runtime + runtimed);
         m_lastTimer = currentTimer;
     }

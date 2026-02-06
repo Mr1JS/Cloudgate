@@ -93,7 +93,7 @@ private:
     QImage m_tilesetImage;
 
     bool m_extraTiles = false;
-    int m_endIndex = 140; // at which point do the tiles split up between normal Tiles and extraTiles
+    int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
 
     // method to find if we are in the drawing area
     inline bool isFrameTile(int x, int y) const

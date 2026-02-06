@@ -121,10 +121,10 @@ void Level::spawnMonsters()
     const int TILE_Y_OFFSET = 600;
 
     // Tile-IDs: 1-basiert (145/146, 147/148) oder 0-basiert (144/145, 146/147)
-    const int GHOST_TOP_A = 145, GHOST_BOTTOM_A = 146;  // 1-basiert
-    const int GHOST_TOP_B = 144, GHOST_BOTTOM_B = 145;  // 0-basiert
-    const int SNAKE_TOP_A = 147, SNAKE_BOTTOM_A = 148;
-    const int SNAKE_TOP_B = 146, SNAKE_BOTTOM_B = 147;
+    const int GHOST_TOP_A = 132, GHOST_BOTTOM_A = 133;  // 1-basiert
+    const int GHOST_TOP_B = 131, GHOST_BOTTOM_B = 132;  // 0-basiert
+    const int SNAKE_TOP_A = 134, SNAKE_BOTTOM_A = 135;
+    const int SNAKE_TOP_B = 136, SNAKE_BOTTOM_B = 137;
     const int monsterW = 32;
 
     for(int gy = 0; gy < levelH - 1; ++gy)
