@@ -143,6 +143,12 @@ public:
     /// Entfernt Tile an (gx, gy) aus der Karte (z.B. gesammelte Münze)
     void removeTileAt(int gx, int gy);
 
+    /// Liefert die Tile-Wert an (gx, gy), 0 = leer, sonst 1-basiert
+    int getTileAt(int gx, int gy) const;
+
+    /// Setzt Tile an (gx, gy), value = 0 leer, sonst 1-basierter Tile-Index
+    void setTileAt(int gx, int gy, int value);
+
 private:
 
     /// Updates the actor accordint to the given keyboard states

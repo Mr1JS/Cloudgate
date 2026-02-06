@@ -75,6 +75,9 @@ public:
     /// Body nach Kontakt-Callback zerstören (z.B. gesammelte Münze)
     void queueBodyForDestruction(b2Body* body);
 
+    /// Feder/Spring (z.B. Tile 120): Actor mit factor-facher Sprungkraft nach oben schleudern
+    void applySpringLaunch(float factor);
+
 private:
 
     /// Erstellt statische Box2D-Bodies aus den Level-Tiles

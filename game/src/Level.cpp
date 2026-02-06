@@ -233,6 +233,24 @@ void Level::removeTileAt(int gx, int gy)
     }
 }
 
+int Level::getTileAt(int gx, int gy) const
+{
+    if (!m_tiles || !m_tiles->tiles()) return 0;
+    TileSetRepresentation* rep = m_tiles->tiles();
+    if (gx < 0 || gx >= rep->width() || gy < 0 || gy >= rep->height()) return 0;
+    return rep->get(gx, gy);
+}
+
+void Level::setTileAt(int gx, int gy, int value)
+{
+    if (m_tiles && m_tiles->tiles())
+    {
+        TileSetRepresentation* rep = m_tiles->tiles();
+        if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+            rep->insert(gx, gy, value);
+    }
+}
+
 void Level::update(const Uint8* keystates)
 {
     // Update camera (automatisches Scrollen nach oben)

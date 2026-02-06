@@ -166,8 +166,8 @@
     <tile id="117" name="Sign Left" type="decoration"/>
     <tile id="118" name="Coin Gold" type="collectible"/>
     <tile id="119" name="Key Yellow" type="key"/>
-    <tile id="120" name="Spring Board Down" type="jump"/>
-    <tile id="121" name="Spring Board Up" type="decoration"/>
+    <tile id="120" name="Spring Board Down" type="jumpdown"/>
+    <tile id="121" name="Spring Board Up" type="jumpup"/>
     <tile id="122" name="Bush Green" type="decoration"/>
     <tile id="123" name="Bush White" type="decoration"/>
     <tile id="124" name="Red Potion" type=" red_potion"/>

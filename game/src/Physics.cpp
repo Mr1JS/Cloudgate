@@ -103,6 +103,46 @@ void ContactListener::BeginContact(b2Contact* contact)
         m_physics->handleHazardContact(tileId, tileCenter, actorCenter);
     }
 
+    // Spring: nur "jumpup" löst automatischen Aufwärts-Impuls aus, danach wechselt Tile zu "jumpdown" (einmal nutzbar)
+    if (tileType == "jumpup" || tileType == "jumpdown")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        int currentValue = m_level ? m_level->getTileAt(gx, gy) : 0;
+        int currentTileId = (currentValue > 0) ? (currentValue - 1) : -1;
+        std::string currentType = (currentTileId >= 0) ? m_physics->getTileData(currentTileId).second : "";
+        if (currentType != "jumpup" && currentType != "jumpdown" && currentValue > 0)
+        {
+            currentTileId = currentValue;
+            currentType = m_physics->getTileData(currentTileId).second;
+        }
+        if (currentType == "jumpdown" && currentValue == 121)
+        {
+            std::string typeAs121 = m_physics->getTileData(121).second;
+            if (typeAs121 == "jumpup")
+            {
+                currentTileId = 121;
+                currentType = "jumpup";
+            }
+        }
+        std::cout << "[Spring] Kollision tileId=" << tileId << " type=" << tileType
+                  << " gx=" << gx << " gy=" << gy << " currentValue=" << currentValue
+                  << " currentTileId=" << currentTileId << " currentType=\"" << currentType << "\"" << std::endl;
+        if (currentType == "jumpup")
+        {
+            std::cout << "[Spring] Launch nach oben (2x), setze Tile auf jumpdown" << std::endl;
+            m_physics->applySpringLaunch(2.0f);
+            if (m_level)
+                m_level->setTileAt(gx, gy, 120);
+        }
+        else
+        {
+            std::cout << "[Spring] Bereits jumpdown – kein Launch" << std::endl;
+        }
+        return;
+    }
+
     // check win condition and end game if condition is met
     if (tileType == "door")
     {
@@ -452,6 +492,14 @@ void Physics::enforceCameraBounds()
         float cy = topLeft.y() + m_actor->h() / 2.0f;
         m_actorBody->SetTransform(toBox2D(Vector2f(cx, cy)), 0);
     }
+}
+
+void Physics::applySpringLaunch(float factor)
+{
+    if (!m_actorBody || !m_actor) return;
+    float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f * factor;
+    m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
+    std::cout << "[Spring] applySpringLaunch factor=" << factor << " impulse=" << jumpImpulse << std::endl;
 }
 
 void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& actorCenter)
