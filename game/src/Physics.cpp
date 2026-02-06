@@ -13,10 +13,12 @@
 #include "game/include/Physics.hpp"
 #include "game/include/Actor.hpp"
 #include "game/include/Level.hpp"
+#include "game/include/Monster.hpp"
 #include "game/include/Util.hpp"
 
 #include <SDL.h>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 
 namespace jumper {
@@ -80,7 +82,49 @@ void ContactListener::BeginContact(b2Contact* contact)
         m_physics->queueBodyForDestruction(tileBody);
         return;
     }
-    
+
+    // Random-Box (id 108): Box verschwindet, zufällig erscheint Sprungbrett, Trank, Falle (hazard) oder Monster (enemy).
+    // Geist und Schlange: 2 Tiles (Top oben, Bottom unten). Spawn so, dass der BODEN (Bottom) auf der Box-Zelle steht (gy),
+    // Top eine Zeile darüber (gy-1) – dann steht das Monster auf dem „Button“, nicht mit dem Kopf in der Erde.
+    if (tileType == "random")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        std::vector<int> options;
+        int jumpdownId = m_physics->getTileIdByType("jumpdown");
+        int redPotionId = m_physics->getTileIdByType("red_potion");
+        if (jumpdownId >= 0) options.push_back(jumpdownId);
+        if (redPotionId >= 0) options.push_back(redPotionId);
+        std::vector<int> hazardIds = m_physics->getTileIdsByType("hazard");
+        for (int id : hazardIds) options.push_back(id);
+        bool canPlaceTwoTile = (gy >= 1);  // Platz für Top in gy-1, Bottom auf Box-Zelle gy
+        if (canPlaceTwoTile)
+        {
+            options.push_back(131);  // Ghost White Top (131) + Bottom (132)
+            options.push_back(133);  // Snake Slime Top (133) + Bottom (134)
+        }
+        if (!options.empty() && m_level)
+        {
+            int chosenId = options[static_cast<size_t>(std::rand()) % options.size()];
+            m_physics->queueBodyForDestruction(tileBody);
+            if (chosenId == 131)
+            {
+                m_level->spawnMonsterAt(gx, gy, Monster::Type::Ghost);
+            }
+            else if (chosenId == 133)
+            {
+                m_level->spawnMonsterAt(gx, gy, Monster::Type::Snake);
+            }
+            else
+            {
+                m_level->setTileAt(gx, gy, chosenId + 1);
+                m_physics->queueCreateBodyForTile(gx, gy);
+            }
+        }
+        return;
+    }
+
     // take dmg (monster and traps)
     if (tileType == "hazard" || tileType == "enemy")
     {
@@ -360,6 +404,102 @@ void Physics::queueBodyForDestruction(b2Body* body)
         m_bodiesToDestroy.push_back(body);
 }
 
+void Physics::queueCreateBodyForTile(int gx, int gy)
+{
+    m_tilesToCreateBodyFor.push_back({ gx, gy });
+}
+
+void Physics::createBodyForTile(int gx, int gy)
+{
+    if (!m_tiles || !m_world)
+        return;
+    int tw = m_tiles->tileWidth();
+    int th = m_tiles->tileHeight();
+    int levelW = m_tiles->width();
+    int levelH = m_tiles->height();
+    if (gx < 0 || gx >= levelW || gy < 0 || gy >= levelH)
+        return;
+    int tileId = m_tiles->get(gx, gy) - 1;
+    if (tileId < 0)
+        return;
+
+    const float hwM = (tw / 2.0f) / PIXELS_PER_METER;
+    const float hhM = (th / 2.0f) / PIXELS_PER_METER;
+    float px = gx * tw;
+    float py = gy * th + TILE_Y_OFFSET;
+
+    std::string shapeType = "full";
+    auto it = m_tileData.find(tileId);
+    if (it != m_tileData.end())
+        shapeType = it->second.shape;
+
+    b2Vec2 center;
+    b2PolygonShape shape;
+    b2FixtureDef fixtureDef;
+    fixtureDef.friction = 0.05f;
+    fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
+
+    if (shapeType == "half_bottom")
+    {
+        center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f + th/4.0f));
+        float hw = (tw / 2.0f) / PIXELS_PER_METER;
+        float hh = (th / 4.0f) / PIXELS_PER_METER;
+        shape.SetAsBox(hw, hh);
+    }
+    else if (shapeType == "half_top")
+    {
+        center = toBox2D(Vector2f(px + tw/2.0f, py + th/4.0f));
+        float hw = (tw / 2.0f) / PIXELS_PER_METER;
+        float hh = (th / 4.0f) / PIXELS_PER_METER;
+        shape.SetAsBox(hw, hh);
+    }
+    else if (shapeType == "half_left")
+    {
+        center = toBox2D(Vector2f(px + tw/4.0f, py + th/2.0f));
+        float hw = (tw / 4.0f) / PIXELS_PER_METER;
+        float hh = (th / 2.0f) / PIXELS_PER_METER;
+        shape.SetAsBox(hw, hh);
+    }
+    else if (shapeType == "half_right")
+    {
+        center = toBox2D(Vector2f(px + 3.0f*tw/4.0f, py + th/2.0f));
+        float hw = (tw / 4.0f) / PIXELS_PER_METER;
+        float hh = (th / 2.0f) / PIXELS_PER_METER;
+        shape.SetAsBox(hw, hh);
+    }
+    else if (shapeType == "diag_tl_br" || shapeType == "diag_tr_bl")
+    {
+        center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f));
+        b2Vec2 verts[3];
+        if (shapeType == "diag_tl_br")
+        {
+            verts[0].Set(-hwM, -hhM);
+            verts[1].Set(-hwM,  hhM);
+            verts[2].Set( hwM, -hhM);
+        }
+        else
+        {
+            verts[0].Set( hwM, -hhM);
+            verts[1].Set( hwM,  hhM);
+            verts[2].Set(-hwM, -hhM);
+        }
+        shape.Set(verts, 3);
+    }
+    else
+    {
+        center = toBox2D(Vector2f(px + tw/2.0f, py + th/2.0f));
+        shape.SetAsBox(hwM, hhM);
+    }
+
+    fixtureDef.shape = &shape;
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_staticBody;
+    bodyDef.position = center;
+    bodyDef.userData.pointer = (static_cast<uintptr_t>(gx) << 16) | (static_cast<uintptr_t>(gy) & 0xFFFFu);
+    b2Body* body = m_world->CreateBody(&bodyDef);
+    body->CreateFixture(&fixtureDef);
+}
+
 void Physics::update()
 {
     if (!m_world || !m_actorBody || !m_actor)
@@ -371,6 +511,11 @@ void Physics::update()
     for (b2Body* body : m_bodiesToDestroy)
         m_world->DestroyBody(body);
     m_bodiesToDestroy.clear();
+
+    // Neue Bodies für ersetzte Tiles anlegen (z.B. random-Box → jumpdown/red_potion)
+    for (const auto& p : m_tilesToCreateBodyFor)
+        createBodyForTile(p.first, p.second);
+    m_tilesToCreateBodyFor.clear();
 
     unsigned int currentTicks = SDL_GetTicks();
     double dt = (currentTicks - m_lastTicks) / 1000.0;
@@ -551,6 +696,25 @@ int Physics::getTileIdByType(const std::string& type) const
         if (p.second.type == type)
             return p.first;
     return -1;
+}
+
+std::vector<int> Physics::getTileIdsByType(const std::string& type) const
+{
+    std::vector<int> ids;
+    for (const auto& p : m_tileData)
+        if (p.second.type == type)
+            ids.push_back(p.first);
+    return ids;
+}
+
+int Physics::getLevelWidth() const
+{
+    return m_tiles ? m_tiles->width() : 0;
+}
+
+int Physics::getLevelHeight() const
+{
+    return m_tiles ? m_tiles->height() : 0;
 }
 
 } // namespace jumper

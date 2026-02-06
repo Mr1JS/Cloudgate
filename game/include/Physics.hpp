@@ -19,6 +19,7 @@
 #include "Vector.hpp"
 
 #include <map>
+#include <utility>
 #include <vector>
 #include <box2d/box2d.h>
 
@@ -75,8 +76,18 @@ public:
     /// Tile-ID (0-basiert) zu einem type aus RulesTiles.xml; -1 wenn nicht gefunden
     int getTileIdByType(const std::string& type) const;
 
+    /// Alle Tile-IDs (0-basiert) mit gegebenem type (z.B. "enemy" für Monster)
+    std::vector<int> getTileIdsByType(const std::string& type) const;
+
+    /// Level-Ausdehnung in Tiles (für Prüfung z.B. gy+1 < getLevelHeight())
+    int getLevelWidth() const;
+    int getLevelHeight() const;
+
     /// Body nach Kontakt-Callback zerstören (z.B. gesammelte Münze)
     void queueBodyForDestruction(b2Body* body);
+
+    /// Nach Ersetzen eines Tiles (z.B. random-Box): in nächstem update() Body für (gx, gy) anlegen
+    void queueCreateBodyForTile(int gx, int gy);
 
     /// Feder/Spring (z.B. Tile 120): Actor mit factor-facher Sprungkraft nach oben schleudern
     void applySpringLaunch(float factor);
@@ -85,6 +96,9 @@ private:
 
     /// Erstellt statische Box2D-Bodies aus den Level-Tiles
     void buildLevelBodies();
+
+    /// Erstellt einen statischen Body für die Tile an (gx, gy); liest aktuellen Wert aus m_tiles
+    void createBodyForTile(int gx, int gy);
 
     /// Konvertiert Pixel-Position zu Box2D-Koordinaten (Meter, Y invertiert)
     b2Vec2 toBox2D(const Vector2f& pixel) const;
@@ -132,6 +146,9 @@ private:
 
     /// Bodies, die nach dem Kontakt-Callback zerstört werden (z.B. Collectibles)
     std::vector<b2Body*> m_bodiesToDestroy;
+
+    /// (gx, gy) für die im nächsten update() ein neuer Body erzeugt werden soll (z.B. nach random-Box)
+    std::vector<std::pair<int, int>> m_tilesToCreateBodyFor;
 };
 
 } // namespace jumper

@@ -176,6 +176,42 @@ void Level::spawnMonsters()
     }
 }
 
+void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
+{
+    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+
+    TileSetRepresentation* tileRep = m_tiles->tiles();
+    int tw = m_tiles->tileWidth();
+    int th = m_tiles->tileHeight();
+    int levelW = tileRep->width();
+    int levelH = tileRep->height();
+    const int TILE_Y_OFFSET = 600;
+    const int monsterW = 32;
+
+    if (gy < 1 || gx < 0 || gx >= levelW || gy >= levelH) return;
+
+    double wx = gx * tw;
+    double wy = (gy - 1) * th + TILE_Y_OFFSET;
+
+    int platformRow = gy + 1;
+    int gxLeft = gx, gxRight = gx;
+    if (platformRow < levelH)
+    {
+        while (gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0) gxLeft--;
+        while (gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0) gxRight++;
+    }
+    double leftBound = gxLeft * tw;
+    double rightBound = (gxRight + 1) * tw - monsterW;
+    if (rightBound - leftBound < monsterW)
+        rightBound = leftBound + monsterW;
+
+    Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, wx, wy,
+                              leftBound, rightBound,
+                              tw, th, m_tiles->tilesPerRow(), m_tiles->tileOffset());
+    m_monsters.push_back(m);
+    m_layers.addRenderable(m, 2);
+}
+
 void Level::setForces(const LevelForces &f)
 {
     m_levelForce = f;
