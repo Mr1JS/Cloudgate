@@ -72,6 +72,9 @@ public:
     // get Tile Data in ContactListener
     std::pair<std::string, std::string> getTileData(int tileId);
 
+    /// Tile-ID (0-basiert) zu einem type aus RulesTiles.xml; -1 wenn nicht gefunden
+    int getTileIdByType(const std::string& type) const;
+
     /// Body nach Kontakt-Callback zerstören (z.B. gesammelte Münze)
     void queueBodyForDestruction(b2Body* body);
 

@@ -103,42 +103,42 @@ void ContactListener::BeginContact(b2Contact* contact)
         m_physics->handleHazardContact(tileId, tileCenter, actorCenter);
     }
 
-    // Spring: nur "jumpup" löst automatischen Aufwärts-Impuls aus, danach wechselt Tile zu "jumpdown" (einmal nutzbar)
+    // Spring: "jumpdown" = Feder aktiv (schleudert), "jumpup" = bereits benutzt (einmal nutzbar)
     if (tileType == "jumpup" || tileType == "jumpdown")
     {
         uintptr_t posData = tileBody->GetUserData().pointer;
         int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
         int gy = static_cast<int>(posData & 0xFFFFu);
         int currentValue = m_level ? m_level->getTileAt(gx, gy) : 0;
-        int currentTileId = (currentValue > 0) ? (currentValue - 1) : -1;
-        std::string currentType = (currentTileId >= 0) ? m_physics->getTileData(currentTileId).second : "";
-        if (currentType != "jumpup" && currentType != "jumpdown" && currentValue > 0)
+        std::string currentType;
+        int currentTileId = -1;
+        if (currentValue > 0)
         {
-            currentTileId = currentValue;
+            currentTileId = currentValue - 1;  // Level 1-basiert → 0-basierte Tile-ID
             currentType = m_physics->getTileData(currentTileId).second;
-        }
-        if (currentType == "jumpdown" && currentValue == 121)
-        {
-            std::string typeAs121 = m_physics->getTileData(121).second;
-            if (typeAs121 == "jumpup")
+            if (currentType != "jumpup" && currentType != "jumpdown")
             {
-                currentTileId = 121;
-                currentType = "jumpup";
+                currentTileId = currentValue;
+                currentType = m_physics->getTileData(currentTileId).second;
             }
         }
         std::cout << "[Spring] Kollision tileId=" << tileId << " type=" << tileType
                   << " gx=" << gx << " gy=" << gy << " currentValue=" << currentValue
                   << " currentTileId=" << currentTileId << " currentType=\"" << currentType << "\"" << std::endl;
-        if (currentType == "jumpup")
+        if (currentType == "jumpdown")
         {
-            std::cout << "[Spring] Launch nach oben (2x), setze Tile auf jumpdown" << std::endl;
+            std::cout << "[Spring] Launch nach oben (2x), setze Tile auf jumpup (benutzt)" << std::endl;
             m_physics->applySpringLaunch(2.0f);
             if (m_level)
-                m_level->setTileAt(gx, gy, 120);
+            {
+                int jumpupId = m_physics->getTileIdByType("jumpup");
+                if (jumpupId >= 0)
+                    m_level->setTileAt(gx, gy, jumpupId + 1);  // Level speichert 1-basiert
+            }
         }
         else
         {
-            std::cout << "[Spring] Bereits jumpdown – kein Launch" << std::endl;
+            std::cout << "[Spring] Bereits jumpup (benutzt) – kein Launch" << std::endl;
         }
         return;
     }
@@ -538,9 +538,19 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 
 std::pair<std::string, std::string> Physics::getTileData(int tileId)
 {
-    const TileInfo& t = m_tileData[tileId];
+    auto it = m_tileData.find(tileId);
+    if (it == m_tileData.end())
+        return { "", "" };
+    const TileInfo& t = it->second;
     return { t.name, t.type };
 }
 
+int Physics::getTileIdByType(const std::string& type) const
+{
+    for (const auto& p : m_tileData)
+        if (p.second.type == type)
+            return p.first;
+    return -1;
+}
 
 } // namespace jumper
