@@ -38,6 +38,7 @@ public:
     ContactListener(Actor* actor, Level* level, Physics* physics);
 
     void BeginContact(b2Contact* contact) override;
+    void EndContact(b2Contact* contact) override;
 
 private:
     Actor*      m_actor;
@@ -69,7 +70,19 @@ public:
 
     b2Body* getActorBody() const { return m_actorBody; }
     unsigned int getLastHazardDamageTicks() const { return m_lastHazardDamageTicks; }
-    void setLastHazardDamageTicks(unsigned int t) { m_lastHazardDamageTicks = t; }
+
+    /// true = Spieler kann Schaden nehmen; false = noch unverwundbar
+    bool canTakeDamage() const;
+
+    /// Kamera darf sich erst nach CAMERA_DELAY_MS bewegen (z.B. 5 Sekunden nach Levelstart)
+    bool isCameraMovementEnabled() const;
+    void setLastHazardDamageTicks(unsigned int t);
+
+    /// Bewegungssperre nach Schaden (ms)
+    static constexpr unsigned int MOVEMENT_LOCK_MS = 400;
+    /// Unverwundbarkeit nach Schaden (ms)
+    static constexpr unsigned int INVINCIBILITY_MS = 600;
+
     // get Tile Data in ContactListener
     std::pair<std::string, std::string> getTileData(int tileId);
 
@@ -91,6 +104,10 @@ public:
 
     /// Feder/Spring (z.B. Tile 120): Actor mit factor-facher Sprungkraft nach oben schleudern
     void applySpringLaunch(float factor);
+
+    /// Von ContactListener aufgerufen: Wandkontakt (verhindert Drücken in Wand → Zittern)
+    void addWallContact(float normalX);
+    void removeWallContact(float normalX);
 
 private:
 
@@ -133,14 +150,29 @@ private:
     /// Letzter Ticks-Wert für Delta-Zeit
     unsigned int            m_lastTicks;
 
-    /// Zeitpunkt des letzten Hazard-Schadens (Invincibility-Frames)
+    /// Level-Start-Zeitpunkt (SDL_GetTicks), ab dem die Kamera nach CAMERA_DELAY_MS scrollen darf
+    unsigned int            m_cameraStartTicks;
+
+    /// Zeitpunkt des letzten Hazard-Schadens
     unsigned int            m_lastHazardDamageTicks;
+    /// Bis zu diesem Zeitpunkt (SDL_GetTicks) ist der Spieler unverwundbar
+    unsigned int            m_invincibleUntilTicks;
+
+    /// Bis zu diesem Zeitpunkt (SDL_GetTicks) kann der Spieler sich nicht bewegen (nach Schaden)
+    unsigned int            m_movementLockedUntilTicks;
+
+    /// Wandkontakte: wenn > 0, darf sich der Actor nicht in diese Richtung bewegen (verhindert Hängen/Zittern)
+    int                     m_wallContactLeft;
+    int                     m_wallContactRight;
 
     /// Skalierung Pixel pro Meter für Box2D
     static constexpr float  PIXELS_PER_METER = 32.0f;
 
     /// Y-Offset der Tile-Welt in Pixel
     static constexpr float  TILE_Y_OFFSET = 600.0f;
+
+    /// Verzögerung in ms, bis die Kamera sich zu bewegen beginnt (5 Sekunden)
+    static constexpr unsigned int CAMERA_DELAY_MS = 5000;
     /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
     std::map<int, TileInfo> m_tileData;
 

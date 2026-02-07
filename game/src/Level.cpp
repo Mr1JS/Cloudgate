@@ -289,12 +289,12 @@ void Level::setTileAt(int gx, int gy, int value)
 
 void Level::update(const Uint8* keystates)
 {
-    // Update camera (automatisches Scrollen nach oben)
-    // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
+    // Update camera (automatisches Scrollen nach oben) – erst nach 5 Sekunden Verzögerung
     double dt = 1.0 / 60.0;
     if (!m_stateController->isPaused())
     {
-        m_camera.update(dt);
+        if (m_physics && m_physics->isCameraMovementEnabled())
+            m_camera.update(dt);
     
         if(m_physics)
         {
@@ -304,10 +304,8 @@ void Level::update(const Uint8* keystates)
             // Run physics
             m_physics->update();
 
-            // Monster-Kollision: Schaden + Knockback
-            unsigned int now = SDL_GetTicks();
-            const unsigned int damageCooldownMs = 1000;
-            if(m_actor && now - m_physics->getLastHazardDamageTicks() >= damageCooldownMs)
+            // Monster-Kollision: Schaden + Knockback (0,6 s Unverwundbarkeit)
+            if(m_actor && m_physics->canTakeDamage())
             {
                 double ax = m_actor->worldPosition().x(), ay = m_actor->worldPosition().y();
                 int aw = m_actor->w(), ah = m_actor->h();
@@ -317,7 +315,7 @@ void Level::update(const Uint8* keystates)
                     int mw = mon->w(), mh = mon->h();
                     if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
                     {
-                        m_physics->setLastHazardDamageTicks(now);
+                        m_physics->setLastHazardDamageTicks(SDL_GetTicks());
                         if(m_stateController) m_stateController->decrementHp(1);
                         double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
                         m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));

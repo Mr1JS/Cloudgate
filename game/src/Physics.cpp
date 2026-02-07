@@ -17,6 +17,7 @@
 #include "game/include/Util.hpp"
 
 #include <SDL.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -58,12 +59,20 @@ void ContactListener::BeginContact(b2Contact* contact)
     }
     int tileId = static_cast<int>(tileFixture->GetUserData().pointer);
 
-    // invalid tileID
     if (tileId < 0)
     {
         return;
     }
     std::string tileType = m_physics->getTileData(tileId).second;
+
+    // Wandkontakt für feste Tiles (verhindert Hängen/Zittern an Wänden)
+    if (tileType != "collectible" && tileType != "red_potion" && tileType != "random")
+    {
+        b2WorldManifold wm;
+        contact->GetWorldManifold(&wm);
+        float nx = (bodyA == actorBody) ? wm.normal.x : -wm.normal.x;
+        m_physics->addWallContact(nx);
+    }
 
     // Collectible (Münze etc.): von Karte entfernen, Münzzähler erhöhen, Body später zerstören
     if (tileType == "collectible")
@@ -143,17 +152,13 @@ void ContactListener::BeginContact(b2Contact* contact)
         return;
     }
 
-    // take dmg (monster and traps)
+    // take dmg (monster and traps) – nur wenn nicht unverwundbar
     if (tileType == "hazard" || tileType == "enemy")
     {
-        unsigned int now = SDL_GetTicks();
-        const unsigned int hazardCooldownMs = 1000;
-        if (now - m_physics->getLastHazardDamageTicks() < hazardCooldownMs)
-        {
+        if (!m_physics->canTakeDamage())
             return;
-        }
 
-        m_physics->setLastHazardDamageTicks(now);
+        m_physics->setLastHazardDamageTicks(SDL_GetTicks());
         if (m_level && m_level->getStateController())
         {
             m_level->getStateController()->decrementHp(1);
@@ -216,6 +221,19 @@ void ContactListener::BeginContact(b2Contact* contact)
     }
 }
 
+void ContactListener::EndContact(b2Contact* contact)
+{
+    b2Body* bodyA = contact->GetFixtureA()->GetBody();
+    b2Body* bodyB = contact->GetFixtureB()->GetBody();
+    b2Body* actorBody = m_physics->getActorBody();
+    if (bodyA != actorBody && bodyB != actorBody)
+        return;
+    b2WorldManifold wm;
+    contact->GetWorldManifold(&wm);
+    float nx = (bodyA == actorBody) ? wm.normal.x : -wm.normal.x;
+    m_physics->removeWallContact(nx);
+}
+
 // --- Physics ---
 
 Physics::Physics(Actor* actor, Level* level)
@@ -223,7 +241,12 @@ Physics::Physics(Actor* actor, Level* level)
 {
     m_tiles = m_level->tiles();
     m_lastTicks = SDL_GetTicks();
+    m_cameraStartTicks = m_lastTicks;
     m_lastHazardDamageTicks = 0;
+    m_invincibleUntilTicks = 0;
+    m_movementLockedUntilTicks = 0;
+    m_wallContactLeft = 0;
+    m_wallContactRight = 0;
     m_contactListener = nullptr;
 
     if (!m_tiles || !m_actor)
@@ -261,15 +284,15 @@ Physics::Physics(Actor* actor, Level* level)
     bodyDef.linearDamping = 1.0f - static_cast<float>(lf.damping().x());
     m_actorBody = m_world->CreateBody(&bodyDef);
 
-    // Etwas kleinere Kollisionsbox verhindert Hängenbleiben an Kanten
-    b2PolygonShape box;
-    float shrink = 0.85f;
-    float hw = (m_actor->w() / 2.0f) * shrink / PIXELS_PER_METER;
-    float hh = (m_actor->h() / 2.0f) * shrink / PIXELS_PER_METER;
-    box.SetAsBox(hw, hh);
+    // Kreis: Radius = halbe Höhe, damit Kreis-Unterkante = Füße (Charakter nicht im Boden)
+    b2CircleShape circle;
+    float shrink = 0.9f;
+    float radiusPx = (m_actor->h() / 2.0f) * shrink;
+    circle.m_radius = radiusPx / PIXELS_PER_METER;
+    circle.m_p.Set(0.0f, 0.0f);
 
     b2FixtureDef fixtureDef;
-    fixtureDef.shape = &box;
+    fixtureDef.shape = &circle;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.0f;   // Niedrig, damit Actor nicht an Tile-Kanten hängen bleibt
     fixtureDef.restitution = 0.0f;
@@ -587,6 +610,13 @@ void Physics::update()
     if (onGround)
     {
         m_actor->setJumping(false);
+        m_actor->setWantsToJump(false);
+        // Steht still auf Boden → Wand-Zähler zurücksetzen (verhindert dauerhafte Bewegungssperre)
+        if (std::abs(vel.x) < 0.01f)
+        {
+            m_wallContactLeft = 0;
+            m_wallContactRight = 0;
+        }
     }
 
     enforceCameraBounds();
@@ -594,17 +624,49 @@ void Physics::update()
     m_lastTicks = SDL_GetTicks();
 }
 
+bool Physics::canTakeDamage() const
+{
+    return SDL_GetTicks() >= m_invincibleUntilTicks;
+}
+
+void Physics::setLastHazardDamageTicks(unsigned int t)
+{
+    m_lastHazardDamageTicks = t;
+    m_invincibleUntilTicks = t + INVINCIBILITY_MS;
+    m_movementLockedUntilTicks = t + MOVEMENT_LOCK_MS;
+}
+
+void Physics::addWallContact(float normalX)
+{
+    const int maxWallContacts = 2;
+    if (normalX > 0.35f && m_wallContactLeft < maxWallContacts) ++m_wallContactLeft;
+    else if (normalX < -0.35f && m_wallContactRight < maxWallContacts) ++m_wallContactRight;
+}
+
+void Physics::removeWallContact(float normalX)
+{
+    if (normalX > 0.35f) { if (m_wallContactLeft > 0) --m_wallContactLeft; }
+    else if (normalX < -0.35f) { if (m_wallContactRight > 0) --m_wallContactRight; }
+}
+
 void Physics::applyPlayerInput(double dt)
 {
     if (!m_actorBody || !m_actor) return;
 
-    // Horizontale Bewegung
+    if (SDL_GetTicks() < m_movementLockedUntilTicks)
+        return;
+
     float moveX = m_actor->forces().moveForce().x() * static_cast<float>(dt) / PIXELS_PER_METER * 10.5f;
     b2Vec2 vel = m_actorBody->GetLinearVelocity();
     vel.x += moveX;
 
     float maxRun = m_actor->forces().maxRunVelocity() / PIXELS_PER_METER;
     vel.x = b2Clamp(vel.x, -maxRun, maxRun);
+
+    // Gegen Wand laufen unterbinden → verhindert Hängen und Zittern
+    if (m_wallContactLeft > 0 && vel.x < 0) vel.x = 0;
+    if (m_wallContactRight > 0 && vel.x > 0) vel.x = 0;
+
     m_actorBody->SetLinearVelocity(vel);
 
     // Sprung (Impuls statt Kraft über Zeit - äquivalent zur ursprünglichen Sprung-Logik)
@@ -669,14 +731,14 @@ void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& a
 {
     if (!m_actorBody) return;
 
-    // Diagonal nach oben wegschleudern, horizontal weg von der Falle (starker Knockback)
+    // Knockback in Richtung weg vom Gegner/Falle (entgegengesetzte Richtung zur Kollision)
     float dx = actorCenter.x - tileCenter.x;
-    float dirX = (std::abs(dx) < 0.01f) ? 0.0f : ((dx > 0) ? 1.0f : -1.0f);
-    float dirY = 1.0f;  // Box2D: Y+ = oben
-    float len = std::sqrt(dirX*dirX + dirY*dirY);
-    dirX /= len;
-    dirY /= len;
-    float strength = 920.0f / PIXELS_PER_METER;
+    float dy = actorCenter.y - tileCenter.y;
+    float len = std::sqrt(dx*dx + dy*dy);
+    if (len < 0.01f) len = 1.0f;
+    float dirX = dx / len;
+    float dirY = dy / len;
+    float strength = (920.0f / 4.0f) / PIXELS_PER_METER;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
 
@@ -689,13 +751,14 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
     b2Vec2 actorBox = toBox2D(actorCenter);
     b2Vec2 otherBox = toBox2D(otherCenter);
 
+    // Knockback weg vom Gegner (entgegengesetzte Richtung zur Kollision)
     float dx = actorBox.x - otherBox.x;
-    float dirX = (std::abs(dx) < 0.01f) ? 0.0f : ((dx > 0) ? 1.0f : -1.0f);
-    float dirY = 1.0f;
-    float len = std::sqrt(dirX*dirX + dirY*dirY);
-    dirX /= len;
-    dirY /= len;
-    float strength = 920.0f / PIXELS_PER_METER;  // Starker Knockback bei Monster-Kollision
+    float dy = actorBox.y - otherBox.y;
+    float len = std::sqrt(dx*dx + dy*dy);
+    if (len < 0.01f) len = 1.0f;
+    float dirX = dx / len;
+    float dirY = dy / len;
+    float strength = (920.0f / 4.0f) / PIXELS_PER_METER;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
 
@@ -733,6 +796,11 @@ int Physics::getLevelWidth() const
 int Physics::getLevelHeight() const
 {
     return m_tiles ? m_tiles->height() : 0;
+}
+
+bool Physics::isCameraMovementEnabled() const
+{
+    return (SDL_GetTicks() - m_cameraStartTicks) >= CAMERA_DELAY_MS;
 }
 
 } // namespace jumper

@@ -39,6 +39,7 @@ Monster::Monster(MainWindow* mw, SDL_Texture* tilesetTexture,
     , m_rightBound(rightBound)
     , m_groundY(0.0)
     , m_chaseTimer(0.0)
+    , m_exhaustedTimer(0.0)
 {
     // Ghost: 131 Top, 132 Bottom | Snake: 133 Top, 134 Bottom (0-basiert: 131/132, 133/134)
     int tileTop = (type == Type::Ghost) ? 131 : 133;
@@ -79,8 +80,9 @@ void Monster::update(double dt, Actor* actor)
         return;
     }
 
-    const double chaseSpeed = 75.0;  // Geist verfolgt langsamer
+    const double chaseSpeed = 75.0;
     const double chaseDuration = 5.0;
+    const double exhaustedDuration = 5.0;
     const double jumpSpeed = -280.0;
     const double gravity = 400.0;
     const double actorAboveThreshold = 20.0;
@@ -89,10 +91,20 @@ void Monster::update(double dt, Actor* actor)
     Vector<double> vel = velocity();
     bool onGround = (pos.y() + h() >= m_groundY - 1.0);
 
-    if (actor && m_chaseTimer > 0.0)
+    // Erschöpft: 5 s nur Patrouille, dann wieder Jagd
+    if (m_exhaustedTimer > 0.0)
+    {
+        m_exhaustedTimer -= dt;
+        if (m_exhaustedTimer <= 0.0)
+            m_chaseTimer = chaseDuration;
+        vel.setX((vel.x() > 0) ? m_moveSpeed : -m_moveSpeed);
+        vel.setY(0.0);
+    }
+    // Jagd: 5 s verfolgen, dann erschöpft
+    else if (actor && m_chaseTimer > 0.0)
     {
         double ax = actor->worldPosition().x() + actor->w() / 2.0;
-        double ay = actor->worldPosition().y() + actor->h() / 2.0;  // Actor-Mitte
+        double ay = actor->worldPosition().y() + actor->h() / 2.0;
         double mx = pos.x() + w() / 2.0;
         double my = pos.y() + h() / 2.0;
 
@@ -100,7 +112,7 @@ void Monster::update(double dt, Actor* actor)
         double dy = ay - my;
         double dist = std::sqrt(dx * dx + dy * dy);
 
-        if (dist > 1.0)  // Normalisiere Richtung
+        if (dist > 1.0)
         {
             vel.setX((dx / dist) * chaseSpeed);
             vel.setY((dy / dist) * chaseSpeed * 0.9);
@@ -109,6 +121,8 @@ void Monster::update(double dt, Actor* actor)
                 vel.setY(jumpSpeed);
         }
         m_chaseTimer -= dt;
+        if (m_chaseTimer <= 0.0)
+            m_exhaustedTimer = exhaustedDuration;
     }
     else
     {
