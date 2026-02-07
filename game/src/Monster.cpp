@@ -79,7 +79,7 @@ void Monster::update(double dt, Actor* actor)
         return;
     }
 
-    const double chaseSpeed = 120.0;
+    const double chaseSpeed = 75.0;  // Geist verfolgt langsamer
     const double chaseDuration = 5.0;
     const double jumpSpeed = -280.0;
     const double gravity = 400.0;

@@ -202,6 +202,23 @@ void StateController::decrementHp(int number)
     }
 }
 
+void StateController::incrementHp(int number)
+{
+    if (number <= 0) return;
+    int oldHp = m_playerHp;
+    m_playerHp += number;
+    if (m_playerHp > MAX_HEARTS)
+        m_playerHp = MAX_HEARTS;
+    for (int i = oldHp; i < m_playerHp && i < MAX_HEARTS; i++)
+    {
+        if (m_hearts[i])
+        {
+            Vector v = Vector(m_mainWindow->w() - m_heartWidth * (i + 1), 10);
+            m_hearts[i]->setPosition(v);
+        }
+    }
+}
+
 int StateController::getHp() const
 {
     return m_playerHp;

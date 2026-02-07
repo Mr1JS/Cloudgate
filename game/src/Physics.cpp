@@ -83,6 +83,24 @@ void ContactListener::BeginContact(b2Contact* contact)
         return;
     }
 
+    // Red Potion: ein Herz hinzufügen, Tile entfernen, Body zerstören
+    if (tileType == "red_potion")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+            {
+                m_level->getStateController()->incrementHp(1);
+            }
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
+
     // Random-Box (id 108): Box verschwindet, zufällig erscheint Sprungbrett, Trank, Falle (hazard) oder Monster (enemy).
     // Geist und Schlange: 2 Tiles (Top oben, Bottom unten). Spawn so, dass der BODEN (Bottom) auf der Box-Zelle steht (gy),
     // Top eine Zeile darüber (gy-1) – dann steht das Monster auf dem „Button“, nicht mit dem Kopf in der Erde.
@@ -253,7 +271,7 @@ Physics::Physics(Actor* actor, Level* level)
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &box;
     fixtureDef.density = 1.0f;
-    fixtureDef.friction = 0.05f;
+    fixtureDef.friction = 0.0f;   // Niedrig, damit Actor nicht an Tile-Kanten hängen bleibt
     fixtureDef.restitution = 0.0f;
     m_actorBody->CreateFixture(&fixtureDef);
 
@@ -329,7 +347,7 @@ void Physics::buildLevelBodies()
             b2Vec2 center;
             b2PolygonShape shape;
             b2FixtureDef fixtureDef;
-            fixtureDef.friction = 0.05f;
+            fixtureDef.friction = 0.0f;   // Keine Reibung an Tiles → Actor bleibt nicht an Kanten hängen
             fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
 
             if (shapeType == "half_bottom")
@@ -436,7 +454,7 @@ void Physics::createBodyForTile(int gx, int gy)
     b2Vec2 center;
     b2PolygonShape shape;
     b2FixtureDef fixtureDef;
-    fixtureDef.friction = 0.05f;
+    fixtureDef.friction = 0.0f;
     fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
 
     if (shapeType == "half_bottom")
@@ -651,14 +669,14 @@ void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& a
 {
     if (!m_actorBody) return;
 
-    // Diagonal nach oben wegschleudern, horizontal weg von der Falle
+    // Diagonal nach oben wegschleudern, horizontal weg von der Falle (starker Knockback)
     float dx = actorCenter.x - tileCenter.x;
     float dirX = (std::abs(dx) < 0.01f) ? 0.0f : ((dx > 0) ? 1.0f : -1.0f);
     float dirY = 1.0f;  // Box2D: Y+ = oben
     float len = std::sqrt(dirX*dirX + dirY*dirY);
     dirX /= len;
     dirY /= len;
-    float strength = 280.0f / PIXELS_PER_METER;
+    float strength = 920.0f / PIXELS_PER_METER;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
 
@@ -677,7 +695,7 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
     float len = std::sqrt(dirX*dirX + dirY*dirY);
     dirX /= len;
     dirY /= len;
-    float strength = 280.0f / PIXELS_PER_METER;
+    float strength = 920.0f / PIXELS_PER_METER;  // Starker Knockback bei Monster-Kollision
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
 
