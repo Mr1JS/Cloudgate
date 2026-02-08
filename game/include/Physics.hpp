@@ -79,7 +79,7 @@ public:
     void setLastHazardDamageTicks(unsigned int t);
 
     /// Bewegungssperre nach Schaden (ms)
-    static constexpr unsigned int MOVEMENT_LOCK_MS = 400;
+    static constexpr unsigned int MOVEMENT_LOCK_MS = 250;
     /// Unverwundbarkeit nach Schaden (ms)
     static constexpr unsigned int INVINCIBILITY_MS = 600;
 
@@ -164,6 +164,9 @@ private:
     /// Wandkontakte: wenn > 0, darf sich der Actor nicht in diese Richtung bewegen (verhindert Hängen/Zittern)
     int                     m_wallContactLeft;
     int                     m_wallContactRight;
+
+    /// Coyote-Time: Sprung noch möglich für kurze Zeit nach Verlassen des Bodens (Sekunden)
+    float                   m_coyoteTimeLeft;
 
     /// Skalierung Pixel pro Meter für Box2D
     static constexpr float  PIXELS_PER_METER = 32.0f;

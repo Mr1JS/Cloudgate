@@ -247,6 +247,7 @@ Physics::Physics(Actor* actor, Level* level)
     m_movementLockedUntilTicks = 0;
     m_wallContactLeft = 0;
     m_wallContactRight = 0;
+    m_coyoteTimeLeft = 0.0f;
     m_contactListener = nullptr;
 
     if (!m_tiles || !m_actor)
@@ -294,7 +295,7 @@ Physics::Physics(Actor* actor, Level* level)
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &circle;
     fixtureDef.density = 1.0f;
-    fixtureDef.friction = 0.0f;   // Niedrig, damit Actor nicht an Tile-Kanten hängen bleibt
+    fixtureDef.friction = 0.05f;   // Niedrig, damit Actor nicht an Tile-Kanten hängen bleibt
     fixtureDef.restitution = 0.0f;
     m_actorBody->CreateFixture(&fixtureDef);
 
@@ -370,7 +371,7 @@ void Physics::buildLevelBodies()
             b2Vec2 center;
             b2PolygonShape shape;
             b2FixtureDef fixtureDef;
-            fixtureDef.friction = 0.0f;   // Keine Reibung an Tiles → Actor bleibt nicht an Kanten hängen
+            fixtureDef.friction = 0.05f;   // Keine Reibung an Tiles → Actor bleibt nicht an Kanten hängen
             fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
 
             if (shapeType == "half_bottom")
@@ -569,6 +570,28 @@ void Physics::update()
         dt = 0.1;
     }
 
+    // onGround per Raycast VOR applyPlayerInput, damit Sprung/Lenkung aktuellen Bodenstand nutzt
+    struct GroundRayCallback : b2RayCastCallback
+    {
+        bool hit = false;
+        float ReportFixture(b2Fixture* fixture, const b2Vec2&, const b2Vec2&, float) override
+        {
+            if (fixture->GetBody()->GetType() == b2_staticBody)
+                hit = true;
+            return 0;
+        }
+    };
+    b2Vec2 rayStart = m_actorBody->GetWorldCenter();
+    b2Vec2 rayEnd = rayStart + b2Vec2(0, -((m_actor->h() / 2.0f) / PIXELS_PER_METER + 0.08f));
+    GroundRayCallback cb;
+    m_world->RayCast(&cb, rayStart, rayEnd);
+    bool onGround = cb.hit;
+    if (!onGround && m_actor->onGround())
+        m_coyoteTimeLeft = 0.12f;  // Coyote-Time nach Verlassen des Bodens
+    if (onGround)
+        m_coyoteTimeLeft = 0.0f;
+    m_actor->setOnGround(onGround);
+
     // Spielereingabe anwenden (vor Step)
     applyPlayerInput(dt);
 
@@ -587,30 +610,13 @@ void Physics::update()
     m_actor->velocity().setX(vel.x * PIXELS_PER_METER);
     m_actor->velocity().setY(-vel.y * PIXELS_PER_METER);
 
-    // onGround per Raycast
-    struct GroundRayCallback : b2RayCastCallback
-    {
-        bool hit = false;
-        float ReportFixture(b2Fixture* fixture, const b2Vec2&, const b2Vec2&, float) override
-        {
-            if (fixture->GetBody()->GetType() == b2_staticBody)
-            {
-                hit = true;
-            }
-            return 0;
-        }
-    };
-    b2Vec2 rayStart = m_actorBody->GetWorldCenter();
-    b2Vec2 rayEnd = rayStart + b2Vec2(0, -((m_actor->h() / 2.0f) / PIXELS_PER_METER + 0.05f));
-    GroundRayCallback cb;
-    m_world->RayCast(&cb, rayStart, rayEnd);
-    bool onGround = cb.hit;
-    m_actor->setOnGround(onGround);
+    // Coyote-Time ablaufen lassen
+    m_coyoteTimeLeft -= static_cast<float>(dt);
+    if (m_coyoteTimeLeft < 0.0f) m_coyoteTimeLeft = 0.0f;
 
     if (onGround)
     {
         m_actor->setJumping(false);
-        m_actor->setWantsToJump(false);
         // Steht still auf Boden → Wand-Zähler zurücksetzen (verhindert dauerhafte Bewegungssperre)
         if (std::abs(vel.x) < 0.01f)
         {
@@ -660,6 +666,12 @@ void Physics::applyPlayerInput(double dt)
     b2Vec2 vel = m_actorBody->GetLinearVelocity();
     vel.x += moveX;
 
+    // Kein horizontaler Input + auf Boden → Bremsen (ersetzt physikalische Reibung bei friction=0)
+    if (std::abs(moveX) < 0.0001f && m_actor->onGround())
+    {
+        vel.x *= 0.15f;
+    }
+
     float maxRun = m_actor->forces().maxRunVelocity() / PIXELS_PER_METER;
     vel.x = b2Clamp(vel.x, -maxRun, maxRun);
 
@@ -669,11 +681,13 @@ void Physics::applyPlayerInput(double dt)
 
     m_actorBody->SetLinearVelocity(vel);
 
-    // Sprung (Impuls statt Kraft über Zeit - äquivalent zur ursprünglichen Sprung-Logik)
-    if (m_actor->wantsToJump() && m_actor->onGround())
+    // Sprung: erlaubt wenn onGround oder Coyote-Time (kurz nach Verlassen des Bodens)
+    bool canJump = m_actor->onGround() || m_coyoteTimeLeft > 0.0f;
+    if (m_actor->wantsToJump() && canJump)
     {
         m_actor->setWantsToJump(false);
         m_actor->setJumping(true);
+        m_coyoteTimeLeft = 0.0f;
         float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f;
         m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
     }
@@ -758,7 +772,7 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
     if (len < 0.01f) len = 1.0f;
     float dirX = dx / len;
     float dirY = dy / len;
-    float strength = (920.0f / 4.0f) / PIXELS_PER_METER;
+    float strength = (920.0f / 2.0f) / PIXELS_PER_METER;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(dirX * strength, dirY * strength), true);
 }
 
