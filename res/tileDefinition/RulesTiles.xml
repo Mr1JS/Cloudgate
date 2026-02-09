@@ -170,7 +170,7 @@
     <tile id="121" name="Spring Board Up" type="jumpup"/>
     <tile id="122" name="Bush Green" type="decoration"/>
     <tile id="123" name="Bush White" type="decoration"/>
-    <tile id="124" name="Red Potion" type=" red_potion"/>
+    <tile id="124" name="Red Potion" type="red_potion"/>
     <tile id="125" name="Blue Potion" type="blue_potion"/>
 
     <!-- ROW 17: Potion and 1x2 Tiles -->

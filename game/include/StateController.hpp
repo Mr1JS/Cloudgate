@@ -57,6 +57,9 @@ public:
     /// @param number (optional) amount of hp to decrease (default: 1)
     void decrementHp(int number = 1);
 
+    /// Erhöht HP um number (max. MAX_HEARTS). Z.B. für red_potion.
+    void incrementHp(int number = 1);
+
     /// Reset hp to default value
     void resetHp();
 
