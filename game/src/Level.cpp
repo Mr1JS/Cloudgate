@@ -269,7 +269,7 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
             for (int gy = 0; gy < tileRep->height(); gy++)
             {
                 // apparently the returned value differs by 1, so we need to do +1 to get tileId 
-                tileId = tileRep->get(gx, gy) + 1;
+                tileId = tileRep->get(gx, gy) -1;
                 if (tileId != -1)
                 {
                     TileInfo& t = (*m_tileData)[tileId];
