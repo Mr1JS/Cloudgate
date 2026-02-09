@@ -6,7 +6,7 @@ Page {
     id: levelSelectorPage
     Image {
         anchors.fill: parent
-        source: "qrc:/resources/images/LevelSelectorBackground.jpg"
+        source: "qrc:/resources/images/backgrounds/skyIslands.jpg"
         fillMode: Image.PreserveAspectCrop
         smooth: true
     }
@@ -127,6 +127,7 @@ Page {
                                 // Übergabe des Levels
                                 if (page.initLevel) 
                                 {
+                                    console.log(file)
                                     page.initLevel(file)
                                 }
                             } else 

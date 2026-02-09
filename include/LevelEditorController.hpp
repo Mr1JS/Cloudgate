@@ -37,6 +37,9 @@ public:
     Q_INVOKABLE void saveLevel();
     Q_INVOKABLE void loadLevel();
 
+    // load background (opens QFileDialog)
+    Q_INVOKABLE void loadBackground();
+
     Q_INVOKABLE void toggleExtraTileset(bool enabled);
 
     // Tile selection

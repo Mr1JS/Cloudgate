@@ -1,5 +1,6 @@
 <level resources="level 1.h5">
   <background_tiles texture="backgroundImg">
+    <background_path>res/images/backgrounds/skyIslands.jpg</background_path>
     <layer>0</layer>
   </background_tiles>
   <collision_tiles texture="tileset" tiles="level1">
@@ -23,7 +24,7 @@
     <frame_height>10</frame_height>
     <layer>3</layer>
   </numbers>
-  <actor texture="MariosVergessenerZweiterBruder">
+  <actor texture="Wiepower">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
     <frame_height>48</frame_height>

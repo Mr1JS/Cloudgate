@@ -20,6 +20,7 @@ class LevelCanvas : public QQuickPaintedItem
     Q_OBJECT
     Q_PROPERTY(int gridWidth READ gridWidth WRITE setGridWidth NOTIFY gridWidthChanged)
     Q_PROPERTY(int gridHeight READ gridHeight WRITE setGridHeight NOTIFY gridHeightChanged)
+    Q_PROPERTY(QString background READ background NOTIFY backgroundChanged)
 
 public:
     using LevelHdf5IO = jumper::BaseHdf5IO<
@@ -62,10 +63,15 @@ public:
 
     void paint(QPainter *painter) override;
 
+    // set and get m_background (for Leveleditor.qml)
+    void setBackground(QString background);
+    QString background();
+
 signals:
 
     void gridWidthChanged();
     void gridHeightChanged();
+    void backgroundChanged(const QString &path);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -88,6 +94,9 @@ private:
     // ---- Tileset meta ----
     QString m_tilesetPath = ":/resources/images/tileset.png";
     QString m_tilesetTextureName = "tileset";
+
+    // relative path to the background chosen
+    QString m_background = "res/images/backgrounds/mountain.png";
 
     // Image member
     QImage m_tilesetImage;

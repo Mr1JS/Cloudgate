@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Cloudgate_game 1.0
 
 Page {
     id: characterPage

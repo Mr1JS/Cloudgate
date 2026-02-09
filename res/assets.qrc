@@ -10,8 +10,6 @@
     <file>images/ghost.png</file>
     <file>images/heart3.png</file>
     <file>images/numbers.png</file>
-    <file>images/backgroundMountain.png</file>
-    <file>images/LevelSelectorBackground.jpg</file>
     <file>images/actors/MariosVergessenerZweiterBruder.png</file>
     <file>images/actors/Celower.png</file>
     <file>images/actors/jetlag.png</file>
@@ -19,5 +17,10 @@
     <file>images/actors/Merlower.png</file>
     <file>images/actors/Namenloser.png</file>
     <file>images/actors/Wiepower.png</file>
+    <file>images/backgrounds/mountain.png</file>
+    <file>images/backgrounds/skyIslands.jpg</file>
+    <file>images/backgrounds/lavaCastle.png</file>
+    <file>images/backgrounds/scifi.png</file>
+    <file>images/backgrounds/river.png</file>
   </qresource>
 </RCC>
