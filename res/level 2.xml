@@ -1,5 +1,6 @@
 <level resources="level 2.h5">
   <background_tiles texture="backgroundImg">
+    <background_path>res/images/backgrounds/skyIslands.jpg</background_path>
     <layer>0</layer>
   </background_tiles>
   <collision_tiles texture="tileset" tiles="level1">

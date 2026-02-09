@@ -96,6 +96,9 @@ void LevelCanvas::clearLevel()
     setHeight(m_gridHeight * m_tileHeight);
     setWidth(m_gridWidth * m_tileWidth);
 
+    // set background image to base value
+    setBackground("res/images/backgrounds/mountain.png");
+    
     emit gridHeightChanged();
     emit gridWidthChanged();
     update();
@@ -106,7 +109,7 @@ void LevelCanvas::paint(QPainter *painter)
     painter->setRenderHint(QPainter::Antialiasing, false);
     painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    painter->fillRect(boundingRect(), Qt::white);
+    painter->fillRect(boundingRect(), Qt::transparent);
 
     // Draw placed tiles
     for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
@@ -407,22 +410,27 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     std::string absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml").toStdString();
 
     QString currentActorName = QString::fromStdString(jumper::getLevelActor(absoluteLevelPath));
+    if (currentActorName == QString(""))
+    {
+        currentActorName = QString("MariosVergessenerZweiterBruder");
+    }
+
+    // get full path for background Image (use appDir of code above)
+    QString absoluteBackgroundPath = appDir.absoluteFilePath(m_background);
 
     // ---------- prepare tileset image ----------
     if (!m_tilesetPath.isEmpty())
     {
-        std::cout << "\ntileset saved\n";
         QImage img(m_tilesetPath);
         if (!img.isNull())
         {
-            std::cout << "\ntileset saved\n";
             // TODO: Change the Color format pls
             m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
         }
     }
 
     // ---------- prepare background image ----------
-    QImage bgImg(":/resources/images/backgroundMountain.png");
+    QImage bgImg(absoluteBackgroundPath);
     if (!bgImg.isNull())
     {
         bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
@@ -773,6 +781,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // background still references the tileset for tilemap usage
     // (If you want XML to reference the PNG instead, tell me and I adapt)
     ts << "  <background_tiles texture=\"" << "backgroundImg" << "\">\n";
+    ts << "    <background_path>" << m_background << "</background_path>\n";
     ts << "    <layer>0</layer>\n";
     ts << "  </background_tiles>\n";
 
@@ -892,6 +901,25 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             else if (elementName == "background_tiles")
             {
                 bgTextureName = xml.attributes().value("texture").toString();
+
+                while (!(xml.isEndElement() && xml.name().toString() == "background_tiles"))
+                {
+                    xml.readNext();
+                    if (xml.isStartElement())
+                    {
+                        QString childName = xml.name().toString();
+
+                        if (childName == "background_path")
+                        {
+                            QString v = xml.readElementText();
+                            if (v != "")
+                            {
+                                setBackground(v);
+                            }
+                        }
+                    }
+                }
+                
             }
             else if (elementName == "collision_tiles")
             {
@@ -1094,6 +1122,19 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 void LevelCanvas::setExtraTiles(bool mode)
 {
     m_extraTiles = mode;
+}
+
+// used every time in this class to change m_background so the emit signal is centralized here
+void LevelCanvas::setBackground(QString background)
+{
+    m_background = background;
+
+    emit backgroundChanged(m_background);
+}
+
+QString LevelCanvas::background()
+{
+    return m_background;
 }
 
 void LevelCanvas::setQML(QObject* root)

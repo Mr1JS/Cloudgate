@@ -43,17 +43,11 @@ Page {
         }
     }
 
+    property string backgroundImageLevel: "qrc:/resources/images/backgrounds/mountain.png"
+
     Rectangle {
         anchors.fill: parent
-        color: "#5c82a1" // RGB 92, 130, 161
-
-        Image {
-            id: editorBackground
-            anchors.fill: parent
-            source: "/resources/images/clouds2.png"
-            fillMode: Image.PreserveAspectCrop
-            opacity: 0.3
-        }
+        color: "#5c82a1" // RGB 92, 130, 16
 
         // Top bar with buttons
         Rectangle {
@@ -81,6 +75,11 @@ Page {
                 Button {
                     text: "+ 5 Tile above"
                     onClicked: editorController.addRowsAbove(5)
+                }
+
+                Button {
+                    text: "Background"
+                    onClicked: editorController.loadBackground()
                 }
 
                 Button {
@@ -139,6 +138,10 @@ Page {
                         MenuItem {
                             text: "Load"
                             onTriggered: editorController.loadLevel()
+                        }
+                        MenuItem {
+                            text: "Background"
+                            onTriggered: editorController.loadBackground()
                         }
 
                         MenuItem {
@@ -476,6 +479,13 @@ Page {
                     anchors.margins: 5
                     color: "white"
                     radius: 5
+                    Image {
+                        anchors.fill: parent  
+                        source: backgroundImageLevel    
+                        fillMode: Image.PreserveAspectCrop 
+                        // not 100% to see the tiles better
+                        opacity: 0.75
+                    }
 
                     Flickable {
                         id: canvasFlickable
@@ -504,18 +514,33 @@ Page {
                             height: 800 // 25 tiles * 32px
                             gridWidth: 20
                             gridHeight: 25
+                            onBackgroundChanged: function (path) 
+                            {
+                                // cut away "res" and replace with "qrc:/resources"
+                                backgroundImageLevel = "qrc:/resources" + path.slice(3)
+                            }
                         }
                     }
-
-                    Text {
+                    
+                    Rectangle {
                         anchors.bottom: parent.bottom
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottomMargin: 5
-                        text: "Scroll to see the entire level | Right-click to delete tiles"
-                        color: "#666666"
-                        font.pixelSize: 10
+                        color: "white"
+                        radius: 4
+                        width: textItem.implicitWidth + 1
+                        height: textItem.implicitHeight + 1
                         visible: levelCanvas.width > canvasFlickable.width
-                                 || levelCanvas.height > canvasFlickable.height
+                            || levelCanvas.height > canvasFlickable.height
+                        opacity: 0.75
+
+                        Text {
+                            id: textItem
+                            anchors.centerIn: parent
+                            text: "Scroll to see the entire level | Right-click to delete tiles"
+                            color: "#020202"
+                            font.pixelSize: 12
+                        }
                     }
                 }
             }

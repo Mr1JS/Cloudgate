@@ -295,7 +295,7 @@ void LevelEditorController::saveLevel()
     }
 
     // default save location
-    QString defaultPath = QDir::currentPath() + "/res/level_master.xml";
+    QString defaultPath = QDir::currentPath() + "/../res/level_master.xml";
     qDebug() << "[LevelEditorController] Default path:" << defaultPath;
 
     QString file_name = QFileDialog::getSaveFileName(
@@ -347,12 +347,12 @@ void LevelEditorController::loadLevel()
         qWarning() << "[LevelEditorController] Canvas not registered!";
         return;
     }
-
+    QString defaultPath = QDir::currentPath() + "/../res/level_master.xml";
     // Open QFileDialog to get load path
     QString file_name = QFileDialog::getOpenFileName(
         nullptr,
         "Open Level",
-        "",
+        defaultPath,
         "Level Files (*.xml)");
 
     // If user cancelled
@@ -376,6 +376,44 @@ void LevelEditorController::loadLevel()
 
     emit levelLoaded(file_name);
     qDebug() << "[LevelEditorController] Level loaded from:" << file_name;
+}
+
+void LevelEditorController::loadBackground()
+{
+    qDebug() << "[LevelEditorController] Opening load dialog...";
+
+    if (!m_canvas)
+    {
+        qWarning() << "[LevelEditorController] Canvas not registered!";
+        return;
+    }
+    // starting point
+    QString defaultPath = QDir::currentPath() + "/../res/images/backgrounds/mountain.png";
+    // Open QFileDialog to get load path
+    QString file = QFileDialog::getOpenFileName(
+        nullptr,
+        "Choose Background",
+        defaultPath,
+        "Images (*.png *.jpg *.jpeg)");
+
+    // If user cancelled
+    if (file.isEmpty())
+    {
+        qDebug() << "[LevelEditorController] Load Background cancelled by user";
+        return;
+    }
+    // get relative path and check if its close enough to the right folder
+    int index = file.indexOf("res/images/backgrounds/");
+    if (index != -1) 
+    {
+        QString relativePath = file.mid(index);
+        m_canvas->setBackground(relativePath);
+    }
+    else
+    {
+        qDebug() << "[LevelEditorController]: path not allowed. Choose from res/images/backgrounds";
+    }
+
 }
 
 void LevelEditorController::selectTile(int tileIndex)
