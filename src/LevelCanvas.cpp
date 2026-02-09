@@ -1,4 +1,5 @@
 #include "include/LevelCanvas.hpp"
+#include "include/Util.hpp"
 #include <QPainter>
 #include <QMouseEvent>
 #include <QDebug>
@@ -11,6 +12,7 @@
 #include <QPair>
 #include <QMap>
 #include <QDebug>
+#include <QDirIterator>
 
 #include <vector>
 #include <algorithm> // std::copy
@@ -399,6 +401,13 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         static_cast<size_t>(gridH),
         static_cast<size_t>(gridW)};
 
+    // get name of currently selected actor
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp();
+    std::string absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml").toStdString();
+
+    QString currentActorName = QString::fromStdString(jumper::getLevelActor(absoluteLevelPath));
+
     // ---------- prepare tileset image ----------
     if (!m_tilesetPath.isEmpty())
     {
@@ -436,18 +445,28 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         snakeImg = snakeImg.convertToFormat(QImage::Format_RGBA8888);
     }
 
-    const QString actorResourcePath = ":/resources/images/actor1.png";
-    const QString actorTextureName = "actor1";
-
-    QImage actorImg(actorResourcePath);
-    if (!actorImg.isNull())
-    {
-        actorImg = actorImg.convertToFormat(QImage::Format_RGBA8888);
-    }
     QImage numberImg(":/resources/images/numbers.png");
     if (!numberImg.isNull())
     {
         numberImg = numberImg.convertToFormat(QImage::Format_RGBA8888);
+    }
+
+    QMap<QString, QImage> actorImages;
+    // iterate through all (.png) actors in assets.qrc defined
+    QDirIterator it(":/resources/images/actors", QStringList() << "*.png", QDir::Files);
+
+    while (it.hasNext())
+    {
+        QString actor = it.next();
+        QFileInfo info(actor);
+        QString actorName = info.baseName();
+
+        QImage img(actor);
+        if (!img.isNull())
+        {
+            img = img.convertToFormat(QImage::Format_RGBA8888);
+            actorImages.insert(actorName, img);
+        }
     }
 
     try
@@ -608,35 +627,37 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         }
 
         // ----------------------------------------------------------
-        // Save actor texture as RAW DATASET (engine asset)
+        // Save actors textures as RAW DATASET (engine asset)   // iterate through all actors
         // ----------------------------------------------------------
-        if (!actorImg.isNull())
+        for (auto it = actorImages.constBegin(); it != actorImages.constEnd(); ++it)
         {
-            std::vector<unsigned char> bytes;
-            int h = 0, w = 0;
+            const QString &actorName = it.key();
+            const QImage &actorImg = it.value();
 
-            if (imageToRgbaBytes(actorImg, bytes, h, w))
+            if (!actorImg.isNull())
             {
-                std::vector<size_t> dims = {
-                    static_cast<size_t>(h),
-                    static_cast<size_t>(w),
-                    static_cast<size_t>(4)};
+                std::vector<unsigned char> bytes;
+                int h = 0, w = 0;
 
-                std::vector<hsize_t> chunks = {
-                    dims[0], dims[1], dims[2]};
+                if (imageToRgbaBytes(actorImg, bytes, h, w))
+                {
+                    std::vector<size_t> dims = {
+                        static_cast<size_t>(h),
+                        static_cast<size_t>(w),
+                        static_cast<size_t>(4)};
 
-                auto arr = makeSharedArrayCopy(bytes);
+                    std::vector<hsize_t> chunks = {
+                        dims[0], dims[1], dims[2]};
 
-                io.save(
-                    "textures",
-                    actorTextureName.toStdString(),
-                    dims,
-                    chunks,
-                    arr);
+                    auto arr = makeSharedArrayCopy(bytes);
 
-                qDebug() << "[LevelCanvas] Saved actor texture to H5:"
-                         << "/textures/" << actorTextureName
-                         << "dim=" << h << "x" << w << "x4";
+                    io.save(
+                        "textures",
+                        actorName.toStdString(),
+                        dims,
+                        chunks,
+                        arr);
+                }
             }
         }
 
@@ -696,9 +717,6 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
                     chunks,
                     arr);
 
-                qDebug() << "[LevelCanvas] Saved actor texture to H5:"
-                         << "/textures/" << actorTextureName
-                         << "dim=" << h << "x" << w << "x4";
             }
         }
 
@@ -768,7 +786,7 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
-qDebug() << m_gridHeight;
+
     // hp hearts
     ts << "  <heart texture=\"heart\">\n";
     ts << "    <tileWidth>" << 16 << "</tileWidth>\n";
@@ -784,9 +802,9 @@ qDebug() << m_gridHeight;
     ts << "    <layer>3</layer>\n";
     ts << "  </numbers>\n";
 
-    // Actor block (Dummy values for now) //TODO: if there are actor settings to save
-    // then this should be adapted and changed accordingly
-    ts << "  <actor texture=\"" << actorTextureName << "\">\n";
+
+    // fixed values because all actors have the same settings except for name
+    ts << "  <actor texture=\"" << currentActorName << "\">\n";
     ts << "    <num_frames>2</num_frames>\n";
     ts << "    <frame_width>36</frame_width>\n";
     ts << "    <frame_height>48</frame_height>\n";

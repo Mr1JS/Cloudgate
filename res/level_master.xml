@@ -9,7 +9,7 @@
     <numRows>15</numRows>
     <gridHeight>25</gridHeight>
     <tileOffset>4</tileOffset>
-    <switchIndex>140</switchIndex>
+    <switchIndex>127</switchIndex>
     <layer>1</layer>
   </collision_tiles>
   <heart texture="heart">
@@ -23,7 +23,7 @@
     <frame_height>10</frame_height>
     <layer>3</layer>
   </numbers>
-  <actor texture="actor1">
+  <actor texture="MariosVergessenerZweiterBruder">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
     <frame_height>48</frame_height>
@@ -36,7 +36,7 @@
     <gravity_y>400</gravity_y>
     <damping_x>0.7</damping_x>
     <damping_y>1.0</damping_y>
-    <scrollSpeed>8</scrollSpeed>
+    <scrollSpeed>4</scrollSpeed>
   </level_forces>
   <goal>
     <type>0</type>
