@@ -205,9 +205,17 @@ Page {
                 y: 41
                 width: 25
                 height: 19
-                text: qsTr("⏳")
                 checkable: true
                 ButtonGroup.group: buttonGroup
+                contentItem: Image {
+                    source: "qrc:/resources/images/Time.png"
+                    fillMode: Image.PreserveAspectFit
+                    anchors.centerIn: parent
+                    width: parent.width - 4
+                    height: parent.height - 4
+                }
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Win: Time")
                 background: Rectangle {
                     border.color: parent.checked ? "green" : "#404040"
                     border.width: 2
@@ -224,9 +232,17 @@ Page {
                 y: 20
                 width: 25
                 height: 20
-                text: qsTr("🪙")
                 checkable: true
                 ButtonGroup.group: buttonGroup
+                contentItem: Image {
+                    source: "qrc:/resources/images/Coin.png"
+                    fillMode: Image.PreserveAspectFit
+                    anchors.centerIn: parent
+                    width: parent.width - 4
+                    height: parent.height - 4
+                }
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Win: Coins")
                 background: Rectangle {
                     border.color: parent.checked ? "green" : "#404040"
                     border.width: 2
@@ -243,9 +259,17 @@ Page {
                 y: 0
                 width: 25
                 height: 19
-                text: qsTr("⌀")
                 checkable: true
                 ButtonGroup.group: buttonGroup
+                contentItem: Image {
+                    source: "qrc:/resources/images/None.png"
+                    fillMode: Image.PreserveAspectFit
+                    anchors.centerIn: parent
+                    width: parent.width - 4
+                    height: parent.height - 4
+                }
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("No win condition")
                 background: Rectangle {
                     border.color: parent.checked ? "green" : "#404040"
                     border.width: 2
