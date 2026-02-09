@@ -88,7 +88,10 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         int rightTileX = cameraRight / tileWidth;
         
         // Stelle sicher, dass die rechte Wand innerhalb der Level-Breite ist
-        if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
+        if(rightTileX >= levelWidth)
+        {
+            rightTileX = levelWidth - 1;
+        }
         
         // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
         int wallTileId = 85;
@@ -128,7 +131,10 @@ Level::Level(MainWindow* mainWindow, std::string filename)
 
 void Level::spawnMonsters()
 {
-    if(!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+    if(!m_tiles || !m_tiles->tiles() || !m_tiles->texture())
+    {
+        return;
+    }
 
     TileSetRepresentation* tileRep = m_tiles->tiles();
     int tw = m_tiles->tileWidth();
@@ -164,7 +170,10 @@ void Level::spawnMonsters()
                 type = Monster::Type::Snake;
                 isMonster = true;
             }
-            if(!isMonster) continue;
+            if(!isMonster)
+            {
+                continue;
+            }
 
             double wx = gx * tw;
             double wy = gy * th + TILE_Y_OFFSET;
@@ -179,7 +188,9 @@ void Level::spawnMonsters()
             double leftBound = gxLeft * tw;
             double rightBound = (gxRight + 1) * tw - monsterW;
             if(rightBound - leftBound < monsterW)
+            {
                 rightBound = leftBound + monsterW;
+            }
 
             tileRep->insert(gx, gy, 0);
             tileRep->insert(gx, gy + 1, 0);
@@ -195,7 +206,10 @@ void Level::spawnMonsters()
 
 void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
 {
-    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture())
+    {
+        return;
+    }
 
     TileSetRepresentation* tileRep = m_tiles->tiles();
     int tw = m_tiles->tileWidth();
@@ -205,7 +219,10 @@ void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
     const int TILE_Y_OFFSET = 600;
     const int monsterW = 32;
 
-    if (gy < 1 || gx < 0 || gx >= levelW || gy >= levelH) return;
+    if (gy < 1 || gx < 0 || gx >= levelW || gy >= levelH)
+    {
+        return;
+    }
 
     double wx = gx * tw;
     double wy = (gy - 1) * th + TILE_Y_OFFSET;
@@ -220,7 +237,9 @@ void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
     double leftBound = gxLeft * tw;
     double rightBound = (gxRight + 1) * tw - monsterW;
     if (rightBound - leftBound < monsterW)
+    {
         rightBound = leftBound + monsterW;
+    }
 
     Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, wx, wy,
                               leftBound, rightBound,
@@ -312,15 +331,23 @@ void Level::removeTileAt(int gx, int gy)
     {
         TileSetRepresentation* rep = m_tiles->tiles();
         if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+        {
             rep->insert(gx, gy, 0);
+        }
     }
 }
 
 int Level::getTileAt(int gx, int gy) const
 {
-    if (!m_tiles || !m_tiles->tiles()) return 0;
+    if (!m_tiles || !m_tiles->tiles())
+    {
+        return 0;
+    }
     TileSetRepresentation* rep = m_tiles->tiles();
-    if (gx < 0 || gx >= rep->width() || gy < 0 || gy >= rep->height()) return 0;
+    if (gx < 0 || gx >= rep->width() || gy < 0 || gy >= rep->height())
+    {
+        return 0;
+    }
     return rep->get(gx, gy);
 }
 
@@ -330,7 +357,9 @@ void Level::setTileAt(int gx, int gy, int value)
     {
         TileSetRepresentation* rep = m_tiles->tiles();
         if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+        {
             rep->insert(gx, gy, value);
+        }
     }
 }
 
@@ -341,7 +370,9 @@ void Level::update(const Uint8* keystates)
     if (!m_stateController->isPaused())
     {
         if (m_physics && m_physics->isCameraMovementEnabled())
+        {
             m_camera.update(dt);
+        }
     
         if(m_physics)
         {
@@ -372,7 +403,10 @@ void Level::update(const Uint8* keystates)
                     if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
                     {
                         m_physics->setLastHazardDamageTicks(SDL_GetTicks());
-                        if(m_stateController) m_stateController->decrementHp(1);
+                        if(m_stateController)
+                        {
+                            m_stateController->decrementHp();
+                        }
                         double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
                         m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));
                         break;

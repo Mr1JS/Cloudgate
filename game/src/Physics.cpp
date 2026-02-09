@@ -140,9 +140,18 @@ void ContactListener::BeginContact(b2Contact* contact)
         int jumpdownId = m_physics->getTileIdByType("jumpdown");
         int redPotionId = m_physics->getTileIdByType("red_potion");
         int bluePotionId = m_physics->getTileIdByType("blue_potion");
-        if (jumpdownId >= 0) options.push_back(jumpdownId);
-        if (redPotionId >= 0) options.push_back(redPotionId);
-        if (bluePotionId >= 0) options.push_back(bluePotionId);
+        if (jumpdownId >= 0)
+        {
+            options.push_back(jumpdownId);
+        }
+        if (redPotionId >= 0)
+        {
+            options.push_back(redPotionId);
+        }
+        if (bluePotionId >= 0)
+        {
+            options.push_back(bluePotionId);
+        }
         std::vector<int> hazardIds = m_physics->getTileIdsByType("hazard");
         for (int id : hazardIds) options.push_back(id);
         bool canPlaceTwoTile = (gy >= 1);  // Platz für Top in gy-1, Bottom auf Box-Zelle gy
@@ -176,7 +185,9 @@ void ContactListener::BeginContact(b2Contact* contact)
     if (tileType == "hazard" || tileType == "enemy")
     {
         if (!m_physics->canTakeDamage())
+        {
             return;
+        }
 
         m_physics->setLastHazardDamageTicks(SDL_GetTicks());
         if (m_level && m_level->getStateController())
@@ -220,7 +231,9 @@ void ContactListener::BeginContact(b2Contact* contact)
             {
                 int jumpupId = m_physics->getTileIdByType("jumpup");
                 if (jumpupId >= 0)
+                {
                     m_level->setTileAt(gx, gy, jumpupId + 1);  // Level speichert 1-basiert
+                }
             }
         }
         else
@@ -247,7 +260,9 @@ void ContactListener::EndContact(b2Contact* contact)
     b2Body* bodyB = contact->GetFixtureB()->GetBody();
     b2Body* actorBody = m_physics->getActorBody();
     if (bodyA != actorBody && bodyB != actorBody)
+    {
         return;
+    }
     b2WorldManifold wm;
     contact->GetWorldManifold(&wm);
     float nx = (bodyA == actorBody) ? wm.normal.x : -wm.normal.x;
@@ -466,16 +481,22 @@ void Physics::queueCreateBodyForTile(int gx, int gy)
 void Physics::createBodyForTile(int gx, int gy)
 {
     if (!m_tiles || !m_world)
+    {
         return;
+    }
     int tw = m_tiles->tileWidth();
     int th = m_tiles->tileHeight();
     int levelW = m_tiles->width();
     int levelH = m_tiles->height();
     if (gx < 0 || gx >= levelW || gy < 0 || gy >= levelH)
+    {
         return;
+    }
     int tileId = m_tiles->get(gx, gy) - 1;
     if (tileId < 0)
+    {
         return;
+    }
 
     const float hwM = (tw / 2.0f) / PIXELS_PER_METER;
     const float hhM = (th / 2.0f) / PIXELS_PER_METER;
@@ -483,9 +504,11 @@ void Physics::createBodyForTile(int gx, int gy)
     float py = gy * th + TILE_Y_OFFSET;
 
     std::string shapeType = "full";
-    auto it = m_tileData.find(tileId);
-    if (it != m_tileData.end())
+    auto it = m_level->tileData()->find(tileId);
+    if (it != m_level->tileData()->end())
+    {
         shapeType = it->second.shape;
+    }
 
     b2Vec2 center;
     b2PolygonShape shape;
@@ -591,7 +614,9 @@ void Physics::update()
         float ReportFixture(b2Fixture* fixture, const b2Vec2&, const b2Vec2&, float) override
         {
             if (fixture->GetBody()->GetType() == b2_staticBody)
+            {
                 hit = true;
+            }
             return 0;
         }
     };
@@ -601,9 +626,14 @@ void Physics::update()
     m_world->RayCast(&cb, rayStart, rayEnd);
     bool onGround = cb.hit;
     if (!onGround && m_actor->onGround())
+    {
         m_coyoteTimeLeft = 0.12f;  // Coyote-Time nach Verlassen des Bodens
+    }
     if (onGround)
+    {
         m_coyoteTimeLeft = 0.0f;
+    }
+
     m_actor->setOnGround(onGround);
 
     // Spielereingabe anwenden (vor Step)
@@ -626,7 +656,10 @@ void Physics::update()
 
     // Coyote-Time ablaufen lassen
     m_coyoteTimeLeft -= static_cast<float>(dt);
-    if (m_coyoteTimeLeft < 0.0f) m_coyoteTimeLeft = 0.0f;
+    if (m_coyoteTimeLeft < 0.0f)
+    {
+        m_coyoteTimeLeft = 0.0f;
+    }
 
     if (onGround)
     {
@@ -659,10 +692,14 @@ void Physics::update()
 bool Physics::canTakeDamage() const
 {
     if (SDL_GetTicks() < m_invincibleUntilTicks)
+    {
         return false;
+    }
     // Super-Trank: 10 Sekunden Unverwundbarkeit
     if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+    {
         return false;
+    }
     return true;
 }
 
@@ -679,14 +716,30 @@ void Physics::setLastHazardDamageTicks(unsigned int t)
 void Physics::addWallContact(float normalX)
 {
     const int maxWallContacts = 2;
-    if (normalX > 0.35f && m_wallContactLeft < maxWallContacts) ++m_wallContactLeft;
-    else if (normalX < -0.35f && m_wallContactRight < maxWallContacts) ++m_wallContactRight;
+    if (normalX > 0.35f && m_wallContactLeft < maxWallContacts)
+    {
+        ++m_wallContactLeft;
+    }
+    else if (normalX < -0.35f && m_wallContactRight < maxWallContacts)
+    {
+        ++m_wallContactRight;
+    }
 }
 
 void Physics::removeWallContact(float normalX)
 {
-    if (normalX > 0.35f) { if (m_wallContactLeft > 0) --m_wallContactLeft; }
-    else if (normalX < -0.35f) { if (m_wallContactRight > 0) --m_wallContactRight; }
+    if (normalX > 0.35f) {
+        if (m_wallContactLeft > 0)
+        {
+            --m_wallContactLeft;
+        }
+    }
+    else if (normalX < -0.35f) {
+        if (m_wallContactRight > 0)
+        {
+            --m_wallContactRight;
+        }
+    }
 }
 
 void Physics::applyPlayerInput(double dt)
@@ -697,7 +750,9 @@ void Physics::applyPlayerInput(double dt)
     }
 
     if (SDL_GetTicks() < m_movementLockedUntilTicks)
+    {
         return;
+    }
 
     float moveX = m_actor->forces().moveForce().x() * static_cast<float>(dt) / PIXELS_PER_METER * 10.5f;
     b2Vec2 vel = m_actorBody->GetLinearVelocity();
@@ -722,14 +777,18 @@ void Physics::applyPlayerInput(double dt)
     if (m_wallContactLeft > 0 && vel.x < 0)
     {
         if (inputStrength > 50.0f && m_actor->forces().moveForce().x() > 0)
+        {
             m_wallContactLeft = 0;  // Spieler drückt nach rechts → Wand-Kontakt links ignorieren
+        }
         else
             vel.x = 0;
     }
     if (m_wallContactRight > 0 && vel.x > 0)
     {
         if (inputStrength > 50.0f && m_actor->forces().moveForce().x() < 0)
+        {
             m_wallContactRight = 0;  // Spieler drückt nach links → Wand-Kontakt rechts ignorieren
+        }
         else
             vel.x = 0;
     }
@@ -746,7 +805,9 @@ void Physics::applyPlayerInput(double dt)
         float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f;
         // Super-Trank: 1.5x Sprungkraft
         if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+        {
             jumpImpulse *= 1.5f;
+        }
         m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
     }
 
@@ -823,7 +884,10 @@ void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& a
     float dx = actorCenter.x - tileCenter.x;
     float dy = actorCenter.y - tileCenter.y;
     float len = std::sqrt(dx*dx + dy*dy);
-    if (len < 0.01f) len = 1.0f;
+    if (len < 0.01f)
+    {
+        len = 1.0f;
+    }
     float dirX = dx / len;
     float dirY = dy / len;
     float strength = (920.0f / 4.0f) / PIXELS_PER_METER;
@@ -846,7 +910,10 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
     float dx = actorBox.x - otherBox.x;
     float dy = actorBox.y - otherBox.y;
     float len = std::sqrt(dx*dx + dy*dy);
-    if (len < 0.01f) len = 1.0f;
+    if (len < 0.01f)
+    {
+        len = 1.0f;
+    }
     float dirX = dx / len;
     float dirY = dy / len;
     float strength = (920.0f / 2.0f) / PIXELS_PER_METER;
@@ -855,27 +922,37 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 
 std::pair<std::string, std::string> Physics::getTileData(int tileId)
 {
-    auto it = m_tileData.find(tileId);
-    if (it == m_tileData.end())
+    auto it = m_level->tileData()->find(tileId);
+    if (it == m_level->tileData()->end())
+    {
         return { "", "" };
+    }
     const TileInfo& t = it->second;
     return { t.name, t.type };
 }
 
 int Physics::getTileIdByType(const std::string& type) const
 {
-    for (const auto& p : m_tileData)
+    for (const auto& p : *(m_level->tileData()))
+    {
         if (p.second.type == type)
+        {
             return p.first;
+        }
+    }
     return -1;
 }
 
 std::vector<int> Physics::getTileIdsByType(const std::string& type) const
 {
     std::vector<int> ids;
-    for (const auto& p : m_tileData)
+    for (const auto& p : *(m_level->tileData()))
+    {
         if (p.second.type == type)
+        {
             ids.push_back(p.first);
+        }
+    }
     return ids;
 }
 
