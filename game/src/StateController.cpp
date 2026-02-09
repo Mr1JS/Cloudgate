@@ -20,6 +20,7 @@ StateController::StateController(MainWindow* mainWindow, Level* level, std::stri
     m_heartWidth    = 0;
     m_heartHeight   = 0;
     m_coins         = 0;
+    m_superPotionUntilTicks = 0;
 }
 
 
@@ -244,6 +245,16 @@ void StateController::addCoin(int coinCount)
 int StateController::getCoins() const
 {
     return m_coins;
+}
+
+void StateController::activateSuperPotion()
+{
+    m_superPotionUntilTicks = SDL_GetTicks() + 10000;  // 10 Sekunden
+}
+
+bool StateController::isSuperPotionActive() const
+{
+    return SDL_GetTicks() < m_superPotionUntilTicks;
 }
 
 StateController::~StateController()
