@@ -60,7 +60,7 @@ Page {
             opacity: 0.9
 
             // Check if there's enough space for all buttons
-            property bool showAllButtons: width > 700
+            property bool showAllButtons: width > 1000
 
             Row {
                 anchors.centerIn: parent
@@ -530,8 +530,6 @@ Page {
                         radius: 4
                         width: textItem.implicitWidth + 1
                         height: textItem.implicitHeight + 1
-                        visible: levelCanvas.width > canvasFlickable.width
-                            || levelCanvas.height > canvasFlickable.height
                         opacity: 0.75
 
                         Text {
