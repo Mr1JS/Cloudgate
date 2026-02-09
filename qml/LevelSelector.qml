@@ -91,10 +91,13 @@ Page {
                         text: "goal: "
                         font.pixelSize: 18
                     }
-                    Text 
+                    Image 
                     {
-                        text: goalType === 1 ? "🪙" : goalType === 2 ? "⏳" : goalType === 0 ? "Ø" : " "
-                        font.pixelSize: 18
+                        width: 20
+                        height: 20
+                        source: goalType === 1 ? "qrc:/resources/images/Coin.png" : goalType === 2 ? "qrc:/resources/images/Time.png" : goalType === 0 ? "qrc:/resources/images/None.png" : ""
+                        fillMode: Image.PreserveAspectFit
+                        visible: goalType >= 0 && goalType <= 2
                     }
                     Text 
                     {
