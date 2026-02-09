@@ -139,7 +139,7 @@ std::string getLevelActor(const std::string& path)
     {
         xml.readNext();
 
-        if (xml.isStartElement() && xml.name() == "actor") 
+        if (xml.isStartElement() && xml.name() == QString("actor")) 
         {
             QXmlStreamAttributes attrs = xml.attributes();
             if (attrs.hasAttribute("texture")) 
