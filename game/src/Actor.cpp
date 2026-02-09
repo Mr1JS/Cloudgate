@@ -23,6 +23,8 @@ Actor::Actor(MainWindow* mainWindow, std::string filename)
     m_wantsToJump = false;
     m_onGround = false;
     m_jumpStart = 0;
+    m_saltoRotation = 0.0;
+    m_lastSaltoTicks = 0;
     setWorldPosition(Vector2f(100, 0));
 }
 
@@ -35,6 +37,9 @@ Actor::Actor(MainWindow* mainWindow, SDL_Texture* texture, int frameWidth, int f
     m_jumpStart = 0;
     m_blinking = false;
     m_superPotionActive = false;
+    m_breakTilesModeActive = false;
+    m_saltoRotation = 0.0;
+    m_lastSaltoTicks = 0;
     setWorldPosition(Vector2f(100, 0));
 }
 
@@ -86,13 +91,12 @@ void Actor::render()
             flip = SDL_FLIP_NONE;
         }
 
-        // Blinken: Super-Trank = bläulich, normale Invincibility = rötlich
+        // Blinken: Super-Trank = bläulich, Green-Potion = grün, Invincibility = rötlich
         unsigned int ticks = SDL_GetTicks();
         bool isBlinkFrame = ((ticks / 100) % 2 == 0);
         
         if (m_superPotionActive)
         {
-            // Super-Trank: Bläuliches Blinken (Color-Modulation)
             if (isBlinkFrame)
             {
                 SDL_SetTextureColorMod(m_texture, 100, 150, 255);  // Bläulich
@@ -100,13 +104,25 @@ void Actor::render()
             }
             else
             {
-                SDL_SetTextureColorMod(m_texture, 255, 255, 255);  // Normal
+                SDL_SetTextureColorMod(m_texture, 255, 255, 255);
+                SDL_SetTextureAlphaMod(m_texture, 255);
+            }
+        }
+        else if (m_breakTilesModeActive)
+        {
+            if (isBlinkFrame)
+            {
+                SDL_SetTextureColorMod(m_texture, 100, 255, 150);  // Grünlich
+                SDL_SetTextureAlphaMod(m_texture, 255);
+            }
+            else
+            {
+                SDL_SetTextureColorMod(m_texture, 255, 255, 255);
                 SDL_SetTextureAlphaMod(m_texture, 255);
             }
         }
         else if (m_blinking)
         {
-            // Normale Invincibility: Rötliches Blinken (nach Schaden)
             if (isBlinkFrame)
             {
                 SDL_SetTextureColorMod(m_texture, 255, 150, 150);  // Rötlich
@@ -114,27 +130,44 @@ void Actor::render()
             }
             else
             {
-                SDL_SetTextureColorMod(m_texture, 255, 255, 255);  // Normal
+                SDL_SetTextureColorMod(m_texture, 255, 255, 255);
                 SDL_SetTextureAlphaMod(m_texture, 255);
             }
         }
         else
         {
-            // Kein Blinken: Normal
             SDL_SetTextureColorMod(m_texture, 255, 255, 255);
             SDL_SetTextureAlphaMod(m_texture, 255);
         }
 
-        // Render current animation frame
-        SDL_RenderCopyEx( m_mainWindow->renderer(), m_texture, &m_sourceRect, &target, 0, NULL, flip);
+        // Salto bei Super-Trank: in der Luft rotieren
+        unsigned int now = SDL_GetTicks();
+        if (m_superPotionActive && !m_onGround)
+        {
+            if (m_lastSaltoTicks != 0)
+                m_saltoRotation += (now - m_lastSaltoTicks) * 0.72;  // ~1 Salto in ~500 ms
+            if (m_saltoRotation >= 360.0) m_saltoRotation -= 360.0;
+            if (m_saltoRotation < 0.0) m_saltoRotation += 360.0;
+        }
+        else
+            m_saltoRotation = 0.0;
+        m_lastSaltoTicks = now;
+
+        double angle = m_saltoRotation;
+        if (flip == SDL_FLIP_HORIZONTAL)
+            angle = -angle;
+
+        // Render current animation frame (mit Salto-Rotation bei Super-Trank)
+        SDL_RenderCopyEx(m_mainWindow->renderer(), m_texture, &m_sourceRect, &target, angle, NULL, flip);
     }
 
 }
 
-void Actor::setBlinking(bool blink, bool superPotion)
+void Actor::setBlinking(bool blink, bool superPotion, bool breakTilesMode)
 {
     m_blinking = blink;
     m_superPotionActive = superPotion;
+    m_breakTilesModeActive = breakTilesMode;
 }
 
 bool Actor::onGround() const

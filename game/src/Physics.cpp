@@ -66,7 +66,7 @@ void ContactListener::BeginContact(b2Contact* contact)
     std::string tileType = m_physics->getTileData(tileId).second;
 
     // Wandkontakt für feste Tiles (verhindert Hängen/Zittern an Wänden)
-    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion" && tileType != "random")
+    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion" && tileType != "green_potion" && tileType != "random")
     {
         b2WorldManifold wm;
         contact->GetWorldManifold(&wm);
@@ -126,6 +126,48 @@ void ContactListener::BeginContact(b2Contact* contact)
         }
         m_physics->queueBodyForDestruction(tileBody);
         return;
+    }
+
+    // Green Potion: 5 Sekunden lang Tiles mit dem Kopf zerstörbar (Mario-Style)
+    if (tileType == "green_potion")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+            {
+                m_level->getStateController()->activateBreakTilesMode();
+            }
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
+
+    // Green-Potion: von unten mit dem Kopf ground/platform zerstören (ohne RulesTiles zu ändern)
+    // ID 84 = Wände, nicht zerstörbar
+    if ((tileType == "ground" || tileType == "platform" || tileType == "breakable")
+        && tileId != 84
+        && m_level && m_level->getStateController()
+        && m_level->getStateController()->isBreakTilesModeActive())
+    {
+        b2Vec2 actorPos = actorBody->GetPosition();
+        b2Vec2 tilePos = tileBody->GetPosition();
+        bool actorBelowTile = (actorPos.y < tilePos.y);
+        b2WorldManifold wm;
+        contact->GetWorldManifold(&wm);
+        float ny = (bodyA == actorBody) ? wm.normal.y : -wm.normal.y;
+        if (actorBelowTile && ny > 0.1f)
+        {
+            uintptr_t posData = tileBody->GetUserData().pointer;
+            int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+            int gy = static_cast<int>(posData & 0xFFFFu);
+            m_level->removeTileAt(gx, gy);
+            m_physics->queueBodyForDestruction(tileBody);
+            return;
+        }
     }
 
     // Random-Box (id 108): Box verschwindet, zufällig erscheint Sprungbrett, Trank, Falle (hazard) oder Monster (enemy).

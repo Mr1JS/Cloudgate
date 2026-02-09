@@ -84,8 +84,8 @@ public:
     /// Returns weather the actor wants to start to jump
     bool wantsToJump();
 
-    /// Setzt Blink-Status: blink = true für normales Blinken (transparent), superPotion = true für Super-Trank (bläulich)
-    void setBlinking(bool blink, bool superPotion = false);
+    /// Setzt Blink-Status: blink = Invincibility (rötlich), superPotion = bläulich, breakTilesMode = grünlich
+    void setBlinking(bool blink, bool superPotion = false, bool breakTilesMode = false);
 
 protected:
 
@@ -111,6 +111,11 @@ protected:
     bool                 m_blinking;
     /// Super-Trank aktiv (bläuliches Blinken)
     bool                 m_superPotionActive;
+    /// Green-Potion / Break-Tiles aktiv (grünes Blinken)
+    bool                 m_breakTilesModeActive;
+    /// Salto-Rotation in Grad (nur bei Super-Trank in der Luft)
+    double               m_saltoRotation;
+    unsigned int        m_lastSaltoTicks;
 
 };
 

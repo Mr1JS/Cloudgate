@@ -83,6 +83,12 @@ public:
     /// Prüft ob Super-Trank aktiv ist
     bool isSuperPotionActive() const;
 
+    /// Aktiviert Grün-Trank (green_potion): 5 Sekunden lang Tiles mit dem Kopf zerstörbar (Mario-Style)
+    void activateBreakTilesMode();
+
+    /// Prüft ob Break-Tiles-Modus aktiv ist
+    bool isBreakTilesModeActive() const;
+
     /// Destructor of class StateController
     virtual ~StateController();
 
@@ -133,6 +139,9 @@ private:
 
     /// Super-Trank aktiv bis zu diesem Zeitpunkt (SDL_GetTicks), 0 = nicht aktiv
     unsigned int m_superPotionUntilTicks;
+
+    /// Break-Tiles-Modus (green_potion) aktiv bis zu diesem Zeitpunkt (SDL_GetTicks)
+    unsigned int m_breakTilesUntilTicks;
 };
 
 } /* namespace jumper */

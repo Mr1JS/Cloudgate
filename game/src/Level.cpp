@@ -304,13 +304,14 @@ void Level::update(const Uint8* keystates)
             // Run physics
             m_physics->update();
 
-            // Blink-Status: Super-Trank (bläulich) ODER normale Unverwundbarkeit (transparent)
+            // Blink-Status: Super-Trank (bläulich), Green-Potion (grün), Unverwundbarkeit (rötlich)
             if (m_actor && m_stateController)
             {
                 bool isSuperPotion = m_stateController->isSuperPotionActive();
+                bool isBreakTilesMode = m_stateController->isBreakTilesModeActive();
                 bool isInvincible = (m_physics && !m_physics->canTakeDamage());
-                bool shouldBlink = isSuperPotion || isInvincible;
-                m_actor->setBlinking(shouldBlink, isSuperPotion);
+                bool shouldBlink = isSuperPotion || isBreakTilesMode || isInvincible;
+                m_actor->setBlinking(shouldBlink, isSuperPotion, isBreakTilesMode);
             }
 
             // Monster-Kollision: Schaden + Knockback (0,6 s Unverwundbarkeit)

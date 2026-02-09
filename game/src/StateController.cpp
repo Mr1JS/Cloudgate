@@ -21,6 +21,7 @@ StateController::StateController(MainWindow* mainWindow, Level* level, std::stri
     m_heartHeight   = 0;
     m_coins         = 0;
     m_superPotionUntilTicks = 0;
+    m_breakTilesUntilTicks = 0;
 }
 
 
@@ -255,6 +256,16 @@ void StateController::activateSuperPotion()
 bool StateController::isSuperPotionActive() const
 {
     return SDL_GetTicks() < m_superPotionUntilTicks;
+}
+
+void StateController::activateBreakTilesMode()
+{
+    m_breakTilesUntilTicks = SDL_GetTicks() + 5000;  // 5 Sekunden
+}
+
+bool StateController::isBreakTilesModeActive() const
+{
+    return SDL_GetTicks() < m_breakTilesUntilTicks;
 }
 
 StateController::~StateController()
