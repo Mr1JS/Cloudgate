@@ -23,7 +23,7 @@
     <frame_height>10</frame_height>
     <layer>3</layer>
   </numbers>
-  <actor texture="MariosVergessenerZweiterBruder">
+  <actor texture="Celower">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
     <frame_height>48</frame_height>
