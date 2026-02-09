@@ -136,6 +136,24 @@ void LevelCanvas::paint(QPainter *painter)
 
             painter->drawPixmap(targetRect, m_tiles[tileIndex].pixmap, croppedSource);
         }
+
+        // player spawnpoint marked red
+        painter->setBrush(QColor(255, 0, 0, 60));
+        painter->setPen(QPen(QColor(255, 0, 0, 180), 2));
+
+        // because of the borders of the game, it doesnt start at (0|max)
+        for (int y = m_gridHeight - 3; y < m_gridHeight - 1; ++y)
+        {
+            for (int x = 1; x < 3; ++x)
+            {
+                QRect r(x * m_tileWidth,
+                        y * m_tileHeight,
+                        m_tileWidth,
+                        m_tileHeight);
+
+                painter->drawRect(r);
+            }
+        }
     }
 
     // Grid as overlay
@@ -154,6 +172,13 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 {
     int gridX = event->position().x() / m_tileWidth;
     int gridY = event->position().y() / m_tileHeight;
+
+    // 2x2 player spawnpoint in grid, so no placing blocks allowed
+    if (gridX >= 1 && gridX < 3 && gridY >= m_gridHeight - 3 && gridY < m_gridHeight - 1)
+    {
+        qDebug() << "Character Spawnpoint - click ignored";
+        return;
+    }
 
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {
