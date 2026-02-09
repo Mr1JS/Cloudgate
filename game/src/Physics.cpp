@@ -66,7 +66,7 @@ void ContactListener::BeginContact(b2Contact* contact)
     std::string tileType = m_physics->getTileData(tileId).second;
 
     // Wandkontakt für feste Tiles (verhindert Hängen/Zittern an Wänden)
-    if (tileType != "collectible" && tileType != "red_potion" && tileType != "random")
+    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion" && tileType != "random")
     {
         b2WorldManifold wm;
         contact->GetWorldManifold(&wm);
@@ -110,6 +110,24 @@ void ContactListener::BeginContact(b2Contact* contact)
         return;
     }
 
+    // Blue Potion (Super-Trank): Blinken, schneller, höher springen, 10 Sekunden unverwundbar
+    if (tileType == "blue_potion")
+    {
+        uintptr_t posData = tileBody->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+            {
+                m_level->getStateController()->activateSuperPotion();
+            }
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
+
     // Random-Box (id 108): Box verschwindet, zufällig erscheint Sprungbrett, Trank, Falle (hazard) oder Monster (enemy).
     // Geist und Schlange: 2 Tiles (Top oben, Bottom unten). Spawn so, dass der BODEN (Bottom) auf der Box-Zelle steht (gy),
     // Top eine Zeile darüber (gy-1) – dann steht das Monster auf dem „Button“, nicht mit dem Kopf in der Erde.
@@ -121,8 +139,10 @@ void ContactListener::BeginContact(b2Contact* contact)
         std::vector<int> options;
         int jumpdownId = m_physics->getTileIdByType("jumpdown");
         int redPotionId = m_physics->getTileIdByType("red_potion");
+        int bluePotionId = m_physics->getTileIdByType("blue_potion");
         if (jumpdownId >= 0) options.push_back(jumpdownId);
         if (redPotionId >= 0) options.push_back(redPotionId);
+        if (bluePotionId >= 0) options.push_back(bluePotionId);
         std::vector<int> hazardIds = m_physics->getTileIdsByType("hazard");
         for (int id : hazardIds) options.push_back(id);
         bool canPlaceTwoTile = (gy >= 1);  // Platz für Top in gy-1, Bottom auf Box-Zelle gy
@@ -625,6 +645,18 @@ void Physics::update()
         }
     }
 
+    // Wand-Kontakte auch zurücksetzen, wenn Bewegungssperre endet (nach Schaden)
+    // Verhindert, dass Spieler nach Knockback gegen Wand hängen bleibt
+    if (SDL_GetTicks() >= m_movementLockedUntilTicks && (m_wallContactLeft > 0 || m_wallContactRight > 0))
+    {
+        // Wenn Geschwindigkeit in entgegengesetzter Richtung → Wand-Kontakt war falsch positiv
+        if ((m_wallContactLeft > 0 && vel.x > 0.1f) || (m_wallContactRight > 0 && vel.x < -0.1f))
+        {
+            m_wallContactLeft = 0;
+            m_wallContactRight = 0;
+        }
+    }
+
     enforceCameraBounds();
 
     m_lastTicks = SDL_GetTicks();
@@ -632,7 +664,12 @@ void Physics::update()
 
 bool Physics::canTakeDamage() const
 {
-    return SDL_GetTicks() >= m_invincibleUntilTicks;
+    if (SDL_GetTicks() < m_invincibleUntilTicks)
+        return false;
+    // Super-Trank: 10 Sekunden Unverwundbarkeit
+    if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+        return false;
+    return true;
 }
 
 void Physics::setLastHazardDamageTicks(unsigned int t)
@@ -640,6 +677,9 @@ void Physics::setLastHazardDamageTicks(unsigned int t)
     m_lastHazardDamageTicks = t;
     m_invincibleUntilTicks = t + INVINCIBILITY_MS;
     m_movementLockedUntilTicks = t + MOVEMENT_LOCK_MS;
+    // Wand-Kontakte nach Schaden zurücksetzen, damit Spieler nicht hängen bleibt
+    m_wallContactLeft = 0;
+    m_wallContactRight = 0;
 }
 
 void Physics::addWallContact(float normalX)
@@ -673,11 +713,29 @@ void Physics::applyPlayerInput(double dt)
     }
 
     float maxRun = m_actor->forces().maxRunVelocity() / PIXELS_PER_METER;
+    // Super-Trank: 1.5x Geschwindigkeit
+    if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+        maxRun *= 1.5f;
     vel.x = b2Clamp(vel.x, -maxRun, maxRun);
 
     // Gegen Wand laufen unterbinden → verhindert Hängen und Zittern
-    if (m_wallContactLeft > 0 && vel.x < 0) vel.x = 0;
-    if (m_wallContactRight > 0 && vel.x > 0) vel.x = 0;
+    // Aber: Wenn Spieler sich aktiv wegbewegt (starker Input), Wand-Kontakt ignorieren
+    // (verhindert Hängen nach Knockback)
+    float inputStrength = std::abs(m_actor->forces().moveForce().x());
+    if (m_wallContactLeft > 0 && vel.x < 0)
+    {
+        if (inputStrength > 50.0f && m_actor->forces().moveForce().x() > 0)
+            m_wallContactLeft = 0;  // Spieler drückt nach rechts → Wand-Kontakt links ignorieren
+        else
+            vel.x = 0;
+    }
+    if (m_wallContactRight > 0 && vel.x > 0)
+    {
+        if (inputStrength > 50.0f && m_actor->forces().moveForce().x() < 0)
+            m_wallContactRight = 0;  // Spieler drückt nach links → Wand-Kontakt rechts ignorieren
+        else
+            vel.x = 0;
+    }
 
     m_actorBody->SetLinearVelocity(vel);
 
@@ -689,6 +747,9 @@ void Physics::applyPlayerInput(double dt)
         m_actor->setJumping(true);
         m_coyoteTimeLeft = 0.0f;
         float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f;
+        // Super-Trank: 1.5x Sprungkraft
+        if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+            jumpImpulse *= 1.5f;
         m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
     }
 

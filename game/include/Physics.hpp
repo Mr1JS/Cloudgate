@@ -80,8 +80,8 @@ public:
 
     /// Bewegungssperre nach Schaden (ms)
     static constexpr unsigned int MOVEMENT_LOCK_MS = 250;
-    /// Unverwundbarkeit nach Schaden (ms)
-    static constexpr unsigned int INVINCIBILITY_MS = 600;
+    /// Unverwundbarkeit nach Schaden (ms) - 2 Sekunden
+    static constexpr unsigned int INVINCIBILITY_MS = 2000;
 
     // get Tile Data in ContactListener
     std::pair<std::string, std::string> getTileData(int tileId);

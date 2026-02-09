@@ -84,6 +84,9 @@ public:
     /// Returns weather the actor wants to start to jump
     bool wantsToJump();
 
+    /// Setzt Blink-Status: blink = true für normales Blinken (transparent), superPotion = true für Super-Trank (bläulich)
+    void setBlinking(bool blink, bool superPotion = false);
+
 protected:
 
     /// Retruns the time elapsed since the last call of this function
@@ -103,6 +106,11 @@ protected:
 
     /// The physical properties of the player
     ActorForces          m_forces;
+
+    /// Blink-Status (für Unverwundbarkeit)
+    bool                 m_blinking;
+    /// Super-Trank aktiv (bläuliches Blinken)
+    bool                 m_superPotionActive;
 
 };
 
