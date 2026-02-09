@@ -79,6 +79,19 @@ struct TileInfo
  */
 std::map<int, TileInfo> ParseXMLData(const std::string& xmlPath);
 
+/**
+ * @brief get current actor
+ * @param path path to level_master
+ * @return name of current actor
+ */
+std::string getLevelActor(const std::string& path);
+
+/**
+ * @brief update actor in all xmls
+ * @param filePath path to directory of all levels
+ * @param newActor name of new actor
+ */
+void updateActor(const std::string &filePath, const std::string &newActor);
 } // namespace jumper
 
 

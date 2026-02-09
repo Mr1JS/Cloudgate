@@ -53,9 +53,9 @@ Window {
                         }
                     }
                     StyledButton {
-                        text: "Setting"
+                        text: "Characters"
                         onClicked: {
-                            stackView.push(Qt.resolvedUrl("SettingsPage.qml"))
+                            stackView.push(Qt.resolvedUrl("Character.qml"))
                             myMain.page_value = 2
                         }
                     }
