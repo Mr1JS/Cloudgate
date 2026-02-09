@@ -173,7 +173,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
     int gridX = event->position().x() / m_tileWidth;
     int gridY = event->position().y() / m_tileHeight;
 
-    // 2x2 player spawnpoint in grid, so no placing blocks allowed
+    // 2x2 player spawnpoint in grid, so no placing tiles allowed
     if (gridX >= 1 && gridX < 3 && gridY >= m_gridHeight - 3 && gridY < m_gridHeight - 1)
     {
         qDebug() << "Character Spawnpoint - click ignored";
@@ -192,13 +192,13 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 
         if (m_levelData.contains(pos))
         {
-            // Right click or placing Tile on extraTile (1x2 Tile)
+            // Right click (Deleting) or placing Tile on extraTile (1x2 Tile)
             if (event->button() == Qt::RightButton || (m_levelData[pos] != m_currentTileIndex && m_levelData[pos] >= m_endIndex))
             {
                 // if extraTile
                 if (m_levelData[pos] >= m_endIndex)
                 {
-                    // is Upper or Lower Part
+                    // is Upper or Lower Part of extraTile and delete the other part too
                     if (m_levelData[pos] % 2 != m_endIndex % 2)
                     {
                         QPair<int, int> pos2(gridX, gridY - 1);
@@ -212,7 +212,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                         qDebug() << "Tile deleted at (" << gridX << "," << gridY + 1 << ")";
                     }
                 }
-
+                // remove selected part
                 m_levelData.remove(pos);
                 update();
                 qDebug() << "Tile deleted at (" << gridX << "," << gridY << ")";
@@ -233,7 +233,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 if (m_currentTileIndex % 2 != m_endIndex % 2 && gridY != 0)
                 {
                     QPair<int, int> pos2(gridX, gridY - 1);
-                    // special case: extraTile on extraTile
+                    // handle special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 != m_endIndex % 2)
@@ -248,7 +248,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 else if (m_currentTileIndex % 2 == m_endIndex % 2 && gridY != m_gridHeight - 1)
                 {
                     QPair<int, int> pos2(gridX, gridY + 1);
-                    // special case: extraTile on extraTile
+                    // handle special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 == m_endIndex % 2)
