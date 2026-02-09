@@ -155,6 +155,10 @@ public:
     /// Setzt Tile an (gx, gy), value = 0 leer, sonst 1-basierter Tile-Index
     void setTileAt(int gx, int gy, int value);
 
+    /// Spawnt ein Monster (Ghost oder Snake) an (gx, gy). gy = Zeile des Bodens; Top-Tile bei gy-1.
+    /// Nutzt dieselbe Logik wie spawnMonsters() (Schlange: links/rechts, Geist: 5 s Verfolgung).
+    void spawnMonsterAt(int gx, int gy, Monster::Type type);
+
 private:
 
     void updateEverything(const Uint8* keystates, double dt);

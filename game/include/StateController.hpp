@@ -57,6 +57,9 @@ public:
     /// @param number (optional) amount of hp to decrease (default: 1)
     void decrementHp(int number = 1);
 
+    /// Erhöht HP um number (max. MAX_HEARTS). Z.B. für red_potion.
+    void incrementHp(int number = 1);
+
     /// Reset hp to default value
     void resetHp();
 
@@ -73,6 +76,12 @@ public:
 
     /// Get current coin count
     int getCoins() const;
+
+    /// Aktiviert Super-Trank (blue_potion): 10 Sekunden Boost + Unverwundbarkeit
+    void activateSuperPotion();
+
+    /// Prüft ob Super-Trank aktiv ist
+    bool isSuperPotionActive() const;
 
     /// Destructor of class StateController
     virtual ~StateController();
@@ -121,6 +130,9 @@ private:
 
     /// Coins collected in level
     int m_coins;
+
+    /// Super-Trank aktiv bis zu diesem Zeitpunkt (SDL_GetTicks), 0 = nicht aktiv
+    unsigned int m_superPotionUntilTicks;
 };
 
 } /* namespace jumper */

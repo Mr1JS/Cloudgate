@@ -13,6 +13,8 @@
 #include <iostream>
 #include <fstream>
 #include <SDL_image.h>
+#include <sstream>
+#include <regex>
 #include <QDebug>
 // NEED for reading data from XML
 #include <QXmlStreamReader>
@@ -118,5 +120,78 @@ std::map<int, TileInfo> ParseXMLData(const std::string& xmlPath)
     file.close();
     return tileData;
 }
+// get last saved actor to show when loading character page or when saving new level
+std::string getLevelActor(const std::string& path)
+{
+    // read xml of level_master (all level files contain the current actor)
+    QFile file(QString::fromStdString(path));
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        qWarning() << "Could not open XML file:" << path.c_str();
+        return "";
+    }
+
+    QXmlStreamReader xml(&file);
+    std::string startActor;
+
+    // search for name of actor
+    while (!xml.atEnd() && !xml.hasError()) 
+    {
+        xml.readNext();
+
+        if (xml.isStartElement() && xml.name() == QString("actor")) 
+        {
+            QXmlStreamAttributes attrs = xml.attributes();
+            if (attrs.hasAttribute("texture")) 
+            {
+                startActor = attrs.value("texture").toString().toStdString();
+                break; 
+            }
+        }
+    }
+
+    if (xml.hasError()) 
+    {
+        qWarning() << "XML parsing error:" << xml.errorString();
+    }
+    // return actor
+    file.close();
+    return startActor;
+}
+
+// easier and probably more efficient for only rewriting one value than using QXmlStreamReader and QXmlStreamWriter open at the same time
+void updateActor(const std::string &filePath, const std::string &newActor)
+{
+    // open file
+    std::ifstream inFile(filePath);
+    if (!inFile.is_open()) 
+    {
+        std::cerr << "Cannot open file: " << filePath << std::endl;
+        return;
+    }
+
+    // get content of xml file
+    std::stringstream buffer;
+    buffer << inFile.rdbuf();
+    std::string content = buffer.str();
+    inFile.close();
+
+    // find <actor texture="…">
+    std::regex rx(R"(<actor\s+texture="[^"]*")");
+    content = std::regex_replace(content, rx, "<actor texture=\"" + newActor + "\"");
+
+    // rewrite file
+    std::ofstream outFile(filePath, std::ios::trunc);
+    if (!outFile.is_open()) 
+    {
+        std::cerr << "Cannot write file: " << filePath << std::endl;
+        return;
+    }
+
+    outFile << content;
+    outFile.close();
+}
+
+
 
 } // namespace jumper

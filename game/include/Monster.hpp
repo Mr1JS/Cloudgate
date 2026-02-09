@@ -17,7 +17,7 @@ class Actor;
 class MainWindow;
 
 /**
- * @brief Monster (Ghost, Snake). Snake patrouilliert; Ghost verfolgt den Actor 5 Sek. und kann springen.
+ * @brief Monster (Ghost, Snake). Snake patrouilliert; Ghost jagt 5 s, ist 5 s erschöpft, dann wieder Jagd.
  */
 class Monster : public MovingRenderable
 {
@@ -29,7 +29,7 @@ public:
             double leftBound, double rightBound,
             int tileWidth, int tileHeight, int tilesPerRow, int tileOffset);
 
-    /// Update: Snake patrouilliert; Ghost verfolgt Actor (wenn nicht null) 5 Sek., kann springen
+    /// Update: Snake patrouilliert; Ghost jagt 5 s / erschöpft 5 s im Wechsel
     void update(double dt, Actor* actor = nullptr);
 
     virtual void render() override;
@@ -46,8 +46,10 @@ private:
 
     /// Nur Ghost: Boden-Y (Füße) bei Patrouille
     double      m_groundY;
-    /// Nur Ghost: Chase-Timer (Sekunden), nach 5 s zurück zu Patrouille
+    /// Nur Ghost: Chase-Timer (Sekunden), 5 s verfolgen
     double      m_chaseTimer;
+    /// Nur Ghost: Erschöpfungs-Timer (Sekunden), 5 s Pause nach der Jagd
+    double      m_exhaustedTimer;
 };
 
 } // namespace jumper

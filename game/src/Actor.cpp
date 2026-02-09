@@ -33,6 +33,8 @@ Actor::Actor(MainWindow* mainWindow, SDL_Texture* texture, int frameWidth, int f
     m_wantsToJump = false;
     m_onGround = false;
     m_jumpStart = 0;
+    m_blinking = false;
+    m_superPotionActive = false;
     setWorldPosition(Vector2f(100, 0));
 }
 
@@ -84,10 +86,55 @@ void Actor::render()
             flip = SDL_FLIP_NONE;
         }
 
+        // Blinken: Super-Trank = bläulich, normale Invincibility = rötlich
+        unsigned int ticks = SDL_GetTicks();
+        bool isBlinkFrame = ((ticks / 100) % 2 == 0);
+        
+        if (m_superPotionActive)
+        {
+            // Super-Trank: Bläuliches Blinken (Color-Modulation)
+            if (isBlinkFrame)
+            {
+                SDL_SetTextureColorMod(m_texture, 100, 150, 255);  // Bläulich
+                SDL_SetTextureAlphaMod(m_texture, 255);
+            }
+            else
+            {
+                SDL_SetTextureColorMod(m_texture, 255, 255, 255);  // Normal
+                SDL_SetTextureAlphaMod(m_texture, 255);
+            }
+        }
+        else if (m_blinking)
+        {
+            // Normale Invincibility: Rötliches Blinken (nach Schaden)
+            if (isBlinkFrame)
+            {
+                SDL_SetTextureColorMod(m_texture, 255, 150, 150);  // Rötlich
+                SDL_SetTextureAlphaMod(m_texture, 255);
+            }
+            else
+            {
+                SDL_SetTextureColorMod(m_texture, 255, 255, 255);  // Normal
+                SDL_SetTextureAlphaMod(m_texture, 255);
+            }
+        }
+        else
+        {
+            // Kein Blinken: Normal
+            SDL_SetTextureColorMod(m_texture, 255, 255, 255);
+            SDL_SetTextureAlphaMod(m_texture, 255);
+        }
+
         // Render current animation frame
         SDL_RenderCopyEx( m_mainWindow->renderer(), m_texture, &m_sourceRect, &target, 0, NULL, flip);
     }
 
+}
+
+void Actor::setBlinking(bool blink, bool superPotion)
+{
+    m_blinking = blink;
+    m_superPotionActive = superPotion;
 }
 
 bool Actor::onGround() const

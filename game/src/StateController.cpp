@@ -20,6 +20,7 @@ StateController::StateController(MainWindow* mainWindow, Level* level, std::stri
     m_heartWidth    = 0;
     m_heartHeight   = 0;
     m_coins         = 0;
+    m_superPotionUntilTicks = 0;
 }
 
 
@@ -202,6 +203,23 @@ void StateController::decrementHp(int number)
     }
 }
 
+void StateController::incrementHp(int number)
+{
+    if (number <= 0) return;
+    int oldHp = m_playerHp;
+    m_playerHp += number;
+    if (m_playerHp > MAX_HEARTS)
+        m_playerHp = MAX_HEARTS;
+    for (int i = oldHp; i < m_playerHp && i < MAX_HEARTS; i++)
+    {
+        if (m_hearts[i])
+        {
+            Vector v = Vector(m_mainWindow->w() - m_heartWidth * (i + 1), 10);
+            m_hearts[i]->setPosition(v);
+        }
+    }
+}
+
 int StateController::getHp() const
 {
     return m_playerHp;
@@ -227,6 +245,16 @@ void StateController::addCoin(int coinCount)
 int StateController::getCoins() const
 {
     return m_coins;
+}
+
+void StateController::activateSuperPotion()
+{
+    m_superPotionUntilTicks = SDL_GetTicks() + 10000;  // 10 Sekunden
+}
+
+bool StateController::isSuperPotionActive() const
+{
+    return SDL_GetTicks() < m_superPotionUntilTicks;
 }
 
 StateController::~StateController()

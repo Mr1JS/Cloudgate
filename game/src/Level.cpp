@@ -193,6 +193,42 @@ void Level::spawnMonsters()
     }
 }
 
+void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
+{
+    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+
+    TileSetRepresentation* tileRep = m_tiles->tiles();
+    int tw = m_tiles->tileWidth();
+    int th = m_tiles->tileHeight();
+    int levelW = tileRep->width();
+    int levelH = tileRep->height();
+    const int TILE_Y_OFFSET = 600;
+    const int monsterW = 32;
+
+    if (gy < 1 || gx < 0 || gx >= levelW || gy >= levelH) return;
+
+    double wx = gx * tw;
+    double wy = (gy - 1) * th + TILE_Y_OFFSET;
+
+    int platformRow = gy + 1;
+    int gxLeft = gx, gxRight = gx;
+    if (platformRow < levelH)
+    {
+        while (gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0) gxLeft--;
+        while (gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0) gxRight++;
+    }
+    double leftBound = gxLeft * tw;
+    double rightBound = (gxRight + 1) * tw - monsterW;
+    if (rightBound - leftBound < monsterW)
+        rightBound = leftBound + monsterW;
+
+    Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, wx, wy,
+                              leftBound, rightBound,
+                              tw, th, m_tiles->tilesPerRow(), m_tiles->tileOffset());
+    m_monsters.push_back(m);
+    m_layers.addRenderable(m, 2);
+}
+
 void Level::setForces(const LevelForces &f)
 {
     m_levelForce = f;
@@ -300,11 +336,11 @@ void Level::setTileAt(int gx, int gy, int value)
 
 void Level::update(const Uint8* keystates)
 {
-    // Update camera (automatisches Scrollen nach oben)
-    // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
+    // Update camera (automatisches Scrollen nach oben) – erst nach 5 Sekunden Verzögerung
     double dt = 1.0 / 60.0;
     if (!m_stateController->isPaused())
-{
+    {
+        if (m_physics && m_physics->isCameraMovementEnabled())
             m_camera.update(dt);
     
         if(m_physics)
@@ -315,10 +351,17 @@ void Level::update(const Uint8* keystates)
             // Run physics
             m_physics->update();
 
-            // Monster-Kollision: Schaden + Knockback
-            unsigned int now = SDL_GetTicks();
-            const unsigned int damageCooldownMs = 1000;
-            if(m_actor && now - m_physics->getLastHazardDamageTicks() >= damageCooldownMs)
+            // Blink-Status: Super-Trank (bläulich) ODER normale Unverwundbarkeit (transparent)
+            if (m_actor && m_stateController)
+            {
+                bool isSuperPotion = m_stateController->isSuperPotionActive();
+                bool isInvincible = (m_physics && !m_physics->canTakeDamage());
+                bool shouldBlink = isSuperPotion || isInvincible;
+                m_actor->setBlinking(shouldBlink, isSuperPotion);
+            }
+
+            // Monster-Kollision: Schaden + Knockback (0,6 s Unverwundbarkeit)
+            if(m_actor && m_physics->canTakeDamage())
             {
                 double ax = m_actor->worldPosition().x(), ay = m_actor->worldPosition().y();
                 int aw = m_actor->w(), ah = m_actor->h();
@@ -328,7 +371,7 @@ void Level::update(const Uint8* keystates)
                     int mw = mon->w(), mh = mon->h();
                     if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
                     {
-                        m_physics->setLastHazardDamageTicks(now);
+                        m_physics->setLastHazardDamageTicks(SDL_GetTicks());
                         if(m_stateController) m_stateController->decrementHp(1);
                         double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
                         m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));

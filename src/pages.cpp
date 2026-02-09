@@ -31,7 +31,7 @@ QString pages::getPageInfo(int page){
         pageInfo = "Editor";
         break;
     case 2:
-        pageInfo = "Settings";
+        pageInfo = "Character";
         break;
     default:
         break;
