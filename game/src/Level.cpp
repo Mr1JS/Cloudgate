@@ -224,15 +224,16 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
         m_layers.addRenderable(tiles, layer);
 
         // get door tile coordinates
-        TileSetRepresentation* rep = m_tiles->tiles();
+        TileSetRepresentation* tileRep = m_tiles->tiles();
         
         int tileId = 0;
         int doorCount = 0;
-        for (int gx = 0; gx < rep->width(); gx++)
+        for (int gx = 0; gx < tileRep->width(); gx++)
         {
-            for (int gy = 0; gy < rep->height(); gy++)
+            for (int gy = 0; gy < tileRep->height(); gy++)
             {
-                tileId = rep->get(gx, gy);
+                // apparently the returned value differs by 1, so we need to do +1 to get tileId 
+                tileId = tileRep->get(gx, gy) + 1;
                 if (tileId != -1)
                 {
                     TileInfo& t = (*m_tileData)[tileId];
