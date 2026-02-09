@@ -170,19 +170,7 @@ Physics::Physics(Actor* actor, Level* level)
         m_actorBody = nullptr;
         return;
     }
-    // Tile-Formen aus RulesTiles.xml (für Halb- und Diagonal-Tiles)
-    std::string resPath = m_level->getResPath();
-    if (!resPath.empty() && resPath.back() != '/' && resPath.back() != '\\')
-        resPath += "/";
-    std::string rulesPath = resPath + "tileDefinition/RulesTiles.xml";
-    m_tileData = jumper::ParseXMLData(rulesPath);
-    if (m_tileData.empty())
-    {
-        m_tileData = jumper::ParseXMLData("res/tileDefinition/RulesTiles.xml");
-    }
-    std::cout << "[Physics] Tile shapes: " << m_tileData.size()
-              << " (" << (m_tileData.empty() ? "using full boxes" : rulesPath) << ")" << std::endl;
-
+    
     // Box2D-Gravitation: Level hat gravity_y=400 (nach unten), Box2D Y+ ist oben
     const LevelForces& lf = m_level->forces();
     b2Vec2 gravity(0.0f, -lf.gravity().y() / PIXELS_PER_METER);
@@ -278,9 +266,11 @@ void Physics::buildLevelBodies()
             float py = gy * th + TILE_Y_OFFSET;
 
             std::string shapeType = "full";
-            auto it = m_tileData.find(tileId);
-            if (it != m_tileData.end())
+            auto it = m_level->tileData()->find(tileId);
+            if (it != m_level->tileData()->end())
+            {
                 shapeType = it->second.shape;
+            }
 
             b2Vec2 center;
             b2PolygonShape shape;
@@ -357,7 +347,9 @@ void Physics::buildLevelBodies()
 void Physics::queueBodyForDestruction(b2Body* body)
 {
     if (body)
+    {
         m_bodiesToDestroy.push_back(body);
+    }
 }
 
 void Physics::update()
@@ -369,7 +361,9 @@ void Physics::update()
 
     // Bodies zerstören, die im Kontakt-Callback (z.B. Collectibles) markiert wurden
     for (b2Body* body : m_bodiesToDestroy)
+    {
         m_world->DestroyBody(body);
+    }
     m_bodiesToDestroy.clear();
 
     unsigned int currentTicks = SDL_GetTicks();
@@ -433,7 +427,10 @@ void Physics::update()
 
 void Physics::applyPlayerInput(double dt)
 {
-    if (!m_actorBody || !m_actor) return;
+    if (!m_actorBody || !m_actor)
+    {
+        return;
+    }
 
     // Horizontale Bewegung
     float moveX = m_actor->forces().moveForce().x() * static_cast<float>(dt) / PIXELS_PER_METER * 10.5f;
@@ -457,14 +454,20 @@ void Physics::applyPlayerInput(double dt)
     vel = m_actorBody->GetLinearVelocity();
     float maxFall = m_actor->forces().maxFallVelocity() / PIXELS_PER_METER;
     float maxJump = static_cast<float>(m_actor->forces().maxJumpVelocity()) / PIXELS_PER_METER;
-    if (maxJump < 13.0f) maxJump = 13.0f;
+    if (maxJump < 13.0f)
+    {
+        maxJump = 13.0f;
+    }
     vel.y = b2Clamp(vel.y, -maxFall, maxJump);
     m_actorBody->SetLinearVelocity(vel);
 }
 
 void Physics::enforceCameraBounds()
 {
-    if (!m_level || !m_actor) return;
+    if (!m_level || !m_actor)
+    {
+        return;
+    }
 
     const Camera& camera = m_level->getCamera();
     int cameraRight = camera.x() + camera.width();
@@ -475,14 +478,18 @@ void Physics::enforceCameraBounds()
         m_actor->setWorldPosition(Vector2f(cameraRight - m_actor->w(), pos.y()));
         m_actor->velocity().setX(0);
         if (m_actorBody)
+        {
             m_actorBody->SetLinearVelocity(b2Vec2(0, m_actorBody->GetLinearVelocity().y));
+        }
     }
     if (pos.x() < 0)
     {
         m_actor->setWorldPosition(Vector2f(0, pos.y()));
         m_actor->velocity().setX(0);
         if (m_actorBody)
+        {
             m_actorBody->SetLinearVelocity(b2Vec2(0, m_actorBody->GetLinearVelocity().y));
+        }
     }
 
     if (m_actorBody)
@@ -496,7 +503,10 @@ void Physics::enforceCameraBounds()
 
 void Physics::applySpringLaunch(float factor)
 {
-    if (!m_actorBody || !m_actor) return;
+    if (!m_actorBody || !m_actor)
+    {
+        return;
+    }
     float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f * factor;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
     std::cout << "[Spring] applySpringLaunch factor=" << factor << " impulse=" << jumpImpulse << std::endl;
@@ -504,7 +514,10 @@ void Physics::applySpringLaunch(float factor)
 
 void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& actorCenter)
 {
-    if (!m_actorBody) return;
+    if (!m_actorBody)
+    {
+        return;
+    }
 
     // Diagonal nach oben wegschleudern, horizontal weg von der Falle
     float dx = actorCenter.x - tileCenter.x;
@@ -519,7 +532,10 @@ void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& a
 
 void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 {
-    if (!m_actorBody || !m_actor) return;
+    if (!m_actorBody || !m_actor)
+    {
+        return;
+    }
 
     Vector2f actorCenter(m_actor->worldPosition().x() + m_actor->w() / 2.0f,
                          m_actor->worldPosition().y() + m_actor->h() / 2.0f);
@@ -538,7 +554,7 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 
 std::pair<std::string, std::string> Physics::getTileData(int tileId)
 {
-    const TileInfo& t = m_tileData[tileId];
+    const TileInfo& t = (*m_level->tileData())[tileId];
     return { t.name, t.type };
 }
 

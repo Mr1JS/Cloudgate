@@ -12,7 +12,6 @@
 #include "game/include/Level.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Actor.hpp"
-#include "game/include/Util.hpp"
 #include "game/include/Physics.hpp"
 #include "game/include/LevelParser.hpp"
 #include "game/include/Monster.hpp"
@@ -37,16 +36,34 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     : StaticRenderable(mainWindow),
       m_mainWindow(mainWindow),
       m_camera(322, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
-      m_layers(&m_camera)
+      m_layers(&m_camera),
+      m_doors{}
 {
     m_physics         = 0;
     m_actor           = 0;
     m_tiles           = 0;
+    m_tileData        = 0;
     m_goalType        = GOAL_NONE;
     m_goalTargetValue = 0;
     m_goalState       = GOALSTATE_NONE;
 
     m_stateController = new StateController(mainWindow, this, filename);
+
+    // Tile-Formen aus RulesTiles.xml (für Halb- und Diagonal-Tiles)
+    std::string resPath = m_resPath;
+    if (!resPath.empty() && resPath.back() != '/' && resPath.back() != '\\')
+    {
+        resPath += "/";
+    }
+    std::string rulesPath = resPath + "tileDefinition/RulesTiles.xml";
+    std::map<int, jumper::TileInfo> tileData = jumper::ParseXMLData(rulesPath);
+    if (tileData.empty())
+    {
+        tileData = jumper::ParseXMLData("res/tileDefinition/RulesTiles.xml");
+    }
+    m_tileData = &tileData;
+    std::cout << "[Level] Tile shapes: " << m_tileData->size()
+            << " (" << (m_tileData->empty() ? "using full boxes" : rulesPath) << ")" << std::endl;
 
     // Setup level attributes from config file
     LevelParser p(filename, this, m_mainWindow);
@@ -205,6 +222,35 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
     {
         m_tiles = tiles;
         m_layers.addRenderable(tiles, layer);
+
+        // get door tile coordinates
+        TileSetRepresentation* rep = m_tiles->tiles();
+        
+        int tileId = 0;
+        int doorCount = 0;
+        for (int gx = 0; gx < rep->width(); gx++)
+        {
+            for (int gy = 0; gy < rep->height(); gy++)
+            {
+                tileId = rep->get(gx, gy);
+                if (tileId != -1)
+                {
+                    TileInfo& t = (*m_tileData)[tileId];
+                    if (t.type == "door" || t.type == "closed_door")
+                    {
+                        doorCount++;
+                        m_doors.push_back(std::pair(gx, gy));
+                        std::cout << "Door " << doorCount << " found at " << gx << "/" << gy << ":" << std::endl
+                            << "tileId: " << tileId << std::endl
+                            << "Name: " << t.name << std::endl
+                            << "Type: " << t.type << std::endl
+                            << "------------------" << std::endl;
+                    }
+                }
+            }
+        }
+        std::cout << "Number of doors: " << doorCount << std::endl;
+        doorCount = 0;
     }
 }
 
@@ -257,8 +303,8 @@ void Level::update(const Uint8* keystates)
     // Berechne delta time (vereinfacht: 1/60 Sekunden bei 60 FPS)
     double dt = 1.0 / 60.0;
     if (!m_stateController->isPaused())
-    {
-        m_camera.update(dt);
+{
+            m_camera.update(dt);
     
         if(m_physics)
         {
@@ -320,7 +366,7 @@ void Level::update(const Uint8* keystates)
             std::cout << "Pausing game" << std::endl;
             m_stateController->stop();
         }
-    }
+        }
 }
 
 TileSetRepresentation* Level::tiles()
@@ -330,6 +376,11 @@ TileSetRepresentation* Level::tiles()
         return m_tiles->tiles();
     }
     return nullptr;
+}
+
+std::map<int, TileInfo>* Level::tileData()
+{
+    return m_tileData;
 }
 
 void Level::updateActor(const Uint8* keystates)
@@ -437,7 +488,8 @@ bool Level::isGameOver() const
     return isActorOutsideCamera() || m_goalState == GOALSTATE_GAME_OVER;
 }
 
-GoalState Level::checkAndUpdateGoalState() {
+GoalState Level::checkAndUpdateGoalState()
+{
     // if we already won or lost, there's no need to check for anything anmore
     switch (m_goalState)
     {
@@ -462,7 +514,9 @@ GoalState Level::checkAndUpdateGoalState() {
 
     case GOAL_COINS:
         if (m_stateController->getCoins() >= m_goalTargetValue)
+        {
             state = GOALSTATE_WINNABLE;
+        }
         break;
 
     default:
@@ -509,6 +563,11 @@ Level::~Level()
     if (m_stateController)
     {
         delete m_stateController;
+    }
+
+    if (m_tileData)
+    {
+        delete m_tileData;
     }
 }
 

@@ -18,11 +18,14 @@
 #include "MainWindow.hpp"
 #include "Camera.hpp"
 #include "TileSet.hpp"
+#include "Util.hpp"
 #include "LevelForces.hpp"
 #include "StateController.hpp"
 #include "Monster.hpp"
 
 #include <vector>
+#include <map>
+#include <list>
 
 namespace jumper
 {
@@ -89,6 +92,9 @@ public:
     /// Returns a pointer to the tile set representation
     TileSetRepresentation* tiles();
 
+    /// Returns a map with tile data read from RulesTiles.xml
+    std::map<int, TileInfo>* tileData();
+
     const Camera& getCamera();
 
     /// Checks if actor is outside camera bounds (for game over)
@@ -151,6 +157,8 @@ public:
 
 private:
 
+    void updateEverything(const Uint8* keystates, double dt);
+
     /// Updates the actor accordint to the given keyboard states
     void updateActor(const Uint8* keystates);
 
@@ -170,6 +178,9 @@ private:
 
     /// A tile array
     TileSet*				m_tiles;
+
+    /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
+    std::map<int, TileInfo>* m_tileData;
 
     /// The physics engine
     Physics*                m_physics;
@@ -194,6 +205,8 @@ private:
 
     /// Whether player has met the goal requirements, or not, or failed, or finished the level
     GoalState               m_goalState;
+
+    std::list<std::pair<int, int>>          m_doors;
 
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";

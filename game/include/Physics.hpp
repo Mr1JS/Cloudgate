@@ -124,8 +124,6 @@ private:
 
     /// Y-Offset der Tile-Welt in Pixel
     static constexpr float  TILE_Y_OFFSET = 600.0f;
-    /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
-    std::map<int, TileInfo> m_tileData;
 
     /// Bodies, die nach dem Kontakt-Callback zerstört werden (z.B. Collectibles)
     std::vector<b2Body*> m_bodiesToDestroy;
