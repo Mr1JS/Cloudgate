@@ -161,8 +161,6 @@ public:
 
 private:
 
-    void updateEverything(const Uint8* keystates, double dt);
-
     /// Updates the actor accordint to the given keyboard states
     void updateActor(const Uint8* keystates);
 
