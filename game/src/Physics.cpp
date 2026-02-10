@@ -593,7 +593,9 @@ void Physics::update()
 
     // Neue Bodies für ersetzte Tiles anlegen (z.B. random-Box → jumpdown/red_potion)
     for (const auto& p : m_tilesToCreateBodyFor)
+    {
         createBodyForTile(p.first, p.second);
+    }
     m_tilesToCreateBodyFor.clear();
 
     unsigned int currentTicks = SDL_GetTicks();

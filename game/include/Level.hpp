@@ -210,6 +210,12 @@ private:
 
     std::list<std::pair<int, int>>          m_doors;
 
+    /// ids of door open tiles
+    std::pair<int, int>     m_door_open;
+
+    /// ids of door closed tiles
+    std::pair<int, int>     m_door_closed;
+
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";
 

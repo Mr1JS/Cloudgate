@@ -37,7 +37,9 @@ Level::Level(MainWindow* mainWindow, std::string filename)
       m_mainWindow(mainWindow),
       m_camera(322, 1000, mainWindow->w(), mainWindow->h()),  // Kamera weiter rechts und weiter unten
       m_layers(&m_camera),
-      m_doors{}
+      m_doors{},
+      m_door_open(-1, -1),
+      m_door_closed(-1, -1)
 {
     m_physics         = 0;
     m_actor           = 0;
@@ -278,7 +280,7 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
         m_tiles = tiles;
         m_layers.addRenderable(tiles, layer);
 
-        // get door tile coordinates
+        // Get level tiles
         TileSetRepresentation* tileRep = m_tiles->tiles();
         
         int tileId = 0;
@@ -287,20 +289,49 @@ void Level::addLevelTiles(TileSet *tiles, int layer)
         {
             for (int gy = 0; gy < tileRep->height(); gy++)
             {
+                // get tileId at x/y
                 // apparently the returned value differs by 1, so we need to do +1 to get tileId 
                 tileId = tileRep->get(gx, gy) -1;
                 if (tileId != -1)
                 {
+                    // what tile are we actually working with?
                     TileInfo& t = (*m_tileData)[tileId];
                     if (t.type == "door" || t.type == "closed_door")
                     {
                         doorCount++;
+
+                        // remember door coordinates for later
                         m_doors.push_back(std::pair(gx, gy));
                         std::cout << "Door " << doorCount << " found at " << gx << "/" << gy << ":" << std::endl
                             << "tileId: " << tileId << std::endl
                             << "Name: " << t.name << std::endl
                             << "Type: " << t.type << std::endl
                             << "------------------" << std::endl;
+                        
+                        // remember door ids for later
+                        if (t.type == "door")
+                        {
+                            if (m_door_open.first == -1)
+                            {
+                                m_door_open.first = tileId;
+                            }
+                            else if (m_door_open.second == -1)
+                            {
+                                m_door_open.second = tileId;
+                            }
+                        }
+                        else if (t.type == "closed_door")
+                        {
+                            if (m_door_closed.first == -1)
+                            {
+                                m_door_closed.first = tileId;
+                            }
+                            else if (m_door_closed.second == -1)
+                            {
+                                m_door_closed.second = tileId;
+                            }
+                        }
+
                     }
                 }
             }
@@ -603,6 +634,41 @@ GoalState Level::checkAndUpdateGoalState()
     }
 
     m_goalState = state;
+
+    bool first = true;
+    std::string typeToReplace = "door_closed";
+    int doorTop = m_door_open.first;
+    int doorBottom = m_door_open.second;
+    if (m_goalState == GOALSTATE_NONE || GOALSTATE_GAME_OVER)
+    {
+        typeToReplace = "door"; 
+        doorTop = m_door_closed.first;
+        doorBottom = m_door_closed.second;
+    }
+
+    // check and replace doors
+    for (auto it : m_doors)
+    {
+        int tileId = m_tiles->tiles()->get(it.first, it.second);
+        TileInfo& t = (*m_tileData)[tileId];
+        
+        if (t.type == typeToReplace)
+        {
+            if (first)
+            {
+                setTileAt(it.first, it.second, doorTop);
+            }
+            else
+            {
+                setTileAt(it.first, it.second, m_door_open.second);
+            }
+
+            // if we replaced the top door part, we'll replace the bottom one next, so we switch between them
+            first = !first;
+        }
+
+    }
+
 
     return m_goalState;
 }
