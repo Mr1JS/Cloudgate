@@ -131,6 +131,9 @@ public:
     /// @param targetValue value to meet for goal type, if necessary
     void setGoalCondition(int type, int targetValue);
 
+    /// Aktueller Zielmodus (z.B. GOAL_COINS)
+    GoalType goalType() const { return m_goalType; }
+
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
     

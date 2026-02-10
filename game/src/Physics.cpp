@@ -21,6 +21,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <set>
 
 namespace jumper {
 
@@ -66,7 +67,7 @@ void ContactListener::BeginContact(b2Contact* contact)
     std::string tileType = m_physics->getTileData(tileId).second;
 
     // Wandkontakt für feste Tiles (verhindert Hängen/Zittern an Wänden)
-    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion" && tileType != "green_potion" && tileType != "random")
+    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion" && tileType != "green_potion" && tileType != "random" && tileType != "door")
     {
         b2WorldManifold wm;
         contact->GetWorldManifold(&wm);
@@ -285,15 +286,44 @@ void ContactListener::BeginContact(b2Contact* contact)
 
 void ContactListener::EndContact(b2Contact* contact)
 {
-    b2Body* bodyA = contact->GetFixtureA()->GetBody();
-    b2Body* bodyB = contact->GetFixtureB()->GetBody();
+    b2Fixture* fa = contact->GetFixtureA();
+    b2Fixture* fb = contact->GetFixtureB();
+    b2Body* bodyA = fa->GetBody();
+    b2Body* bodyB = fb->GetBody();
+
     b2Body* actorBody = m_physics->getActorBody();
-    if (bodyA != actorBody && bodyB != actorBody)
+    b2Fixture* tileFixture = nullptr;
+    b2Body* tileBody = nullptr;
+
+    if (bodyA == actorBody)
+    {
+        tileFixture = fb;
+        tileBody = bodyB;
+    }
+    else if (bodyB == actorBody)
+    {
+        tileFixture = fa;
+        tileBody = bodyA;
+    }
+    else
+    {
         return;
-    b2WorldManifold wm;
-    contact->GetWorldManifold(&wm);
-    float nx = (bodyA == actorBody) ? wm.normal.x : -wm.normal.x;
-    m_physics->removeWallContact(nx);
+    }
+
+    int tileId = static_cast<int>(tileFixture->GetUserData().pointer);
+    if (tileId < 0) return;
+    (void)tileBody;
+    std::string tileType = m_physics->getTileData(tileId).second;
+
+    // Nur für feste Tiles entfernen (symmetrisch zu BeginContact)
+    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion"
+        && tileType != "green_potion" && tileType != "random" && tileType != "door")
+    {
+        b2WorldManifold wm;
+        contact->GetWorldManifold(&wm);
+        float nx = (bodyA == actorBody) ? wm.normal.x : -wm.normal.x;
+        m_physics->removeWallContact(nx);
+    }
 }
 
 // --- Physics ---
@@ -435,6 +465,10 @@ void Physics::buildLevelBodies()
             b2FixtureDef fixtureDef;
             fixtureDef.friction = 0.05f;   // Keine Reibung an Tiles → Actor bleibt nicht an Kanten hängen
             fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
+            // Offene Tür soll passierbar sein: Sensor (Contact bleibt aktiv)
+            auto itType = m_tileData.find(tileId);
+            if (itType != m_tileData.end() && itType->second.type == "door")
+                fixtureDef.isSensor = true;
 
             if (shapeType == "half_bottom")
             {
@@ -542,6 +576,9 @@ void Physics::createBodyForTile(int gx, int gy)
     b2FixtureDef fixtureDef;
     fixtureDef.friction = 0.0f;
     fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
+    // Offene Tür soll passierbar sein: Sensor
+    if (it != m_tileData.end() && it->second.type == "door")
+        fixtureDef.isSensor = true;
 
     if (shapeType == "half_bottom")
     {
@@ -700,6 +737,80 @@ void Physics::update()
     }
 
     enforceCameraBounds();
+
+    // Geschlossene Türen (closed_door) öffnen:
+    // - Standard: wenn Spieler in die Nähe kommt
+    // - Coin-Modus: sobald genug Coins gesammelt wurden → alle Türen öffnen, ohne Annähern
+    const float DOOR_OPEN_DISTANCE = 100.0f;  // Pixel
+    const int tileW = m_tiles->tileWidth();
+    const int tileH = m_tiles->tileHeight();
+    Vector2f actorPos = m_actor->worldPosition();
+    float ax = actorPos.x() + m_actor->w() / 2.0f;
+    float ay = actorPos.y() + m_actor->h() / 2.0f;
+    bool openDoorsByCoins = false;
+    if (m_level && m_level->goalType() == GOAL_COINS)
+        openDoorsByCoins = (m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE);
+
+    std::set<std::pair<int, int>> doorsToOpen;
+    for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
+    {
+        if (b->GetType() != b2_staticBody || b == m_actorBody)
+            continue;
+        uintptr_t posData = b->GetUserData().pointer;
+        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+        int gy = static_cast<int>(posData & 0xFFFFu);
+        int tileId = m_tiles->get(gx, gy) - 1;
+        if (tileId < 0) continue;
+        std::string tileType = getTileData(tileId).second;
+        if (tileType != "closed_door") continue;
+
+        int topGx, topGy;
+        if (tileId == 129) { topGx = gx; topGy = gy; }       // Door Closed Top
+        else if (tileId == 130) { topGx = gx; topGy = gy - 1; }  // Door Closed Mid
+        else continue;
+        if (topGy < 0 || topGy + 1 >= m_tiles->height()) continue;
+
+        if (openDoorsByCoins)
+        {
+            doorsToOpen.insert({ topGx, topGy });
+        }
+        else
+        {
+            float doorCenterX = topGx * tileW + tileW / 2.0f;
+            float doorCenterY = topGy * tileH + tileH + TILE_Y_OFFSET;  // Mitte der 2-Tile-Tür
+            float dx = ax - doorCenterX;
+            float dy = ay - doorCenterY;
+            if (dx * dx + dy * dy <= DOOR_OPEN_DISTANCE * DOOR_OPEN_DISTANCE)
+                doorsToOpen.insert({ topGx, topGy });
+        }
+    }
+
+    int openTopId = getTileIdByType("door");   // 127 (Door Open Top)
+    int openMidId = openTopId + 1;             // 128 (Door Open Mid)
+    if (openTopId >= 0 && openMidId >= 0 && m_level)
+    {
+        for (const auto& p : doorsToOpen)
+        {
+            int topGx = p.first, topGy = p.second;
+            m_level->setTileAt(topGx, topGy, openTopId + 1);
+            m_level->setTileAt(topGx, topGy + 1, openMidId + 1);
+            // Bodies sofort ersetzen (gleicher Frame), damit Kollision sofort auf „offen“ wechselt
+            std::vector<b2Body*> toDestroy;
+            for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
+            {
+                if (b->GetType() != b2_staticBody) continue;
+                uintptr_t posData = b->GetUserData().pointer;
+                int bx = static_cast<int>((posData >> 16) & 0xFFFFu);
+                int by = static_cast<int>(posData & 0xFFFFu);
+                if ((bx == topGx && by == topGy) || (bx == topGx && by == topGy + 1))
+                    toDestroy.push_back(b);
+            }
+            for (b2Body* b : toDestroy)
+                m_world->DestroyBody(b);
+            createBodyForTile(topGx, topGy);
+            createBodyForTile(topGx, topGy + 1);
+        }
+    }
 
     m_lastTicks = SDL_GetTicks();
 }
