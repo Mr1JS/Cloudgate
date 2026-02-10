@@ -90,6 +90,15 @@ private:
 
     /// speed of Camera scrolling up
     float m_scrollSpeed = 8;
+    
+    /// Boost factor when actor is too fast (in upper 50% of screen)
+    float m_speedBoostFactor = 8.0f;
+    
+    /// Remaining time for speed boost (in seconds)
+    float m_boostTimeRemaining = 0.0f;
+    
+    /// Duration of speed boost (in seconds)
+    const float m_boostDuration = 1.0f;
 };
 
 } /* namespace jumper */
