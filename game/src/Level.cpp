@@ -289,12 +289,27 @@ void Level::setTileAt(int gx, int gy, int value)
 
 void Level::update(const Uint8* keystates)
 {
-    // Update camera (automatisches Scrollen nach oben) – erst nach 5 Sekunden Verzögerung
+   // Update camera (automatisches Scrollen nach oben) – erst nach 5 Sekunden Verzögerung
     double dt = 1.0 / 60.0;
     if (!m_stateController->isPaused())
     {
         if (m_physics && m_physics->isCameraMovementEnabled())
+        {
             m_camera.update(dt);
+            // Wenn der Actor schneller nach oben ist als die Kamera: Kamera mitziehen
+            if (m_actor)
+            {
+                const int actorTopMargin = 40;
+                double actorTop = m_actor->worldPosition().y();
+                int cameraY = m_camera.y();
+                if (actorTop < cameraY + actorTopMargin)
+                {
+                    int newY = static_cast<int>(actorTop) - actorTopMargin;
+                    if (newY < 0) newY = 0;
+                    m_camera.setY(newY);
+                }
+            }
+        }
     
         if(m_physics)
         {
