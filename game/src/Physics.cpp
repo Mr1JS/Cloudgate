@@ -17,11 +17,36 @@
 #include "game/include/Util.hpp"
 
 #include <SDL.h>
-#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <set>
+#include <vector>
+
+namespace {
+
+// Hilfsfunktionen und Konstanten (nur in dieser Datei sichtbar)
+
+constexpr float DOOR_OPEN_DISTANCE = 100.0f;
+constexpr int TILE_ID_CLOSED_DOOR_TOP = 129;
+constexpr int TILE_ID_CLOSED_DOOR_MID = 130;
+constexpr int TILE_ID_WALL_NO_BREAK = 84;
+constexpr float HEAD_BUMP_NORMAL_MIN = 0.1f;
+
+inline void getTileGridFromBody(b2Body* body, int& gx, int& gy)
+{
+    uintptr_t posData = body->GetUserData().pointer;
+    gx = static_cast<int>((posData >> 16) & 0xFFFFu);
+    gy = static_cast<int>(posData & 0xFFFFu);
+}
+
+inline bool isNoWallContactType(const std::string& type)
+{
+    return type == "collectible" || type == "red_potion" || type == "blue_potion"
+        || type == "green_potion" || type == "random" || type == "door";
+}
+
+} // anonymous namespace
 
 namespace jumper {
 
@@ -67,7 +92,7 @@ void ContactListener::BeginContact(b2Contact* contact)
     std::string tileType = m_physics->getTileData(tileId).second;
 
     // Wandkontakt für feste Tiles (verhindert Hängen/Zittern an Wänden)
-    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion" && tileType != "green_potion" && tileType != "random" && tileType != "door")
+    if (!isNoWallContactType(tileType))
     {
         b2WorldManifold wm;
         contact->GetWorldManifold(&wm);
@@ -75,12 +100,12 @@ void ContactListener::BeginContact(b2Contact* contact)
         m_physics->addWallContact(nx);
     }
 
+    int gx, gy;
+    getTileGridFromBody(tileBody, gx, gy);
+
     // Collectible (Münze etc.): von Karte entfernen, Münzzähler erhöhen, Body später zerstören
     if (tileType == "collectible")
     {
-        uintptr_t posData = tileBody->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
         if (m_level)
         {
             m_level->removeTileAt(gx, gy);
@@ -96,9 +121,6 @@ void ContactListener::BeginContact(b2Contact* contact)
     // Red Potion: ein Herz hinzufügen, Tile entfernen, Body zerstören
     if (tileType == "red_potion")
     {
-        uintptr_t posData = tileBody->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
         if (m_level)
         {
             m_level->removeTileAt(gx, gy);
@@ -114,9 +136,6 @@ void ContactListener::BeginContact(b2Contact* contact)
     // Blue Potion (Super-Trank): Blinken, schneller, höher springen, 10 Sekunden unverwundbar
     if (tileType == "blue_potion")
     {
-        uintptr_t posData = tileBody->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
         if (m_level)
         {
             m_level->removeTileAt(gx, gy);
@@ -132,9 +151,6 @@ void ContactListener::BeginContact(b2Contact* contact)
     // Green Potion: 5 Sekunden lang Tiles mit dem Kopf zerstörbar (Mario-Style)
     if (tileType == "green_potion")
     {
-        uintptr_t posData = tileBody->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
         if (m_level)
         {
             m_level->removeTileAt(gx, gy);
@@ -150,7 +166,7 @@ void ContactListener::BeginContact(b2Contact* contact)
     // Green-Potion: von unten mit dem Kopf ground/platform zerstören (ohne RulesTiles zu ändern)
     // ID 84 = Wände, nicht zerstörbar
     if ((tileType == "ground" || tileType == "platform" || tileType == "breakable")
-        && tileId != 84
+        && tileId != TILE_ID_WALL_NO_BREAK
         && m_level && m_level->getStateController()
         && m_level->getStateController()->isBreakTilesModeActive())
     {
@@ -160,11 +176,8 @@ void ContactListener::BeginContact(b2Contact* contact)
         b2WorldManifold wm;
         contact->GetWorldManifold(&wm);
         float ny = (bodyA == actorBody) ? wm.normal.y : -wm.normal.y;
-        if (actorBelowTile && ny > 0.1f)
+        if (actorBelowTile && ny > HEAD_BUMP_NORMAL_MIN)
         {
-            uintptr_t posData = tileBody->GetUserData().pointer;
-            int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-            int gy = static_cast<int>(posData & 0xFFFFu);
             m_level->removeTileAt(gx, gy);
             m_physics->queueBodyForDestruction(tileBody);
             return;
@@ -176,9 +189,6 @@ void ContactListener::BeginContact(b2Contact* contact)
     // Top eine Zeile darüber (gy-1) – dann steht das Monster auf dem „Button“, nicht mit dem Kopf in der Erde.
     if (tileType == "random")
     {
-        uintptr_t posData = tileBody->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
         std::vector<int> options;
         int jumpdownId = m_physics->getTileIdByType("jumpdown");
         int redPotionId = m_physics->getTileIdByType("red_potion");
@@ -236,9 +246,6 @@ void ContactListener::BeginContact(b2Contact* contact)
     // Spring: "jumpdown" = Feder aktiv (schleudert), "jumpup" = bereits benutzt (einmal nutzbar)
     if (tileType == "jumpup" || tileType == "jumpdown")
     {
-        uintptr_t posData = tileBody->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
         int currentValue = m_level ? m_level->getTileAt(gx, gy) : 0;
         std::string currentType;
         int currentTileId = -1;
@@ -312,12 +319,10 @@ void ContactListener::EndContact(b2Contact* contact)
 
     int tileId = static_cast<int>(tileFixture->GetUserData().pointer);
     if (tileId < 0) return;
-    (void)tileBody;
     std::string tileType = m_physics->getTileData(tileId).second;
 
     // Nur für feste Tiles entfernen (symmetrisch zu BeginContact)
-    if (tileType != "collectible" && tileType != "red_potion" && tileType != "blue_potion"
-        && tileType != "green_potion" && tileType != "random" && tileType != "door")
+    if (!isNoWallContactType(tileType))
     {
         b2WorldManifold wm;
         contact->GetWorldManifold(&wm);
@@ -465,9 +470,7 @@ void Physics::buildLevelBodies()
             b2FixtureDef fixtureDef;
             fixtureDef.friction = 0.05f;   // Keine Reibung an Tiles → Actor bleibt nicht an Kanten hängen
             fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
-            // Offene Tür soll passierbar sein: Sensor (Contact bleibt aktiv)
-            auto itType = m_tileData.find(tileId);
-            if (itType != m_tileData.end() && itType->second.type == "door")
+            if (it != m_tileData.end() && it->second.type == "door")
                 fixtureDef.isSensor = true;
 
             if (shapeType == "half_bottom")
@@ -737,80 +740,7 @@ void Physics::update()
     }
 
     enforceCameraBounds();
-
-    // Geschlossene Türen (closed_door) öffnen:
-    // - Standard: wenn Spieler in die Nähe kommt
-    // - Coin-Modus: sobald genug Coins gesammelt wurden → alle Türen öffnen, ohne Annähern
-    const float DOOR_OPEN_DISTANCE = 100.0f;  // Pixel
-    const int tileW = m_tiles->tileWidth();
-    const int tileH = m_tiles->tileHeight();
-    Vector2f actorPos = m_actor->worldPosition();
-    float ax = actorPos.x() + m_actor->w() / 2.0f;
-    float ay = actorPos.y() + m_actor->h() / 2.0f;
-    bool openDoorsByCoins = false;
-    if (m_level && m_level->goalType() == GOAL_COINS)
-        openDoorsByCoins = (m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE);
-
-    std::set<std::pair<int, int>> doorsToOpen;
-    for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
-    {
-        if (b->GetType() != b2_staticBody || b == m_actorBody)
-            continue;
-        uintptr_t posData = b->GetUserData().pointer;
-        int gx = static_cast<int>((posData >> 16) & 0xFFFFu);
-        int gy = static_cast<int>(posData & 0xFFFFu);
-        int tileId = m_tiles->get(gx, gy) - 1;
-        if (tileId < 0) continue;
-        std::string tileType = getTileData(tileId).second;
-        if (tileType != "closed_door") continue;
-
-        int topGx, topGy;
-        if (tileId == 129) { topGx = gx; topGy = gy; }       // Door Closed Top
-        else if (tileId == 130) { topGx = gx; topGy = gy - 1; }  // Door Closed Mid
-        else continue;
-        if (topGy < 0 || topGy + 1 >= m_tiles->height()) continue;
-
-        if (openDoorsByCoins)
-        {
-            doorsToOpen.insert({ topGx, topGy });
-        }
-        else
-        {
-            float doorCenterX = topGx * tileW + tileW / 2.0f;
-            float doorCenterY = topGy * tileH + tileH + TILE_Y_OFFSET;  // Mitte der 2-Tile-Tür
-            float dx = ax - doorCenterX;
-            float dy = ay - doorCenterY;
-            if (dx * dx + dy * dy <= DOOR_OPEN_DISTANCE * DOOR_OPEN_DISTANCE)
-                doorsToOpen.insert({ topGx, topGy });
-        }
-    }
-
-    int openTopId = getTileIdByType("door");   // 127 (Door Open Top)
-    int openMidId = openTopId + 1;             // 128 (Door Open Mid)
-    if (openTopId >= 0 && openMidId >= 0 && m_level)
-    {
-        for (const auto& p : doorsToOpen)
-        {
-            int topGx = p.first, topGy = p.second;
-            m_level->setTileAt(topGx, topGy, openTopId + 1);
-            m_level->setTileAt(topGx, topGy + 1, openMidId + 1);
-            // Bodies sofort ersetzen (gleicher Frame), damit Kollision sofort auf „offen“ wechselt
-            std::vector<b2Body*> toDestroy;
-            for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
-            {
-                if (b->GetType() != b2_staticBody) continue;
-                uintptr_t posData = b->GetUserData().pointer;
-                int bx = static_cast<int>((posData >> 16) & 0xFFFFu);
-                int by = static_cast<int>(posData & 0xFFFFu);
-                if ((bx == topGx && by == topGy) || (bx == topGx && by == topGy + 1))
-                    toDestroy.push_back(b);
-            }
-            for (b2Body* b : toDestroy)
-                m_world->DestroyBody(b);
-            createBodyForTile(topGx, topGy);
-            createBodyForTile(topGx, topGy + 1);
-        }
-    }
+    updateDoors();
 
     m_lastTicks = SDL_GetTicks();
 }
@@ -944,6 +874,78 @@ void Physics::enforceCameraBounds()
         float cx = topLeft.x() + m_actor->w() / 2.0f;
         float cy = topLeft.y() + m_actor->h() / 2.0f;
         m_actorBody->SetTransform(toBox2D(Vector2f(cx, cy)), 0);
+    }
+}
+
+void Physics::updateDoors()
+{
+    if (!m_world || !m_actorBody || !m_actor || !m_tiles || !m_level)
+        return;
+
+    const int tileW = m_tiles->tileWidth();
+    const int tileH = m_tiles->tileHeight();
+    Vector2f actorPos = m_actor->worldPosition();
+    const float ax = actorPos.x() + m_actor->w() / 2.0f;
+    const float ay = actorPos.y() + m_actor->h() / 2.0f;
+
+    bool openDoorsByCoins = (m_level->goalType() == GOAL_COINS)
+        && (m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE);
+
+    std::set<std::pair<int, int>> doorsToOpen;
+    for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
+    {
+        if (b->GetType() != b2_staticBody || b == m_actorBody)
+            continue;
+        int gx, gy;
+        getTileGridFromBody(b, gx, gy);
+        int tileId = m_tiles->get(gx, gy) - 1;
+        if (tileId < 0) continue;
+        if (getTileData(tileId).second != "closed_door") continue;
+
+        int topGx, topGy;
+        if (tileId == TILE_ID_CLOSED_DOOR_TOP)
+            { topGx = gx; topGy = gy; }
+        else if (tileId == TILE_ID_CLOSED_DOOR_MID)
+            { topGx = gx; topGy = gy - 1; }
+        else
+            continue;
+        if (topGy < 0 || topGy + 1 >= m_tiles->height()) continue;
+
+        if (openDoorsByCoins)
+            doorsToOpen.insert({ topGx, topGy });
+        else
+        {
+            float doorCenterX = topGx * tileW + tileW / 2.0f;
+            float doorCenterY = topGy * tileH + tileH + TILE_Y_OFFSET;
+            float dx = ax - doorCenterX, dy = ay - doorCenterY;
+            if (dx * dx + dy * dy <= DOOR_OPEN_DISTANCE * DOOR_OPEN_DISTANCE)
+                doorsToOpen.insert({ topGx, topGy });
+        }
+    }
+
+    const int openTopId = getTileIdByType("door");
+    const int openMidId = openTopId + 1;
+    if (openTopId < 0 || openMidId < 0) return;
+
+    for (const auto& p : doorsToOpen)
+    {
+        int topGx = p.first, topGy = p.second;
+        m_level->setTileAt(topGx, topGy, openTopId + 1);
+        m_level->setTileAt(topGx, topGy + 1, openMidId + 1);
+
+        std::vector<b2Body*> toDestroy;
+        for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
+        {
+            if (b->GetType() != b2_staticBody) continue;
+            int bx, by;
+            getTileGridFromBody(b, bx, by);
+            if ((bx == topGx && by == topGy) || (bx == topGx && by == topGy + 1))
+                toDestroy.push_back(b);
+        }
+        for (b2Body* b : toDestroy)
+            m_world->DestroyBody(b);
+        createBodyForTile(topGx, topGy);
+        createBodyForTile(topGx, topGy + 1);
     }
 }
 

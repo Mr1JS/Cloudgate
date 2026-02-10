@@ -129,6 +129,9 @@ private:
     /// Prüft und korrigiert Kamera-Grenzen
     void enforceCameraBounds();
 
+    /// Geschlossene Türen öffnen (Nähe oder Coin-Ziel erfüllt)
+    void updateDoors();
+
     /// Der Actor im Level
     Actor*                  m_actor;
 
