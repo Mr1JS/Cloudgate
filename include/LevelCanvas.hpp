@@ -77,6 +77,8 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+    int countCoins(const QMap<QPair<int, int>, int> &map);
+    void getTilesRules();
     std::array<int, 3> getQMLValues();
     void setQMLValues(std::array<int, 3> qmlValues);
     QList<Tile> m_tiles;
@@ -103,6 +105,8 @@ private:
 
     bool m_extraTiles = false;
     int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
+
+    std::map<int, std::string>  m_tileType;
 
     // method to find if we are in the drawing area
     inline bool isFrameTile(int x, int y) const

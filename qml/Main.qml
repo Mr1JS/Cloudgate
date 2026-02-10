@@ -23,7 +23,6 @@ Window {
         }
         // check if page turns back to main page and revert the size to standard
         onCurrentItemChanged: {
-                console.log(stackView.currentItem)
                 if (stackView.currentItem === mainPageInstance) {
 
                     window.minimumWidth = 638

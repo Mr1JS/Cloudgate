@@ -18,7 +18,7 @@ class TilesetPalette : public QQuickPaintedItem
 public:
     explicit TilesetPalette(QQuickItem *parent = nullptr);
 
-    Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW = 32, int tileH = 32, int offset = 0, int endIndex = 20);
+    Q_INVOKABLE void setTileset(const QList<Tile>& tiles, int tileW = 32, int tileH = 32, int offset = 4, int endIndex = 127);
     void loadTileNames(const QString &xmlPath);
 
     int tileCount() const { return m_tiles.size(); }
@@ -34,17 +34,16 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    void extractTilesWithTransparency(const QPixmap &pixmap, int offset);
     QList<Tile> m_tiles;
     QMap<int, QString> m_tileNames; // ID -> Name mapping
     int m_tileWidth = 32;
     int m_tileHeight = 32;
-    int m_tileOffset = 0;
+    int m_tileOffset = 4;
     int m_selectedIndex = -1;
     int m_spacing = 6;
     QColor m_backgroundColor; // RGB(92, 130, 161) treated as transparent
     bool m_extraTiles = false;
-    int m_endIndex = 20; // at which point do the tiles split up between normal Tiles and extraTiles
+    int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
 };
 
 #endif // TILESETPALETTE_HPP

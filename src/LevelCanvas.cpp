@@ -30,6 +30,7 @@ LevelCanvas::LevelCanvas(QQuickItem *parent)
     : QQuickPaintedItem(parent), m_backgroundColor(92, 130, 161)
 {
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+    getTilesRules();
 }
 
 void LevelCanvas::setTileset(const QList<Tile> &tiles, int tileW, int tileH, int offset, int endIndex)
@@ -55,6 +56,20 @@ void LevelCanvas::placeTile(int tileIndex)
 {
     m_currentTileIndex = tileIndex;
     qDebug() << "Current tile set:" << tileIndex;
+}
+// get types of each tileID
+void LevelCanvas::getTilesRules()
+{
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp();
+    std::string rulesPath = appDir.absoluteFilePath("res/tileDefinition/RulesTiles.xml").toStdString();
+    std::map<int, jumper::TileInfo> tilesInfo = jumper::ParseXMLData(rulesPath);
+    // filter the types and set them in m_tileType
+    for (const auto& [tileID, tileInfo] : tilesInfo) 
+    {
+        m_tileType[tileID] = tileInfo.type;
+    }
+
 }
 
 void LevelCanvas::clearLevel()
@@ -322,14 +337,19 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     return out;
 }
 // count how many tiles have coins in them
-static int countCoins(const QMap<QPair<int, int>, int> &map)
+int LevelCanvas::countCoins(const QMap<QPair<int, int>, int> &map)
 {
     int coinsAmount = 0;
     for (auto it = map.begin(); it != map.end(); ++it)
     {
-        if (it.value() == 118)
+        // dynamic checking if tileId is a coin (allows unlimited coin variants) and we dont need to have a set id to check
+        // and make sure the value is a valid index
+        if (it.value() >= 0 && it.value() < m_tileType.size())
         {
-            coinsAmount++;
+            if (m_tileType[it.value()] == "collectible")
+            {
+                coinsAmount++;
+            }
         }
     }
 
@@ -815,9 +835,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
     ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
     ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; // switch with code from develop branch
+    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; 
     ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
-    ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
+    ts << "    <endIndex>" << m_endIndex << "</endIndex>\n";
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
 

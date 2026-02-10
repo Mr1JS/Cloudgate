@@ -62,26 +62,17 @@ void LevelEditorController::loadTileset(const QString &path)
         m_palette->loadTileNames("res/tileDefinition/RulesTiles.xml");
         qDebug() << "[LevelEditorController] Tileset loaded into palette";
     }
-
+    // get absolute path and if path is empty use level_master.xml
     QString absoluteLevelPath = path;
-    if (absoluteLevelPath.isEmpty()) {
-        QDir appDir(QCoreApplication::applicationDirPath());
-        appDir.cdUp();
-        absoluteLevelPath = appDir.absoluteFilePath("res/level.xml");
-
-        if (!QFile::exists(absoluteLevelPath)) {
-            QDir currentDir = QDir::current();
-            absoluteLevelPath = currentDir.absoluteFilePath("res/level.xml");
-        }
-    } else if (!QDir::isAbsolutePath(absoluteLevelPath)) {
-        QDir appDir(QCoreApplication::applicationDirPath());
-        appDir.cdUp();
-        absoluteLevelPath = appDir.absoluteFilePath(absoluteLevelPath);
-
-        if (!QFile::exists(absoluteLevelPath)) {
-            QDir currentDir = QDir::current();
-            absoluteLevelPath = currentDir.absoluteFilePath(path);
-        }
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp();
+    if (absoluteLevelPath.isEmpty()) 
+    {
+        absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml");
+    }
+    else
+    {
+        absoluteLevelPath = appDir.absoluteFilePath(path);
     }
 
     // get full xml path
@@ -145,6 +136,15 @@ void LevelEditorController::loadTileset(const QString &path)
                             if (ok)
                             {
                                 m_tileOffset = v;
+                            }
+                        }
+                        else if (childName == "endIndex")
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok)
+                            {
+                                m_endIndex = v;
                             }
                         }
                     }
