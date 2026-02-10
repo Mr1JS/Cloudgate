@@ -20,6 +20,19 @@ int main(int argc, char *argv[])
     // style for buttons in the qml --> Leveleditor.qml
     qputenv("QT_QUICK_CONTROLS_STYLE", QByteArray("Fusion"));
 
+#ifdef Q_OS_LINUX
+    // Lab machines often run compositor/driver combinations where threaded
+    // render loops with embedded SDL readback are unstable.
+    if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP"))
+    {
+        qputenv("QSG_RENDER_LOOP", QByteArray("basic"));
+    }
+    if (qEnvironmentVariableIsEmpty("JUMPER_SDL_SOFTWARE"))
+    {
+        qputenv("JUMPER_SDL_SOFTWARE", QByteArray("1"));
+    }
+#endif
+
     // need for rednering with SDL2 and not OpenGL
     QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
 

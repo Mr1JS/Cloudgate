@@ -90,6 +90,9 @@ private:
     /// SDL main window struct
     SDL_Window*			m_window;
 
+    /// Optional offscreen render target for deterministic readback
+    SDL_Texture*        m_offscreenTarget;
+
     /// Window width
     int					m_width;
 

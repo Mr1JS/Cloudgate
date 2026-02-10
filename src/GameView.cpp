@@ -24,6 +24,9 @@ GameView::GameView(QQuickItem *parent)
     , m_gameWidth(800)
     , m_gameHeight(600)
 {
+    // Keep painting in CPU image mode for deterministic SDL->QImage pipeline.
+    setRenderTarget(QQuickPaintedItem::Image);
+    setOpaquePainting(true);
     setAntialiasing(false);
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
@@ -104,6 +107,7 @@ void GameView::setLevelPath(const QString& path)
 
 void GameView::setPaused(bool paused)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (m_paused != paused)
     {
         m_paused = paused;
@@ -114,6 +118,7 @@ void GameView::setPaused(bool paused)
 
 void GameView::startGame()
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (m_running)
     {
         qDebug() << "Game is already running";
@@ -208,6 +213,7 @@ void GameView::startGame()
 
 void GameView::stopGame()
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running)
     {
         return;
@@ -225,6 +231,7 @@ void GameView::stopGame()
 
 void GameView::updateGame()
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow || m_paused)
     {
         // Wenn pausiert, nur repaint triggern (für statisches Bild)
@@ -300,6 +307,7 @@ void GameView::updateGame()
 
 void GameView::paint(QPainter *painter)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow)
     {
         // Draw black background
@@ -379,6 +387,7 @@ void GameView::paint(QPainter *painter)
 
 void GameView::keyPressEvent(QKeyEvent *event)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     // ESC-Taste wird in QML behandelt (nicht an SDL weitergeben)
     if (event->key() == Qt::Key_Escape) {
         // ESC wird in SecondPage.qml behandelt
@@ -411,6 +420,7 @@ void GameView::keyPressEvent(QKeyEvent *event)
 
 void GameView::keyReleaseEvent(QKeyEvent *event)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow) {
         QQuickPaintedItem::keyReleaseEvent(event);
         return;

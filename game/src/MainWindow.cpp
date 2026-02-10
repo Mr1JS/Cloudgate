@@ -29,6 +29,8 @@ namespace jumper
 
         /// Set pointer to NULL
         m_renderer = 0;
+        m_window = 0;
+        m_offscreenTarget = 0;
 
         /// Initialize SDL stuff
         initSDL();
@@ -99,6 +101,22 @@ namespace jumper
     {
         if (m_level && m_renderer)
         {
+            if (m_offscreenTarget)
+            {
+                if (SDL_SetRenderTarget(m_renderer, m_offscreenTarget) != 0)
+                {
+                    std::cout << "Failed to bind offscreen target, fallback to default target: "
+                              << SDL_GetError() << std::endl;
+                    SDL_DestroyTexture(m_offscreenTarget);
+                    m_offscreenTarget = 0;
+                    SDL_SetRenderTarget(m_renderer, NULL);
+                }
+            }
+            else
+            {
+                SDL_SetRenderTarget(m_renderer, NULL);
+            }
+
             SDL_RenderClear(m_renderer);
             m_level->render();
             // In embedded/offscreen mode GameView reads back pixels directly
@@ -144,6 +162,12 @@ namespace jumper
         {
             const char* videoDriver = SDL_GetCurrentVideoDriver();
             bool preferSoftwareRenderer = false;
+
+#ifdef __linux__
+            // Embedded + hidden SDL windows are most stable with software
+            // rendering on Linux lab/compositor setups.
+            preferSoftwareRenderer = true;
+#endif
 
             // Hidden offscreen windows + readback can be unreliable with some
             // Wayland/compositor setups. Prefer software there.
@@ -224,6 +248,21 @@ namespace jumper
 
                 // Set background color for renderer
                 SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+
+                // Create explicit offscreen render target for stable readback.
+                m_offscreenTarget = SDL_CreateTexture(
+                    m_renderer,
+                    SDL_PIXELFORMAT_ARGB8888,
+                    SDL_TEXTUREACCESS_TARGET,
+                    m_width,
+                    m_height
+                );
+
+                if (!m_offscreenTarget)
+                {
+                    std::cout << "Offscreen target texture unavailable, using default target: "
+                              << SDL_GetError() << std::endl;
+                }
             }
         }
 
@@ -238,6 +277,11 @@ namespace jumper
     void MainWindow::quitSDL()
     {
         // Destroy window and renderer
+        if (m_offscreenTarget)
+        {
+            SDL_DestroyTexture(m_offscreenTarget);
+            m_offscreenTarget = 0;
+        }
 
         if (m_renderer)
         {
