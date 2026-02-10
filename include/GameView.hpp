@@ -11,6 +11,7 @@
 #include <memory>
 #include <QString>
 #include <cstring>
+#include <mutex>
 
 // Forward declarations
 namespace jumper {
@@ -80,6 +81,7 @@ private:
     QImage m_gameImage;
     int m_gameWidth;
     int m_gameHeight;
+    mutable std::recursive_mutex m_gameMutex;
 };
 
 #endif // GAMEVIEW_HPP
