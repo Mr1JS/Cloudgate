@@ -12,6 +12,7 @@
 
 #include <SDL_image.h>
 #include <iostream>
+#include <cstring>
 #include "game/include/MovingRenderable.hpp"
 #include "game/include/Camera.hpp"
 
@@ -100,7 +101,9 @@ namespace jumper
         {
             SDL_RenderClear(m_renderer);
             m_level->render();
-            SDL_RenderPresent(m_renderer);
+            // In embedded/offscreen mode GameView reads back pixels directly
+            // from the current render target. Presenting here would invalidate
+            // the backbuffer before SDL_RenderReadPixels().
         }
     }
 
@@ -139,13 +142,48 @@ namespace jumper
         }
         else
         {
+            const char* videoDriver = SDL_GetCurrentVideoDriver();
+            bool preferSoftwareRenderer = false;
 
-            // Try hardware renderer, fallback to software if not available
-            m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-            
+            // Hidden offscreen windows + readback can be unreliable with some
+            // Wayland/compositor setups. Prefer software there.
+            if (videoDriver && std::strcmp(videoDriver, "wayland") == 0)
+            {
+                preferSoftwareRenderer = true;
+            }
+
+            // Manual override for debugging:
+            // JUMPER_SDL_SOFTWARE=1 -> force software
+            // JUMPER_SDL_SOFTWARE=0 -> allow accelerated first
+            const char* forceSoftware = SDL_getenv("JUMPER_SDL_SOFTWARE");
+            if (forceSoftware)
+            {
+                if (std::strcmp(forceSoftware, "1") == 0)
+                {
+                    preferSoftwareRenderer = true;
+                }
+                else if (std::strcmp(forceSoftware, "0") == 0)
+                {
+                    preferSoftwareRenderer = false;
+                }
+            }
+
+            if (!preferSoftwareRenderer)
+            {
+                m_renderer = SDL_CreateRenderer(
+                    m_window,
+                    -1,
+                    SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE
+                );
+            }
+
             if (m_renderer == NULL)
             {
-                std::cout << "Hardware renderer not available, using software renderer: " << SDL_GetError() << std::endl;
+                if (!preferSoftwareRenderer)
+                {
+                    std::cout << "Hardware renderer not available, using software renderer: "
+                              << SDL_GetError() << std::endl;
+                }
                 m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
             }
 
@@ -155,6 +193,12 @@ namespace jumper
             }
             else
             {
+                std::cout << "SDL video driver: "
+                          << (videoDriver ? videoDriver : "unknown")
+                          << ", prefer software renderer: "
+                          << (preferSoftwareRenderer ? "yes" : "no")
+                          << std::endl;
+
                 SDL_RendererInfo info;
                 if (SDL_GetRendererInfo(m_renderer, &info) == 0)
                 {

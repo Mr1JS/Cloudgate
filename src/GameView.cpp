@@ -327,11 +327,22 @@ void GameView::paint(QPainter *painter)
     m_gameWindow->render();
 
     // Copy SDL renderer content to QImage
-    // Create a surface to read pixels from renderer
-    int width = m_gameWidth > 0 ? m_gameWidth : 800;
-    int height = m_gameHeight > 0 ? m_gameHeight : 600;
-    SDL_Surface* surface = SDL_CreateRGBSurface(0, width, height, 32,
-                                                0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    // Use the real renderer output size (important on HiDPI / scaling setups).
+    int width = 0;
+    int height = 0;
+    if (SDL_GetRendererOutputSize(renderer, &width, &height) != 0 || width <= 0 || height <= 0)
+    {
+        width = m_gameWidth > 0 ? m_gameWidth : 800;
+        height = m_gameHeight > 0 ? m_gameHeight : 600;
+    }
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0,
+        width,
+        height,
+        32,
+        SDL_PIXELFORMAT_ARGB8888
+    );
     if (!surface) {
         painter->fillRect(boundingRect(), Qt::black);
         return;

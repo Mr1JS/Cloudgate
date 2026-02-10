@@ -83,6 +83,7 @@ void ActorSelector::setStartActor()
     // get path of master level file
     QDir appDir(QCoreApplication::applicationDirPath());
     appDir.cdUp();
+    //TODO: make sure it uses CRTP
     std::string absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml").toStdString();
     std::string actorName = jumper::getLevelActor(absoluteLevelPath);
 
