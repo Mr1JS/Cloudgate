@@ -80,7 +80,7 @@ void ActorSelector::loadActors()
 // check and set last selected character to show when clicking Character button
 void ActorSelector::setStartActor()
 {
-    // get path of master level file
+    // get path of master_level file
     QDir appDir(QCoreApplication::applicationDirPath());
     appDir.cdUp();
     std::string absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml").toStdString();

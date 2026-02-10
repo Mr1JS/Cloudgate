@@ -30,6 +30,7 @@ LevelCanvas::LevelCanvas(QQuickItem *parent)
     : QQuickPaintedItem(parent), m_backgroundColor(92, 130, 161)
 {
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+    getTilesRules();
 }
 
 void LevelCanvas::setTileset(const QList<Tile> &tiles, int tileW, int tileH, int offset, int endIndex)
@@ -55,6 +56,20 @@ void LevelCanvas::placeTile(int tileIndex)
 {
     m_currentTileIndex = tileIndex;
     qDebug() << "Current tile set:" << tileIndex;
+}
+// get types of each tileID
+void LevelCanvas::getTilesRules()
+{
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp();
+    std::string rulesPath = appDir.absoluteFilePath("res/tileDefinition/RulesTiles.xml").toStdString();
+    std::map<int, jumper::TileInfo> tilesInfo = jumper::ParseXMLData(rulesPath);
+    // filter the types and set them in m_tileType
+    for (const auto& [tileID, tileInfo] : tilesInfo) 
+    {
+        m_tileType[tileID] = tileInfo.type;
+    }
+
 }
 
 void LevelCanvas::clearLevel()
@@ -136,6 +151,24 @@ void LevelCanvas::paint(QPainter *painter)
 
             painter->drawPixmap(targetRect, m_tiles[tileIndex].pixmap, croppedSource);
         }
+
+        // player spawnpoint marked red
+        painter->setBrush(QColor(255, 0, 0, 60));
+        painter->setPen(QPen(QColor(255, 0, 0, 180), 2));
+
+        // because of the borders of the game, it doesnt start at (0|max)
+        for (int y = m_gridHeight - 3; y < m_gridHeight - 1; ++y)
+        {
+            for (int x = 1; x < 3; ++x)
+            {
+                QRect r(x * m_tileWidth,
+                        y * m_tileHeight,
+                        m_tileWidth,
+                        m_tileHeight);
+
+                painter->drawRect(r);
+            }
+        }
     }
 
     // Grid as overlay
@@ -155,6 +188,13 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
     int gridX = event->position().x() / m_tileWidth;
     int gridY = event->position().y() / m_tileHeight;
 
+    // 2x2 player spawnpoint in grid, so no placing tiles allowed
+    if (gridX >= 1 && gridX < 3 && gridY >= m_gridHeight - 3 && gridY < m_gridHeight - 1)
+    {
+        qDebug() << "Character Spawnpoint - click ignored";
+        return;
+    }
+
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {
         // Protect frame tiles
@@ -167,13 +207,13 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 
         if (m_levelData.contains(pos))
         {
-            // Right click or placing Tile on extraTile (1x2 Tile)
+            // Right click (Deleting) or placing Tile on extraTile (1x2 Tile)
             if (event->button() == Qt::RightButton || (m_levelData[pos] != m_currentTileIndex && m_levelData[pos] >= m_endIndex))
             {
                 // if extraTile
                 if (m_levelData[pos] >= m_endIndex)
                 {
-                    // is Upper or Lower Part
+                    // is Upper or Lower Part of extraTile and delete the other part too
                     if (m_levelData[pos] % 2 != m_endIndex % 2)
                     {
                         QPair<int, int> pos2(gridX, gridY - 1);
@@ -187,7 +227,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                         qDebug() << "Tile deleted at (" << gridX << "," << gridY + 1 << ")";
                     }
                 }
-
+                // remove selected part
                 m_levelData.remove(pos);
                 update();
                 qDebug() << "Tile deleted at (" << gridX << "," << gridY << ")";
@@ -208,7 +248,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 if (m_currentTileIndex % 2 != m_endIndex % 2 && gridY != 0)
                 {
                     QPair<int, int> pos2(gridX, gridY - 1);
-                    // special case: extraTile on extraTile
+                    // handle special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 != m_endIndex % 2)
@@ -223,7 +263,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 else if (m_currentTileIndex % 2 == m_endIndex % 2 && gridY != m_gridHeight - 1)
                 {
                     QPair<int, int> pos2(gridX, gridY + 1);
-                    // special case: extraTile on extraTile
+                    // handle special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 == m_endIndex % 2)
@@ -297,14 +337,19 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     return out;
 }
 // count how many tiles have coins in them
-static int countCoins(const QMap<QPair<int, int>, int> &map)
+int LevelCanvas::countCoins(const QMap<QPair<int, int>, int> &map)
 {
     int coinsAmount = 0;
     for (auto it = map.begin(); it != map.end(); ++it)
     {
-        if (it.value() == 118)
+        // dynamic checking if tileId is a coin (allows unlimited coin variants) and we dont need to have a set id to check
+        // and make sure the value is a valid index
+        if (it.value() >= 0 && it.value() < m_tileType.size())
         {
-            coinsAmount++;
+            if (m_tileType[it.value()] == "collectible")
+            {
+                coinsAmount++;
+            }
         }
     }
 
@@ -790,9 +835,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
     ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
     ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; // switch with code from develop branch
+    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; 
     ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
-    ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
+    ts << "    <endIndex>" << m_endIndex << "</endIndex>\n";
     ts << "    <layer>1</layer>\n";
     ts << "  </collision_tiles>\n";
 
