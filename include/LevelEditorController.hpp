@@ -51,6 +51,8 @@ public:
 
     // Add Rows to canvas
     Q_INVOKABLE void addRowsAbove(int rows);
+    // Remove Rows from Canvas
+    Q_INVOKABLE void removeRowsAbove(int rows);
 
     // Property getters
     QString currentTilesetPath() const { return m_tilesetPath; }

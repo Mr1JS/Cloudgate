@@ -454,3 +454,13 @@ void LevelEditorController::addRowsAbove(int rows)
 
     m_canvas->addRowsAbove(rows);
 }
+
+
+// Remove Rows from canvas
+void LevelEditorController::removeRowsAbove(int rows)
+{
+    if (!m_canvas || rows <= 0)
+        return;
+
+    m_canvas->removeRowsAbove(rows);
+}

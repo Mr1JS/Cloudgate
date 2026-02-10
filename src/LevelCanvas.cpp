@@ -1343,3 +1343,34 @@ void LevelCanvas::addRowsAbove(int rows)
 
     qDebug() << "[LevelCanvas] Added" << rows << "rows ABOVE. New height:" << m_gridHeight;
 }
+
+
+void LevelCanvas::removeRowsAbove(int rows)
+{
+    if (rows <= 0 || m_gridHeight <= 25)
+        return;
+
+    // Max 5 rows entfernen, aber mindestens 25 behalten
+    int actualRows = qMin(rows, m_gridHeight - 25);
+    if (actualRows <= 0)
+        return;
+
+    // Move tiles up
+    QMap<QPair<int, int>, int> newData;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    {
+        int newY = it.key().second - actualRows;
+        if (newY >= 0)
+        {
+            newData.insert(qMakePair(it.key().first, newY), it.value());
+        }
+    }
+
+    m_levelData = newData;
+    m_gridHeight -= actualRows;
+    setHeight(m_gridHeight * m_tileHeight);
+    emit gridHeightChanged();
+    update();
+
+    qDebug() << "[LevelCanvas] Removed" << actualRows << "rows ABOVE. New height:" << m_gridHeight;
+}

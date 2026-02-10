@@ -40,6 +40,8 @@ public:
     Q_INVOKABLE void setQML(QObject *root);
     // Add Rows to Canvas
     Q_INVOKABLE void addRowsAbove(int rows);
+    // Remove Rows from Canvas
+    Q_INVOKABLE void removeRowsAbove(int rows);
 
     int gridWidth() const { return m_gridWidth; }
     void setGridWidth(int w)
