@@ -745,6 +745,16 @@ void Physics::update()
     m_lastTicks = SDL_GetTicks();
 }
 
+b2Body* Physics::getActorBody() const
+{
+    return m_actorBody;
+}
+
+unsigned int Physics::getLastHazardDamageTicks() const
+{
+    return m_lastHazardDamageTicks;
+}
+
 bool Physics::canTakeDamage() const
 {
     if (SDL_GetTicks() < m_invincibleUntilTicks)

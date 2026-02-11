@@ -131,6 +131,38 @@ namespace jumper
         SDL_DestroyTexture(m_texture);
     }
 
+    TileSetRepresentation* TileSet::tiles()
+    {
+        return m_tiles;
+    }
+
+
+    SDL_Texture* TileSet::texture() const
+    {
+        return m_texture;
+    }
+    
+    int TileSet::tileWidth() const
+    {
+        return m_tileWidth;
+    }
+    
+    int TileSet::tileHeight() const
+    {
+        return m_tileHeight;
+    }
+    
+    int TileSet::tilesPerRow() const
+    {
+        return m_tilesPerRow;
+    }
+    
+    int TileSet::tileOffset() const
+    {
+        return m_tileOffset;
+    }
+    
+
     int TileSet::w()
     {
         return m_arrayWidth * m_tileWidth;

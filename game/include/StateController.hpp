@@ -57,7 +57,7 @@ public:
     /// @param number (optional) amount of hp to decrease (default: 1)
     void decrementHp(int number = 1);
 
-    /// Erhöht HP um number (max. MAX_HEARTS). Z.B. für red_potion.
+    /// Increase hp by given number (max. MAX_HEARTS). E.g. for red_potion.
     void incrementHp(int number = 1);
 
     /// Reset hp to default value
@@ -69,6 +69,7 @@ public:
     /// Returns current player HP
     int getHp() const;
 
+    /// returns current runtime in ms
     unsigned int getRuntime() const;
 
     /// Increase coin count
@@ -77,22 +78,24 @@ public:
     /// Get current coin count
     int getCoins() const;
 
-    /// Aktiviert Super-Trank (blue_potion): 10 Sekunden Boost + Unverwundbarkeit
+    /// Activate super potion (blue_potion): 10 seconds boost + invincibility
     void activateSuperPotion();
 
-    /// Prüft ob Super-Trank aktiv ist
+    /// Return whether super potion is active
     bool isSuperPotionActive() const;
 
-    /// Aktiviert Grün-Trank (green_potion): 5 Sekunden lang Tiles mit dem Kopf zerstörbar (Mario-Style)
+    /// Activates green potion (green_potion): tiles can be destroyed with head for 5 seconds (Mario-style)
     void activateBreakTilesMode();
 
-    /// Prüft ob Break-Tiles-Modus aktiv ist
+    /// Returns whether Break-Tiles-Mode is active
     bool isBreakTilesModeActive() const;
 
     /// Destructor of class StateController
     virtual ~StateController();
 
 private:
+
+    /// reset position of heart graphics
     void resetHeartPosition();
 
     // updates runtime visuals
@@ -137,10 +140,10 @@ private:
     /// Coins collected in level
     int m_coins;
 
-    /// Super-Trank aktiv bis zu diesem Zeitpunkt (SDL_GetTicks), 0 = nicht aktiv
+    /// time until end of super potion (SDL_GetTicks), 0 = not active
     unsigned int m_superPotionUntilTicks;
 
-    /// Break-Tiles-Modus (green_potion) aktiv bis zu diesem Zeitpunkt (SDL_GetTicks)
+    /// time until end of Break-Tiles mode (green_potion), 0 = not active
     unsigned int m_breakTilesUntilTicks;
 };
 

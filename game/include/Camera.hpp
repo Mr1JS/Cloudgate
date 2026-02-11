@@ -43,6 +43,7 @@ public:
      */
     void moveY(int pixels);
 
+    /// set camera y-position
     void setY(int pixels);
 
     Vector<int> getPosition() const;

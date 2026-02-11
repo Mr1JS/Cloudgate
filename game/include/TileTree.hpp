@@ -21,6 +21,7 @@
 namespace jumper
 {
 
+/// Flag for split axis
 enum SplitAxis
 {
     HORIZONTAL,
@@ -33,7 +34,7 @@ enum SplitAxis
 template<typename T>
 class TileTree : public TileSetRepresentation
 {
-public:
+^public:
 
     /**
      * @brief	Internal helper class to allow [][] access to the tiles
@@ -41,6 +42,7 @@ public:
     class IndexHelper: public TileIndexProxy
     {
     public:
+        /// Constructor with pointer to parent tree and Y position of access
         IndexHelper(TileTree* parent, int y) : m_parent(parent), m_y(y) {}
 
         /// Parent tree. Used to access the tiles via \ref get

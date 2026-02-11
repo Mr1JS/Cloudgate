@@ -139,7 +139,10 @@ private:
 template<typename T>
 Vector<T> operator* (T s, const Vector<T>& v);
 
+/// Rename of Vector<double>
 typedef Vector<double>  Vector2f;
+
+/// Representation of a pixel as Vector<int>
 typedef Vector<int>     Pixel;
 
 } /* namespace jumper */

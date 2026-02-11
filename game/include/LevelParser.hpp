@@ -34,6 +34,9 @@ class LevelParser
 public:
     using LevelHdf5IO = BaseHdf5IO<hdf5features::TextureIO, hdf5features::TileSetIO>;
 
+    /**
+     * Parse a level from the given file and set up the given level accordingly
+     */
     LevelParser(std::string file, Level* level, MainWindow* mw);
 
 private:

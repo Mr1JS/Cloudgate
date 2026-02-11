@@ -114,6 +114,7 @@ set(GAME_SOURCES
     game/include/StateController.hpp
     game/include/TileArray.hpp
     game/include/TileSet.hpp
+    game/include/TileSetRepresentation.hpp
     game/include/Util.hpp
     game/io/BaseHdf5IO.hpp
     game/io/Hdf5Util.hpp
@@ -138,6 +139,7 @@ set(GAME_SOURCES
     game/src/StateController.cpp
     game/src/TileArray.cpp
     game/src/TileSet.cpp
+    game/src/TileSetRepresentation.cpp
     game/src/Util.cpp
 )
 

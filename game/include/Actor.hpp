@@ -74,7 +74,7 @@ public:
     bool jumping();
 
     /**
-     * Retruns the pixel position at which jumping was started
+     * Returns the pixel position at which jumping was started
      */
     int jumpStart();
 
@@ -84,12 +84,12 @@ public:
     /// Returns weather the actor wants to start to jump
     bool wantsToJump();
 
-    /// Setzt Blink-Status: blink = Invincibility (rötlich), superPotion = bläulich, breakTilesMode = grünlich
+    /// Set Blink-Status: blink = Invincibility (red), superPotion = blue, breakTilesMode = green
     void setBlinking(bool blink, bool superPotion = false, bool breakTilesMode = false);
 
 protected:
 
-    /// Retruns the time elapsed since the last call of this function
+    /// Returns the time elapsed since the last call of this function
     float getElapsedTime();
 
     /// True if the player touches ground
@@ -107,15 +107,20 @@ protected:
     /// The physical properties of the player
     ActorForces          m_forces;
 
-    /// Blink-Status (für Unverwundbarkeit)
+    /// Blink-Status (for Invincibility)
     bool                 m_blinking;
-    /// Super-Trank aktiv (bläuliches Blinken)
+
+    /// Super-Potion active (blinking blue)
     bool                 m_superPotionActive;
-    /// Green-Potion / Break-Tiles aktiv (grünes Blinken)
+    
+    /// Green-Potion / Break-Tiles active (blinking green)
     bool                 m_breakTilesModeActive;
+    
     /// Salto-Rotation in Grad (nur bei Super-Trank in der Luft)
     double               m_saltoRotation;
-    unsigned int        m_lastSaltoTicks;
+    
+    /// last time a salto was performed in ticks
+    unsigned int         m_lastSaltoTicks;
 
 };
 

@@ -47,8 +47,6 @@ protected:
 
     // value of the digit
     unsigned int m_value;
-
-
 };
 
 } /* namespace jumper */
