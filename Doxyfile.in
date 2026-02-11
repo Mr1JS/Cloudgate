@@ -1,0 +1,72 @@
+# Doxyfile for Cloudgate Game Project
+
+PROJECT_NAME           = "Cloudgate Game"
+PROJECT_NUMBER         = @PROJECT_VERSION@
+PROJECT_BRIEF          = "A 2D game engine with Qt/QML interface and SDL2 rendering"
+
+OUTPUT_DIRECTORY       = @DOXYGEN_OUTPUT_DIR@
+INPUT                  = @DOXYGEN_INPUT_DIR@
+RECURSIVE              = YES
+FILE_PATTERNS          = *.cpp *.hpp *.h *.qml
+
+# Extract everything automatically (even without special comments)
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+
+# Generate HTML documentation
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+
+# No LaTeX/PDF
+GENERATE_LATEX         = NO
+
+# Enable Graphviz diagrams if available
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+CLASS_DIAGRAMS         = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+UML_LOOK               = YES
+DOT_IMAGE_FORMAT       = svg
+
+# Source code browsing
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = NO
+
+# Cross-referencing
+REFERENCES_RELATION    = YES
+REFERENCED_BY_RELATION = YES
+
+# Create alphabetical index
+ALPHABETICAL_INDEX     = YES
+
+# Exclude build directories and auto-generated files
+EXCLUDE_PATTERNS       = */build/* \
+                         */CMakeFiles/* \
+                         */.git/* \
+                         *_autogen/* \
+                         *_qmltyperegistrations.cpp
+
+# Automatically create brief descriptions from first line
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+
+# Generate tree view for easier navigation
+GENERATE_TREEVIEW      = YES
+
+# Show all members
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = YES
+SHOW_INCLUDE_FILES     = YES
+
+# Warnings
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES

@@ -87,6 +87,49 @@ cp -r ../res ./
 ./appCloudgate_game
 ```
 
+## Dokumentation
+
+Das Projekt nutzt **Doxygen** zur automatischen Generierung von API-Dokumentation.
+
+### Doxygen installieren
+
+**Windows:**
+```powershell
+choco install doxygen.install graphviz
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install doxygen graphviz
+```
+
+**macOS:**
+```bash
+brew install doxygen graphviz
+```
+
+### Dokumentation generieren
+
+```bash
+cd build
+cmake --build . --target doc
+```
+
+Die HTML-Dokumentation wird in `build/docs/html/` generiert. Öffne `build/docs/html/index.html` im Browser.
+
+### Was wird dokumentiert?
+
+Doxygen extrahiert automatisch:
+- Alle Klassen und ihre Hierarchie
+- Funktionen und Methoden mit Signaturen
+- Member-Variablen
+- Vererbungsbeziehungen
+- Call-Graphen (wer ruft welche Funktion auf)
+- Include-Abhängigkeiten
+- Klassendiagramme (UML-Style)
+
+Die Dokumentation wird automatisch generiert, auch ohne spezielle Kommentare im Code.
+
 ## Verwendung
 
 ### Hauptmenü
