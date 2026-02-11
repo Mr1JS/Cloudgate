@@ -100,49 +100,49 @@ private:
     void updateRuntime(unsigned int runtime);
 
     /// Player hp in hearts
-    int                                     m_playerHp;
+    int                                         m_playerHp;
 
     /// Current time elapsed in level, as will be displayed on screen
-    unsigned int                            m_runtime;
+    unsigned int                                m_runtime;
 
     /// Last time stored in m_timer (will be reset after a pause)
-    unsigned int                            m_lastTimer;
+    unsigned int                                m_lastTimer;
 
     /// QElapsedTimer is used to measure time elapsed since game start
-    QElapsedTimer*                          m_timer;
+    QElapsedTimer*                              m_timer;
 
     /// Whether level has started and runtime should be logged or not
-    bool                                    m_isRunning;
+    bool                                        m_isRunning;
 
     /// heart sprites
-    std::array<SDLRenderable*, MAX_HEARTS>  m_hearts;
+    std::array<SDLRenderable*, MAX_HEARTS>      m_hearts;
 
     /// width of a heart sprite - used in calculating position of the heart sprites
-    int                                     m_heartWidth;
+    int                                         m_heartWidth;
 
     /// height of a heart sprite - used in calculating position of the coin sprites
-    int                                     m_heartHeight;
+    int                                         m_heartHeight;
 
     /// sprites of the individual timer digits
-    std::array<NumberDigit*, RUNTIME_DIGITS> m_runtimeDigits;
+    std::array<NumberDigit*, RUNTIME_DIGITS>    m_runtimeDigits;
 
     /// reference to MainWindow class
-    MainWindow*                             m_mainWindow;
+    MainWindow*                                 m_mainWindow;
 
     /// reference to Level class
-    Level*                                  m_level;
+    Level*                                      m_level;
     
     /// sprites of the coin counter digits
-    std::array<NumberDigit*, COIN_DIGITS>    m_coinTextures;
+    std::array<NumberDigit*, COIN_DIGITS>       m_coinTextures;
 
     /// Coins collected in level
-    int                                     m_coins;
+    int                                         m_coins;
 
     /// time until end of super potion (SDL_GetTicks), 0 = not active
-    unsigned int                            m_superPotionUntilTicks;
+    unsigned int                                m_superPotionUntilTicks;
 
     /// time until end of Break-Tiles mode (green_potion), 0 = not active
-    unsigned int                            m_breakTilesUntilTicks;
+    unsigned int                                m_breakTilesUntilTicks;
 };
 
 } /* namespace jumper */

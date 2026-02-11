@@ -36,13 +36,15 @@ public:
     /// Renders the digits
     virtual void render() override;
 
+    /// advance to the next digit (e.g. from 5 to 6)
     virtual void nextFrame() override;
 
+    /// Set value to display for this digit. Only numbers from 0 to 9 are valid.
     void setValue(unsigned int value);
 
 protected:
 
-    // value of the digit
+    // value of the digit, will always be a number from 0-9
     unsigned int m_value;
 };
 
