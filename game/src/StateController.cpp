@@ -141,17 +141,17 @@ void StateController::updateRuntime(unsigned int runtime)
     {
         if (i > RUNTIME_DIGITS-3)
         {
-            digit = ms % 10;
+            digit = ms;
             ms /= 10;
         }
         else if (i > RUNTIME_DIGITS-5)
         {
-            digit = sec % 10;
+            digit = sec;
             sec /= 10;
         }
         else
         {
-            digit = min % 10;
+            digit = min;
             min /= 10;
         }
         m_runtimeDigits[i]->setValue(digit);
@@ -244,7 +244,7 @@ void StateController::addCoin(int coinCount)
     int j = m_coins;
     for (int i = 0; i < COIN_DIGITS; i++)
     {
-        m_coinTextures[i]->setValue(j % 10);
+        m_coinTextures[i]->setValue(j);
         j /= 10;
     }
 }

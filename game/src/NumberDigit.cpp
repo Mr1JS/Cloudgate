@@ -60,12 +60,7 @@ void NumberDigit::nextFrame()
 
 void NumberDigit::setValue(unsigned int value)
 {
-    if (value > m_numFrames)
-    {
-        //throw std::runtime_error("Illegal digit value " + std::to_string(value) + ". Can't be higher than " + std::to_string(m_numFrames));
-        return;
-    }
-    m_value = value;
+    m_value = value % m_numFrames;
 }
 
 } // namespace jumper
