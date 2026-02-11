@@ -24,7 +24,7 @@
     <frame_height>10</frame_height>
     <layer>3</layer>
   </numbers>
-  <actor texture="Wiepower">
+  <actor texture="Batonzo">
     <num_frames>2</num_frames>
     <frame_width>36</frame_width>
     <frame_height>48</frame_height>
@@ -43,6 +43,6 @@
   </level_forces>
   <goal>
     <type>1</type>
-    <value>4</value>
+    <value>2</value>
   </goal>
 </level>

@@ -250,15 +250,27 @@ QString EndlessLevelGenerator::generateLevel(int levelNumber)
     }
 
     // Münzen: bei Normal-Tür 5 Stück, bei Schlüssel-Tür 0, bei Münzen-Tür genau goalValue
-    int topPlatformRow = path.empty() ? doorY + 2 : std::min_element(path.begin(), path.end(),
-        [](const Step& a, const Step& b) { return a.row < b.row; })->row;
     int numCoins = (doorType == 0) ? 5 : (doorType == 1) ? 0 : goalValue;
-    for (int i = 0; i < numCoins; ++i) {
-        int cx = 3 + (std::rand() % (GRID_W - 6));
-        int cy = topPlatformRow - 1 + (std::rand() % std::max(1, GRID_H - topPlatformRow - 1));
-        if (cx >= 0 && cx < GRID_W && cy >= 0 && cy < GRID_H - 1 &&
-            grid[cy][cx] == TILE_EMPTY && grid[cy + 1][cx] != TILE_EMPTY)
-            grid[cy][cx] = TILE_COIN;
+    if (numCoins > 0 && !path.empty()) {
+        // Gültige Positionen sammeln (über Plattform-Oberkanten)
+        std::vector<std::pair<int, int>> validPositions;
+        for (const Step& s : path) {
+            int cy = s.row - 1;
+            if (cy < 0) continue;
+            for (int cx = s.xStart; cx < s.xStart + s.width && cx < GRID_W - 1; ++cx) {
+                if (cx < 1) continue;
+                if (grid[cy][cx] == TILE_EMPTY && grid[cy + 1][cx] != TILE_EMPTY)
+                    validPositions.push_back({cy, cx});
+            }
+        }
+        // Zufällig numCoins Positionen auswählen und Münzen platzieren
+        int toPlace = std::min(numCoins, (int)validPositions.size());
+        for (int i = 0; i < toPlace; ++i) {
+            int j = i + (std::rand() % ((int)validPositions.size() - i));
+            std::swap(validPositions[i], validPositions[j]);
+        }
+        for (int i = 0; i < toPlace; ++i)
+            grid[validPositions[i].first][validPositions[i].second] = TILE_COIN;
     }
 
     // Gegner (Ghost/Snake) auf Plattform-Oberkanten – 2 Tiles hoch
