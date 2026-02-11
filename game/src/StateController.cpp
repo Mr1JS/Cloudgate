@@ -112,7 +112,8 @@ void StateController::updateGameTime()
 
     unsigned int currentTimer = m_timer->elapsed();
     unsigned int runtimed = currentTimer - m_lastTimer;
-    if (runtimed > 100) {
+    if (runtimed > 100)
+    {
         unsigned int min = m_runtime/1000/60;
         unsigned int sec = m_runtime/1000 - min*60;
         unsigned int ms  = m_runtime - sec*1000;
@@ -177,7 +178,7 @@ void StateController::decrementHp(int number)
     m_playerHp -= number;
     
     // Guard against negative HP
-    if(m_playerHp < 0)
+    if (m_playerHp < 0)
     {
         m_playerHp = 0;
         return;
@@ -206,11 +207,16 @@ void StateController::decrementHp(int number)
 
 void StateController::incrementHp(int number)
 {
-    if (number <= 0) return;
+    if (number <= 0)
+    {
+        return;
+    }
     int oldHp = m_playerHp;
     m_playerHp += number;
     if (m_playerHp > MAX_HEARTS)
+    {
         m_playerHp = MAX_HEARTS;
+    }
     for (int i = oldHp; i < m_playerHp && i < MAX_HEARTS; i++)
     {
         if (m_hearts[i])

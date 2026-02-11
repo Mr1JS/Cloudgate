@@ -27,7 +27,7 @@ AnimatedRenderable::AnimatedRenderable(MainWindow* mw, std::string filename)
 {
     std::ifstream ifs(filename.c_str());
     std::string textureFileName;
-    if(ifs.good())
+    if (ifs.good())
     {
         ifs >> textureFileName >> m_frameWidth >> m_frameHeight >> m_numFrames;
 
@@ -78,10 +78,10 @@ void AnimatedRenderable::nextFrame()
     Uint32 ticks = SDL_GetTicks();
     float time =  (ticks - m_lastRenderTicks);
 
-    if(time > m_frameTimeout)
+    if (time > m_frameTimeout)
     {
         // Check and increase frame counter
-        if(m_currentFrame + 1 < m_numFrames)
+        if (m_currentFrame + 1 < m_numFrames)
         {
             m_currentFrame++;
         }
@@ -100,7 +100,7 @@ void AnimatedRenderable::nextFrame()
 
 void AnimatedRenderable::render()
 {
-    if(readyToRender())
+    if (readyToRender())
     {
         nextFrame();
         MovingRenderable::render();

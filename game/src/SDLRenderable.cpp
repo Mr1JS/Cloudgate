@@ -32,7 +32,7 @@ void SDLRenderable::setOffset(const Vector<int>& offset)
 void SDLRenderable::computeSourceRect()
 {
     m_sourceRect = { 0, 0, 0, 0 };
-    if(m_texture)
+    if (m_texture)
     {
         Uint32 format;
         int access, w, h;
@@ -51,7 +51,7 @@ void SDLRenderable::computeSourceRect()
 
 void SDLRenderable::render()
 {
-    if(readyToRender())
+    if (readyToRender())
     {
         SDL_Rect dst = m_targetRect;
         SDL_RenderCopyEx(

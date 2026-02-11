@@ -77,12 +77,12 @@ void Actor::render()
     target.h = m_frameHeight;
 
     // Do not render if actor is outside frustrum
-    //if(target.x + target.h > 0 && target.x + target.h < m_camera.w())
+    //if (target.x + target.h > 0 && target.x + target.h < m_camera.w())
     {
 
 
         SDL_RendererFlip flip;
-        if(m_velocity.x() > 0)
+        if (m_velocity.x() > 0)
         {
             flip = SDL_FLIP_HORIZONTAL;
         }
@@ -145,17 +145,29 @@ void Actor::render()
         if (m_superPotionActive && !m_onGround)
         {
             if (m_lastSaltoTicks != 0)
+            {
                 m_saltoRotation += (now - m_lastSaltoTicks) * 0.72;  // ~1 Salto in ~500 ms
-            if (m_saltoRotation >= 360.0) m_saltoRotation -= 360.0;
-            if (m_saltoRotation < 0.0) m_saltoRotation += 360.0;
+            }
+            if (m_saltoRotation >= 360.0)
+            {
+                m_saltoRotation -= 360.0;
+            }
+            if (m_saltoRotation < 0.0)
+            {
+                m_saltoRotation += 360.0;
+            }
         }
         else
+        {
             m_saltoRotation = 0.0;
+        }
         m_lastSaltoTicks = now;
 
         double angle = m_saltoRotation;
         if (flip == SDL_FLIP_HORIZONTAL)
+        {
             angle = -angle;
+        }
 
         // Render current animation frame (mit Salto-Rotation bei Super-Trank)
         SDL_RenderCopyEx(m_mainWindow->renderer(), m_texture, &m_sourceRect, &target, angle, NULL, flip);
@@ -192,7 +204,7 @@ bool Actor::jumping()
 
 void Actor::setJumping(bool jump)
 {
-    if(jump)
+    if (jump)
     {
         m_jumpStart = m_position.y();
     }

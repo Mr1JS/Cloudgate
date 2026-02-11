@@ -305,7 +305,9 @@ static std::vector<int> flattenTileMap(
         const int x = it.key().first;
         const int y = it.key().second;
         if (x < 0 || x >= w || y < 0 || y >= h)
+        {
             continue;
+        }
         out[y * w + x] = it.value() + 1;
     }
 
@@ -323,7 +325,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     QMap<QPair<int, int>, int> out;
 
     if ((int)flat.size() != w * h)
+    {
         return out;
+    }
 
     for (int y = 0; y < h; ++y)
     {
@@ -331,7 +335,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
         {
             const int v = flat[y * w + x] - 1;
             if (v >= 0)
+            {
                 out.insert(qMakePair(x, y), v);
+            }
         }
     }
 
@@ -431,7 +437,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // ---------- path handling ----------
     QString p = xmlPath;
     if (p.startsWith("~"))
+    {
         p.replace(0, 1, QDir::homePath());
+    }
 
     QFileInfo xmlInfo(p);
     const QString outDir = xmlInfo.absolutePath();
@@ -1091,7 +1099,9 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     m_tilesetTextureName = !colTextureName.isEmpty() ? colTextureName : bgTextureName;
 
     if (colTilesDataset.isEmpty())
+    {
         colTilesDataset = "level1";
+    }
 
     // -------- build H5 path next to XML --------
     const QString h5Path = xmlInfo.absolutePath() + "/" + h5FileName;
@@ -1123,8 +1133,12 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         flatTiles.reserve(m_gridWidth * m_gridHeight);
 
         for (int y = 0; y < m_gridHeight; ++y)
+        {
             for (int x = 0; x < m_gridWidth; ++x)
+            {
                 flatTiles.push_back(tileArr[y][x]);
+            }
+        }
 
         m_levelData = unflattenTileMap(flatTiles, m_gridWidth, m_gridHeight, 0);
 
@@ -1359,12 +1373,16 @@ void LevelCanvas::addRowsAbove(int rows)
 void LevelCanvas::removeRowsAbove(int rows)
 {
     if (rows <= 0 || m_gridHeight <= 25)
+    {
         return;
+    }
 
     // Remove 5 rows and min height is 25
     int actualRows = qMin(rows, m_gridHeight - 25);
     if (actualRows <= 0)
+    {
         return;
+    }
 
     // Move tiles up
     QMap<QPair<int, int>, int> newData;

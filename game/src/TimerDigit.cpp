@@ -45,7 +45,7 @@ void TimerDigit::render()
 void TimerDigit::nextFrame()
 {
     // Check and increase frame counter
-    if(m_currentFrame + 1 < m_numFrames)
+    if (m_currentFrame + 1 < m_numFrames)
     {
         m_currentFrame++;
     }

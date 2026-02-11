@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE(HighFiveReadWriteShortcut) {
     const std::string DATASET_NAME("dset");
     std::vector<int> vec;
     vec.resize(x_size);
-    for(size_t i=0; i < x_size; i++)
+    for (size_t i=0; i < x_size; i++)
         vec[i] = i * 2;
     std::string at_contents("Contents of string");
     int my_int = 3;
