@@ -23,7 +23,8 @@
 #include <set>
 #include <vector>
 
-namespace {
+namespace
+{
 
 // Hilfsfunktionen und Konstanten (nur in dieser Datei sichtbar)
 
@@ -48,7 +49,8 @@ inline bool isNoWallContactType(const std::string& type)
 
 } // anonymous namespace
 
-namespace jumper {
+namespace jumper
+{
 
 // --- ContactListener ---
 

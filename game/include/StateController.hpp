@@ -21,8 +21,6 @@
 namespace jumper
 {
 
-class Level;
-
 /**
  * @brief Handles different game states.
  */

@@ -12,7 +12,8 @@
 #include <iostream>
 using namespace std;
 
-namespace jumper {
+namespace jumper
+{
 
 TileArray::TileArray(int x, int y, int w, int h, int tileW, int tileH)
     : TileSetRepresentation(x, y, w, h, tileW, tileH)

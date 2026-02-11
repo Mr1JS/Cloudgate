@@ -14,7 +14,8 @@
 #include <mutex>
 
 // Forward declarations
-namespace jumper {
+namespace jumper
+{
 class MainWindow;
 class Level;
 }

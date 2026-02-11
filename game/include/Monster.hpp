@@ -11,7 +11,8 @@
 
 #include <SDL.h>
 
-namespace jumper {
+namespace jumper
+{
 
 class Actor;
 class MainWindow;

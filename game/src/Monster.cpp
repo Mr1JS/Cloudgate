@@ -8,9 +8,11 @@
 
 #include <cmath>
 
-namespace jumper {
+namespace jumper
+{
 
-namespace {
+namespace
+{
     // Formel wie in TileSet.cpp – dort werden 9 und 4 hardcodiert
     constexpr int TILES_PER_ROW = 9;
     constexpr int TILE_OFFSET = 4;

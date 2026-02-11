@@ -23,7 +23,8 @@
 #include <vector>
 #include <box2d/box2d.h>
 
-namespace jumper {
+namespace jumper
+{
 
 class Actor;
 class Level;

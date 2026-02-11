@@ -7,7 +7,8 @@
 #include <QFile>
 #include <memory>
 
-namespace jumper {
+namespace jumper
+{
 class MainWindow;
 }
 

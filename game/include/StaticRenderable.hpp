@@ -13,7 +13,8 @@
 
 #include "SDLRenderable.hpp"
 
-namespace jumper {
+namespace jumper
+{
 
 /**
  * @brief   The StaticRenderable class is an interface for all static

@@ -13,7 +13,8 @@
 
 #include <iostream>
 
-namespace jumper {
+namespace jumper
+{
 
 SDLRenderable::SDLRenderable(MainWindow *mw, SDL_Texture *texture)
     : m_mainWindow(mw), m_texture(texture), m_windowOffset(mw->w() / 2, mw->h() / 2)
