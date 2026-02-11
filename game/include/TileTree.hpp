@@ -34,7 +34,7 @@ enum SplitAxis
 template<typename T>
 class TileTree : public TileSetRepresentation
 {
-^public:
+public:
 
     /**
      * @brief	Internal helper class to allow [][] access to the tiles
