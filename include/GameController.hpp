@@ -39,10 +39,10 @@ signals:
 private:
     void setRunning(bool running);
 
-    QString m_levelPath;
+    QString                             m_levelPath;
     std::unique_ptr<jumper::MainWindow> m_gameWindow;
-    QThread* m_gameThread;
-    bool m_running;
+    QThread*                            m_gameThread;
+    bool                                m_running;
 };
 
 #endif // GAMECONTROLLER_HPP

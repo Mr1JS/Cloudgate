@@ -75,22 +75,22 @@ public:
 private:
 
     /// Position of the camera
-    Vector<int> m_position;
+    Vector<int>         m_position;
 
     /// Height of the associated window
-    int m_width;
+    int                 m_width;
 
     /// Width of the associated window
-    int m_height;
+    int                 m_height;
 
     /// An actor to follow
-    MovingRenderable* m_actor;
+    MovingRenderable*   m_actor;
     
     /// Accumulator for smooth scrolling (stores fractional pixels)
-    double m_scrollAccumulator;
+    double              m_scrollAccumulator;
 
     /// speed of Camera scrolling up
-    float m_scrollSpeed = 8;
+    float               m_scrollSpeed = 8;
 };
 
 } /* namespace jumper */

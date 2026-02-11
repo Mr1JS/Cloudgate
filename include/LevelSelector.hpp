@@ -29,8 +29,8 @@ private:
     {
         QString name;
         QString file;
-        int goalType = 0;  
-        int goalValue = 0; 
+        int     goalType = 0;  
+        int     goalValue = 0; 
     };
 
     QVector<Level> m_levels;

@@ -71,18 +71,18 @@ private:
     SDL_Scancode convertQtKeyToSDLScancode(int qtKey);
 
     // Track keyboard state manually
-    QMap<int, bool> m_keyStates;
+    QMap<int, bool>                     m_keyStates;
 
-    QString m_levelPath;
+    QString                             m_levelPath;
     std::unique_ptr<jumper::MainWindow> m_gameWindow;
-    QTimer* m_updateTimer;
-    bool m_running;
-    bool m_paused;
-    bool m_initialized;
-    QImage m_gameImage;
-    int m_gameWidth;
-    int m_gameHeight;
-    mutable std::recursive_mutex m_gameMutex;
+    QTimer*                             m_updateTimer;
+    bool                                m_running;
+    bool                                m_paused;
+    bool                                m_initialized;
+    QImage                              m_gameImage;
+    int                                 m_gameWidth;
+    int                                 m_gameHeight;
+    mutable std::recursive_mutex        m_gameMutex;
 };
 
 #endif // GAMEVIEW_HPP

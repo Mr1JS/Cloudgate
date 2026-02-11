@@ -157,64 +157,64 @@ private:
     void updateDoors();
 
     /// Pointer to actor in level
-    Actor*                  m_actor;
+    Actor*                              m_actor;
 
     /// TileSet for collision geometry
-    TileSetRepresentation*  m_tiles;
+    TileSetRepresentation*              m_tiles;
 
     /// The level
-    Level*                  m_level;
+    Level*                              m_level;
 
     /// Box2D World
-    b2World*                m_world;
+    b2World*                            m_world;
 
     /// Box2D-Body of Actor
-    b2Body*                 m_actorBody;
+    b2Body*                             m_actorBody;
 
     /// Contact-Listener (Ownership)
-    ContactListener*        m_contactListener;
+    ContactListener*                    m_contactListener;
 
     /// Last Ticks value for delta time
-    unsigned int            m_lastTicks;
+    unsigned int                        m_lastTicks;
 
     /// Level start time (SDL_GetTicks), from which camera is allowed to move after CAMERA_DELAY_MS
-    unsigned int            m_cameraStartTicks;
+    unsigned int                        m_cameraStartTicks;
 
     /// Time of last damage taken
-    unsigned int            m_lastHazardDamageTicks;
+    unsigned int                        m_lastHazardDamageTicks;
 
     /// Time until which plaer is invincible (SDL_GetTicks)
-    unsigned int            m_invincibleUntilTicks;
+    unsigned int                        m_invincibleUntilTicks;
 
     /// Time (SDL_GetTicks) until which player is unable to move (after taking damage)
-    unsigned int            m_movementLockedUntilTicks;
+    unsigned int                        m_movementLockedUntilTicks;
 
     /// Left wall contact where player is not allowed to move past (prevents hanging/jittering)
-    int                     m_wallContactLeft;
+    int                                 m_wallContactLeft;
 
     /// Right wall contact where player is not allowed to move past (prevents hanging/jittering)
-    int                     m_wallContactRight;
+    int                                 m_wallContactRight;
 
     /// Coyote-Time: Jump still possible after moving past ground (seconds)
-    float                   m_coyoteTimeLeft;
+    float                               m_coyoteTimeLeft;
 
     /// Scaling of pixels per meter for Box2D
-    static constexpr float  PIXELS_PER_METER = 32.0f;
+    static constexpr float              PIXELS_PER_METER = 32.0f;
 
     /// Y-Offset of tile world in pixels
-    static constexpr float  TILE_Y_OFFSET = 600.0f;
+    static constexpr float              TILE_Y_OFFSET = 600.0f;
 
     /// Delay in ms, until camera starts moving (5 seconds)
-    static constexpr unsigned int CAMERA_DELAY_MS = 5000;
+    static constexpr unsigned int       CAMERA_DELAY_MS = 5000;
 
     /// Tile definitions (name, type, shape) from RulesTiles.xml
-    std::map<int, TileInfo> m_tileData;
+    std::map<int, TileInfo>             m_tileData;
 
     /// Bodies, to be destroyed in next update step (e.g. Collectibles after contact)
-    std::vector<b2Body*> m_bodiesToDestroy;
+    std::vector<b2Body*>                m_bodiesToDestroy;
 
     /// (gx, gy) for bodies to be created in next update() step (e.g. after destroying random-box)
-    std::vector<std::pair<int, int>> m_tilesToCreateBodyFor;
+    std::vector<std::pair<int, int>>    m_tilesToCreateBodyFor;
 };
 
 } // namespace jumper

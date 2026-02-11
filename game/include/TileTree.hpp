@@ -102,7 +102,7 @@ protected:
     TileTree* 		m_sub2;
 
     /// Array of tiles stored in the leafs
-    T*	        m_tiles;
+    T*	            m_tiles;
 
     /// Number of tiles on the tile leaf array
     int				m_numTiles;

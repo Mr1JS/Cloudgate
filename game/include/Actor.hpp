@@ -93,7 +93,7 @@ protected:
     float getElapsedTime();
 
     /// True if the player touches ground
-    bool     			m_onGround;
+bool     			    m_onGround;
 
     /// True if the player is jumping
     bool     			m_jumping;
@@ -105,22 +105,22 @@ protected:
     int     			m_jumpStart;
 
     /// The physical properties of the player
-    ActorForces          m_forces;
+    ActorForces         m_forces;
 
     /// Blink-Status (for Invincibility)
-    bool                 m_blinking;
+    bool                m_blinking;
 
     /// Super-Potion active (blinking blue)
-    bool                 m_superPotionActive;
+    bool                m_superPotionActive;
     
     /// Green-Potion / Break-Tiles active (blinking green)
-    bool                 m_breakTilesModeActive;
+    bool                m_breakTilesModeActive;
     
     /// Salto-Rotation in Grad (nur bei Super-Trank in der Luft)
-    double               m_saltoRotation;
+    double              m_saltoRotation;
     
     /// last time a salto was performed in ticks
-    unsigned int         m_lastSaltoTicks;
+    unsigned int        m_lastSaltoTicks;
 
 };
 
