@@ -1,28 +1,28 @@
-#include "game/include/TimerDigit.hpp"
+#include "game/include/NumberDigit.hpp"
 
 namespace jumper
 {
 
-TimerDigit::TimerDigit(MainWindow* mainWindow, std::string filename)
+NumberDigit::NumberDigit(MainWindow* mainWindow, std::string filename)
     : AnimatedRenderable(mainWindow, filename)
 {
     m_value = 0;
     setWorldPosition(Vector2f(100, 0));
 }
 
-TimerDigit::TimerDigit(MainWindow* mainWindow, SDL_Texture* texture, int frameWidth, int frameHeight, int numFrames)
+NumberDigit::NumberDigit(MainWindow* mainWindow, SDL_Texture* texture, int frameWidth, int frameHeight, int numFrames)
     : AnimatedRenderable(mainWindow, texture, frameWidth, frameHeight, numFrames)
 {
     m_value = 0;
     setWorldPosition(Vector2f(100, 0));
 }
 
-TimerDigit::~TimerDigit()
+NumberDigit::~NumberDigit()
 {
     // nothing to do yet
 }
 
-void TimerDigit::render()
+void NumberDigit::render()
 {   
     while (m_value != m_currentFrame)
     {
@@ -42,7 +42,7 @@ void TimerDigit::render()
                     &m_sourceRect, &target);
 }
 
-void TimerDigit::nextFrame()
+void NumberDigit::nextFrame()
 {
     // Check and increase frame counter
     if (m_currentFrame + 1 < m_numFrames)
@@ -58,7 +58,7 @@ void TimerDigit::nextFrame()
     m_sourceRect.x = m_currentFrame * m_frameWidth;
 }
 
-void TimerDigit::setValue(unsigned int value)
+void NumberDigit::setValue(unsigned int value)
 {
     if (value > m_numFrames)
     {

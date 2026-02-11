@@ -101,7 +101,7 @@ set(GAME_SOURCES
     game/include/ActorForces.hpp
     game/include/AnimatedRenderable.hpp
     game/include/Camera.hpp
-    game/include/TimerDigit.hpp
+    game/include/NumberDigit.hpp
     game/include/LayerManager.hpp
     game/include/Level.hpp
     game/include/LevelForces.hpp
@@ -126,7 +126,7 @@ set(GAME_SOURCES
     game/src/ActorForces.cpp
     game/src/AnimatedRenderable.cpp
     game/src/Camera.cpp
-    game/src/TimerDigit.cpp
+    game/src/NumberDigit.cpp
     game/src/LayerManager.cpp
     game/src/Level.cpp
     game/src/LevelForces.cpp

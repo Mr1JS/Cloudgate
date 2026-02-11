@@ -9,7 +9,7 @@
 
 #include "MainWindow.hpp"
 #include "SDLRenderable.hpp"
-#include "TimerDigit.hpp"
+#include "NumberDigit.hpp"
 
 #include <SDL.h>
 #include <QElapsedTimer>
@@ -34,7 +34,7 @@ public:
     void initHeartDisplay(SDL_Texture* heartTexture, int texWidth, int texHeight, int layer);
 
     /// Initialize display of level time display in the top left corner
-    void initTimerDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
+    void initNumberDigits(SDL_Texture* heartTexture, int numFrames, int frameWidth, int frameHeight, int layer);
 
     /// Start or resume game
     void startGame();
@@ -124,7 +124,7 @@ private:
     int                                     m_heartHeight;
 
     /// sprites of the individual timer digits
-    std::array<TimerDigit*, RUNTIME_DIGITS> m_runtimeDigits;
+    std::array<NumberDigit*, RUNTIME_DIGITS> m_runtimeDigits;
 
     /// reference to MainWindow class
     MainWindow*                             m_mainWindow;
@@ -133,7 +133,7 @@ private:
     Level*                                  m_level;
     
     /// sprites of the coin counter digits
-    std::array<TimerDigit*, COIN_DIGITS>    m_coinTextures;
+    std::array<NumberDigit*, COIN_DIGITS>    m_coinTextures;
 
     /// Coins collected in level
     int                                     m_coins;

@@ -1,5 +1,5 @@
 /*
- *  TimerDigit.hpp
+ *  NumberDigit.hpp
  *  Created on: Feb 01, 2026
  *      Author: Merlin Aubel
  */
@@ -17,24 +17,21 @@
 namespace jumper
 {
 
-//class MainWindow;
-
 /**
- * @brief 	A class to represent an object, that moves in a level
- * 			and interacts (collides) with other objects
+ * @brief A class to represent a number digit to show on screen (e.g. timer, coin count)
  */
-class TimerDigit : public AnimatedRenderable
+class NumberDigit : public AnimatedRenderable
 {
 public:
 
     /// Creates an digit for the given renderer from the given filename
-    TimerDigit(MainWindow* mainWindow, std::string filename);
+    NumberDigit(MainWindow* mainWindow, std::string filename);
 
     /// Creates an digit from a texture and animation information
-    TimerDigit(MainWindow* renderer, SDL_Texture* texture, int frameWidth, int frameHeight, int numFrames);
+    NumberDigit(MainWindow* renderer, SDL_Texture* texture, int frameWidth, int frameHeight, int numFrames);
 
     /// Destructor
-    virtual ~TimerDigit();
+    virtual ~NumberDigit();
 
     /// Renders the digits
     virtual void render() override;

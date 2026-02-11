@@ -56,13 +56,13 @@ void StateController::resetHeartPosition()
     }
 }
 
-void StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
+void StateController::initNumberDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
 {
     // init textures for the runtime display
     int x = 25;
     for (int i = 0; i < RUNTIME_DIGITS; i++)
     {
-        m_runtimeDigits[i] = new TimerDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_runtimeDigits[i] = new NumberDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
         
         m_runtimeDigits[i]->setWorldPosition(Vector2f(x, 25));
         
@@ -84,7 +84,7 @@ void StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, 
     }
     for (int i = 0; i < COIN_DIGITS; i++)
     {
-        m_coinTextures[i] = new TimerDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_coinTextures[i] = new NumberDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
         m_coinTextures[i]->setWorldPosition(Vector2f(x, y));
         x -= 5 + frameWidth;
         m_level->addRenderable(m_coinTextures[i], layer);
