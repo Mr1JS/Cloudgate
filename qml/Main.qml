@@ -54,8 +54,14 @@ Window {
                     StyledButton {
                         text: "Start"
                         onClicked: {
-                            // Wechsle zur Spiel-Seite
                             stackView.push(Qt.resolvedUrl("LevelSelector.qml"))
+                            myMain.page_value = 0
+                        }
+                    }
+                    StyledButton {
+                        text: "Endless"
+                        onClicked: {
+                            stackView.push(Qt.resolvedUrl("EndlessPage.qml"))
                             myMain.page_value = 0
                         }
                     }

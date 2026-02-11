@@ -59,19 +59,10 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         int levelHeight = tileRep->height();
         int levelWidth = tileRep->width();
         
-        // Berechne die Kamera-Grenzen in Tile-Koordinaten
-        int cameraX = m_camera.x();  // Kamera X in World-Koordinaten (400)
-        int cameraWidth = m_camera.width();  // Kamera Breite (800)
-        int cameraRight = cameraX + cameraWidth;  // Rechte Grenze in World-Koordinaten (1200)
-        
-        // Konvertiere World-Koordinaten zu Tile-Koordinaten
-        // Linke Wand: Bei Tile 0 (linker Rand des Levels)
+        // Linke und rechte Wand: Level-Grenzen (nicht Kamera)
+        // Kamera scrollt nur vertikal – Spieler darf nicht aus dem Level laufen
         int leftTileX = 0;
-        // Rechte Wand: Bei Kamera X + Breite (rechter Rand der Kamera)
-        int rightTileX = cameraRight / tileWidth;
-        
-        // Stelle sicher, dass die rechte Wand innerhalb der Level-Breite ist
-        if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
+        int rightTileX = levelWidth - 1;   // Rechter Rand des Levels
         
         // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
         int wallTileId = 85;

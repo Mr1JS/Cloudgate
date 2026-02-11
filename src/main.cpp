@@ -13,7 +13,7 @@
 #include "include/GameView.hpp"
 #include "include/LevelSelector.hpp"
 #include "include/ActorSelector.hpp"
-
+#include "include/EndlessLevelGenerator.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<GameView>("Cloudgate_game", 1, 0, "GameView");
     qmlRegisterType<LevelSelector>("Cloudgate_game", 1, 0, "LevelSelector");
     qmlRegisterType<ActorSelector>("Cloudgate_game", 1, 0, "ActorSelector");
+    qmlRegisterType<EndlessLevelGenerator>("Cloudgate_game", 1, 0, "EndlessLevelGenerator");
 
     QObject::connect(
         &engine,
