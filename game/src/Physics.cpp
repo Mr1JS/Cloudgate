@@ -998,8 +998,7 @@ void Physics::updateDoors()
     const float ax = actorPos.x() + m_actor->w() / 2.0f;
     const float ay = actorPos.y() + m_actor->h() / 2.0f;
 
-    bool openDoorsByCoins = (m_level->goalType() == GOAL_COINS)
-        && (m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE);
+    bool levelWinnable = m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE;
 
     std::set<std::pair<int, int>> doorsToOpen;
     for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
@@ -1040,19 +1039,9 @@ void Physics::updateDoors()
             continue;
         }
 
-        if (openDoorsByCoins)
+        if (levelWinnable)
         {
             doorsToOpen.insert({ topGx, topGy });
-        }
-        else
-        {
-            float doorCenterX = topGx * tileW + tileW / 2.0f;
-            float doorCenterY = topGy * tileH + tileH + TILE_Y_OFFSET;
-            float dx = ax - doorCenterX, dy = ay - doorCenterY;
-            if (dx * dx + dy * dy <= DOOR_OPEN_DISTANCE * DOOR_OPEN_DISTANCE)
-            {
-                doorsToOpen.insert({ topGx, topGy });
-            }
         }
     }
 
