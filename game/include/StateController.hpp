@@ -11,6 +11,7 @@
 #include "SDLRenderable.hpp"
 #include "NumberDigit.hpp"
 
+#include <list>
 #include <SDL.h>
 #include <QElapsedTimer>
 
@@ -124,7 +125,7 @@ private:
     int                                     m_heartHeight;
 
     /// sprites of the individual timer digits
-    std::array<NumberDigit*, RUNTIME_DIGITS> m_runtimeDigits;
+    std::list<NumberDigit*>                 m_runtimeDigits;
 
     /// reference to MainWindow class
     MainWindow*                             m_mainWindow;
@@ -133,7 +134,7 @@ private:
     Level*                                  m_level;
     
     /// sprites of the coin counter digits
-    std::array<NumberDigit*, COIN_DIGITS>    m_coinTextures;
+    std::list<NumberDigit*>                 m_coinTextures;
 
     /// Coins collected in level
     int                                     m_coins;

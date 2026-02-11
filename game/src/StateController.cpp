@@ -8,7 +8,7 @@ namespace jumper
 {
 
 StateController::StateController(MainWindow* mainWindow, Level* level, std::string& filename)
-: m_hearts{}, m_runtimeDigits{}
+: m_hearts{}, m_runtimeDigits{} 
 {
     m_mainWindow    = mainWindow;
     m_level         = level;
@@ -31,12 +31,12 @@ void StateController::initHeartDisplay(SDL_Texture* heartTexture, int texWidth, 
     m_heartHeight = texHeight;
     for (int i = 0; i < MAX_HEARTS; i++)
     {
-        if (m_hearts[i])
+        if (m_hearts.size >= i && m_hearts[i])
         {
             std::cout << "Heart " << i << " already instanciated! Skipping." << std::endl;
             continue;
         }
-        m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
+        m_hearts.push_back(new SDLRenderable(m_mainWindow, heartTexture));
 
         m_level->addRenderable(m_hearts[i], layer);
     }
@@ -56,13 +56,19 @@ void StateController::resetHeartPosition()
     }
 }
 
-void StateController::initNumberDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
+void StateController::initNumberDigits(SDL_Texture* digitTexture,
+                                        int numFrames, int frameWidth,
+                                        int frameHeight, int layer)
 {
     // init textures for the runtime display
     int x = 25;
     for (int i = 0; i < RUNTIME_DIGITS; i++)
     {
-        m_runtimeDigits[i] = new NumberDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_runtimeDigits.push_back(new NumberDigit(m_mainWindow,
+                                                  digitTexture,
+                                                  numFrames,
+                                                  frameWidth,
+                                                  frameHeight));
         
         m_runtimeDigits[i]->setWorldPosition(Vector2f(x, 25));
         
@@ -84,7 +90,7 @@ void StateController::initNumberDigits(SDL_Texture* digitTexture, int numFrames,
     }
     for (int i = 0; i < COIN_DIGITS; i++)
     {
-        m_coinTextures[i] = new NumberDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_coinTextures.push_back(new NumberDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight));
         m_coinTextures[i]->setWorldPosition(Vector2f(x, y));
         x -= 5 + frameWidth;
         m_level->addRenderable(m_coinTextures[i], layer);
