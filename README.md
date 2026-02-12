@@ -42,28 +42,83 @@ project1_c++/
 
 ### System-Abhängigkeiten
 
-- **Qt6** (Quick-Modul)
+- **Qt 6.8.x** (Quick, Widgets, Quick Controls)
 - **SDL2** und **SDL2_image**
 - **HDF5** (C, CXX, HL Komponenten)
 - **Boost** (filesystem, system)
+- **Box2D**
 
-### Installation der Abhängigkeiten (Ubuntu/Debian)
+### ⚠️ Qt-Version (Wichtig!)
+
+Dieses Projekt erfordert **Qt 6.8.x**.
+
+Viele Linux-Distributionen (z. B. Ubuntu 22.04) liefern standardmäßig ältere Qt-6-Versionen (z. B. 6.2 oder 6.4). Diese Versionen können zu Build- oder QML-Problemen führen.
+
+#### Installierte Version prüfen
+
+```bash
+qmake6 --version
+# oder
+qtpaths6 --version
+```
+
+Falls die Version nicht **6.8.x** ist, muss Qt 6.8 manuell installiert werden.
+
+---
+
+### Installation von Qt 6.8 (offizieller Weg)
+
+#### 1. Qt Online Installer herunterladen
+
+Besuche: https://www.qt.io/download
+
+#### 2. Im Installer auswählen
+
+- **Qt → 6.8.x → Desktop gcc 64-bit**
+- Qt Quick
+- Qt Quick Controls
+
+Standardmäßiger Installationspfad: `~/Qt/6.8.x/gcc_64`
+
+#### 3. Environment korrekt setzen
+
+Falls Qt außerhalb der Systempfade installiert ist (z. B. `~/Qt/6.8.x/gcc_64`), muss die Umgebung angepasst werden.
+
+**Temporär (für aktuelle Shell):**
+```bash
+export Qt6_DIR=~/Qt/6.8.x/gcc_64/lib/cmake/Qt6
+export PATH=~/Qt/6.8.x/gcc_64/bin:$PATH
+export LD_LIBRARY_PATH=~/Qt/6.8.x/gcc_64/lib:$LD_LIBRARY_PATH
+```
+
+**Permanent (empfohlen):**
+
+In `~/.bashrc` oder `~/.zshrc` hinzufügen:
+```bash
+export Qt6_DIR=$HOME/Qt/6.8.x/gcc_64/lib/cmake/Qt6
+export PATH=$HOME/Qt/6.8.x/gcc_64/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/Qt/6.8.x/gcc_64/lib:$LD_LIBRARY_PATH
+```
+
+Danach:
+```bash
+source ~/.bashrc
+```
+
+---
+
+### Installation weiterer Abhängigkeiten (Ubuntu/Debian)
+
+> ⚠️ **Hinweis:** Qt sollte **nicht** über `apt install qt6-*` installiert werden, wenn explizit Qt 6.8 benötigt wird.
 
 ```bash
 sudo apt update
 sudo apt install -y \
-    qt6-base-dev \
-    qt6-declarative-dev \
     libsdl2-dev \
     libsdl2-image-dev \
     libboost-all-dev \
     libhdf5-dev \
-    libbox2d-dev \
-    qml6-module-qtquick-controls \
-    qml6-module-qtquick-templates \
-    qml6-module-qtqml-workerscript \
-    qml6-module-qtquick-window \
-    qml6-module-qtquick-layouts
+    libbox2d-dev
 ```
 
 ## Kompilierung
@@ -78,8 +133,14 @@ cd build
 
 ### 2. CMake konfigurieren
 
+**Standard (Qt im System-Pfad):**
 ```bash
 cmake ..
+```
+
+**Falls Qt manuell installiert wurde (z.B. Qt 6.8.x):**
+```bash
+cmake -B . -S .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.8.x/gcc_64
 ```
 
 #### MacOS (Eine Option auswählen)
