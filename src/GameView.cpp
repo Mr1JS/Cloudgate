@@ -131,7 +131,8 @@ void GameView::startGame()
         return;
     }
 
-    try {
+    try
+    {
         // Get absolute path to level.xml
         QString absoluteLevelPath = m_levelPath;
         if (absoluteLevelPath.isEmpty())
@@ -235,7 +236,8 @@ void GameView::updateGame()
     if (!m_running || !m_gameWindow || m_paused)
     {
         // Wenn pausiert, nur repaint triggern (für statisches Bild)
-        if (m_running && m_gameWindow) {
+        if (m_running && m_gameWindow)
+        {
             update();
         }
         return;
@@ -282,17 +284,17 @@ void GameView::updateGame()
 
     // Prüfe, ob Actor außerhalb des Kamera-Bereichs ist (Game Over)
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
-    if(m_running && m_gameWindow && m_gameWindow->level())
+    if (m_running && m_gameWindow && m_gameWindow->level())
     {
         // Use the new isGameOver() method that checks both HP and camera bounds
-        if(m_gameWindow->level()->isGameOver())
+        if (m_gameWindow->level()->isGameOver())
         {
             // Game Over: Stoppe das Spiel
             stopGame();
             emit gameOver();
         }
 
-        if(m_gameWindow && m_gameWindow->level() && m_gameWindow->level()->isLevelFinished())
+        if (m_gameWindow && m_gameWindow->level() && m_gameWindow->level()->isLevelFinished())
         {
             stopGame();
             emit levelFinished();

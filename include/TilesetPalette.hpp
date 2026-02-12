@@ -34,16 +34,16 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
-    QList<Tile> m_tiles;
-    QMap<int, QString> m_tileNames; // ID -> Name mapping
-    int m_tileWidth = 32;
-    int m_tileHeight = 32;
-    int m_tileOffset = 4;
-    int m_selectedIndex = -1;
-    int m_spacing = 6;
-    QColor m_backgroundColor; // RGB(92, 130, 161) treated as transparent
-    bool m_extraTiles = false;
-    int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
+    QList<Tile>         m_tiles;
+    QMap<int, QString>  m_tileNames; // ID -> Name mapping
+    int                 m_tileWidth = 32;
+    int                 m_tileHeight = 32;
+    int                 m_tileOffset = 4;
+    int                 m_selectedIndex = -1;
+    int                 m_spacing = 6;
+    QColor              m_backgroundColor; // RGB(92, 130, 161) treated as transparent
+    bool                m_extraTiles = false;
+    int                 m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
 };
 
 #endif // TILESETPALETTE_HPP

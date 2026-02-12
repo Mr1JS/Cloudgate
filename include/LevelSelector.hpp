@@ -2,11 +2,13 @@
 #include <QVector>
 #include <QString>
 
-class LevelSelector : public QAbstractListModel {
+class LevelSelector : public QAbstractListModel
+{
     Q_OBJECT
 public:
     // for more readable code
-    enum Roles {
+    enum Roles
+    {
         NameRole = Qt::UserRole + 1,
         FileRole,
         GoalTypeRole,
@@ -27,8 +29,8 @@ private:
     {
         QString name;
         QString file;
-        int goalType = 0;  
-        int goalValue = 0; 
+        int     goalType = 0;  
+        int     goalValue = 0; 
     };
 
     QVector<Level> m_levels;

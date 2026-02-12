@@ -34,9 +34,11 @@ namespace jumper
 {
 
 /**
- * @brief x y tileId
+ * @brief tuple consisting of {x, y, tileId}
  */
 typedef std::tuple<int, int, int> Tile;
+
+/// a \ref std::list of \ref Tile elements
 typedef std::list<Tile>			  TileList;
 
 }

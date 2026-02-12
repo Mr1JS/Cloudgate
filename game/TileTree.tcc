@@ -57,7 +57,7 @@ template<typename T>
 int TileTree<T>::getSplitPosition(const SplitAxis& axis) const
 {
     float globalSplitPosition;
-    if(axis == VERTICAL)
+    if (axis == VERTICAL)
     {
         globalSplitPosition = m_x + (float) m_w / 2.0f;
         return round(globalSplitPosition);
@@ -82,7 +82,7 @@ T TileTree<T>::get(int x, int y) const
 
     // Calculate reference point, index position and
     // split axis position
-    if(m_axis == VERTICAL)
+    if (m_axis == VERTICAL)
     {
         ref = x;
         pos = y - m_y;
@@ -98,15 +98,15 @@ T TileTree<T>::get(int x, int y) const
     // if they exist. If a leaf is found, check
     // if an index value was saved and return
     // it if so. If the leaf is empty return 0.
-    if(ref < splitPosition)
+    if (ref < splitPosition)
     {
-        if(m_sub1)
+        if (m_sub1)
         {
             return m_sub1->get(x, y);
         }
         else
         {
-            if(m_tiles != 0 && pos >= 0 && pos < m_numTiles)
+            if (m_tiles != 0 && pos >= 0 && pos < m_numTiles)
             {
                 return m_tiles[pos];
             }
@@ -118,13 +118,13 @@ T TileTree<T>::get(int x, int y) const
     }
     else
     {
-        if(m_sub2)
+        if (m_sub2)
         {
             return m_sub2->get(x, y);
         }
         else
         {
-            if(m_tiles != 0 && pos >= 0 && pos < m_numTiles)
+            if (m_tiles != 0 && pos >= 0 && pos < m_numTiles)
             {
                 return m_tiles[pos];
             }
@@ -140,7 +140,7 @@ template<typename T>
 void TileTree<T>::insert(int x, int y, T index)
 {
     // Do not insert empty tiles
-    if(index == 0)
+    if (index == 0)
     {
         // Note: This means that tiles cannot be cleared, but we won't change
         // the level after it's loaded anyways.
@@ -148,7 +148,7 @@ void TileTree<T>::insert(int x, int y, T index)
     }
 
     // Determine sub tree for current tile
-    if(m_axis == VERTICAL)
+    if (m_axis == VERTICAL)
     {
         // Determine horizontal split position, i.e., the
         // sub tree position plus half the with of the sub tree.
@@ -157,16 +157,16 @@ void TileTree<T>::insert(int x, int y, T index)
         int splitPosition = getSplitPosition(VERTICAL);
 
         // Determine in which sub tree the tile belongs
-        if(x < splitPosition)
+        if (x < splitPosition)
         {
-            if(m_sub1)
+            if (m_sub1)
             {
                 m_sub1->insert(x, y, index);
             }
             else
             {
                 // Check if we have to subdivide
-                if(m_w > 1)
+                if (m_w > 1)
                 {
                     int newWidth = splitPosition - m_x;
                     m_sub1 = new TileTree<T>(m_x, m_y, newWidth, m_h, m_tileWidth, m_tileHeight, HORIZONTAL);
@@ -175,10 +175,10 @@ void TileTree<T>::insert(int x, int y, T index)
                 else
                 {
                     m_numTiles = m_h;
-                    if(m_tiles == 0)
+                    if (m_tiles == 0)
                     {
                         m_tiles = new T[m_numTiles];
-                        for(int a = 0; a < m_numTiles; a++)
+                        for (int a = 0; a < m_numTiles; a++)
                         {
                             m_tiles[a] = 0;
                         }
@@ -193,14 +193,14 @@ void TileTree<T>::insert(int x, int y, T index)
         }
         else
         {
-            if(m_sub2)
+            if (m_sub2)
             {
                 m_sub2->insert(x, y, index);
             }
             else
             {
                 // Check if we have to subdivide
-                if(m_w > 1)
+                if (m_w > 1)
                 {
                     m_sub2 = new TileTree<T>(splitPosition, m_y, m_x + m_w - splitPosition, m_h, m_tileWidth, m_tileHeight, HORIZONTAL);
                     m_sub2->insert(x, y, index);
@@ -208,10 +208,10 @@ void TileTree<T>::insert(int x, int y, T index)
                 else
                 {
                     m_numTiles = m_h;
-                    if(m_tiles == 0)
+                    if (m_tiles == 0)
                     {
                         m_tiles = new T[m_numTiles];
-                        for(int a = 0; a < m_numTiles; a++)
+                        for (int a = 0; a < m_numTiles; a++)
                         {
                             m_tiles[a] = 0;
                         }
@@ -232,16 +232,16 @@ void TileTree<T>::insert(int x, int y, T index)
         // tile width
         int splitPosition = getSplitPosition(HORIZONTAL);
         // Determine in which sub tree the tile belongs
-        if(y < splitPosition)
+        if (y < splitPosition)
         {
-            if(m_sub1)
+            if (m_sub1)
             {
                 m_sub1->insert(x, y, index);
             }
             else
             {
                 // Check if we have to subdivide
-                if(m_h > 1)
+                if (m_h > 1)
                 {
                     int newHeight = splitPosition - m_y;
                     m_sub1 = new TileTree<T>(m_x, m_y, m_w, newHeight, m_tileWidth, m_tileHeight, VERTICAL);
@@ -250,10 +250,10 @@ void TileTree<T>::insert(int x, int y, T index)
                 else
                 {
                     m_numTiles = m_w;
-                    if(m_tiles == 0)
+                    if (m_tiles == 0)
                     {
                         m_tiles = new T[m_numTiles];
-                        for(int a = 0; a < m_numTiles; a++)
+                        for (int a = 0; a < m_numTiles; a++)
                         {
                             m_tiles[a] = 0;
                         }
@@ -267,14 +267,14 @@ void TileTree<T>::insert(int x, int y, T index)
         }
         else
         {
-            if(m_sub2)
+            if (m_sub2)
             {
                 m_sub2->insert(x, y, index);
             }
             else
             {
                 // Check if we have to subdivide
-                if(m_h > 1)
+                if (m_h > 1)
                 {
                     m_sub2 = new TileTree<T>(m_x, splitPosition, m_w, splitPosition - m_y, m_tileWidth, m_tileHeight, VERTICAL);
                     m_sub2->insert(x, y, index);
@@ -282,10 +282,10 @@ void TileTree<T>::insert(int x, int y, T index)
                 else
                 {
                     m_numTiles = m_w;
-                    if(m_tiles == 0)
+                    if (m_tiles == 0)
                     {
                         m_tiles = new T[m_numTiles];
-                        for(int a = 0; a < m_numTiles; a++)
+                        for (int a = 0; a < m_numTiles; a++)
                         {
                             m_tiles[a] = 0;
                         }
@@ -303,17 +303,17 @@ void TileTree<T>::insert(int x, int y, T index)
 template<typename T>
 TileTree<T>::~TileTree()
 {
-    if(m_sub1)
+    if (m_sub1)
     {
         delete m_sub1;
     }
 
-    if(m_sub2)
+    if (m_sub2)
     {
         delete m_sub2;
     }
 
-    if(m_tiles)
+    if (m_tiles)
     {
         delete[] m_tiles;
     }

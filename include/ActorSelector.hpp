@@ -28,7 +28,7 @@ signals:
 private:
     void loadActors();
 
-    QMap<QString, QString> m_actors;
-    int m_currentIndex;
-    QList<QString> m_actorNames;
+    QMap<QString, QString>  m_actors;
+    int                     m_currentIndex;
+    QList<QString>          m_actorNames;
 };

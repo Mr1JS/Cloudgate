@@ -193,6 +193,7 @@ void LevelEditorController::loadTileset(const QString &path)
         QImage img = tilesetImage.convertToFormat(QImage::Format_ARGB32);
         int tol = 10;
         for (int y = 0; y < img.height(); y++)
+        {
             for (int x = 0; x < img.width(); x++)
             {
                 QRgb px = img.pixel(x, y);
@@ -201,6 +202,7 @@ void LevelEditorController::loadTileset(const QString &path)
                     img.setPixel(x, y, qRgba(0, 0, 0, 0));
                 }
             }
+        }
         tilesetImage = img;
 
         // get tiles
@@ -212,6 +214,7 @@ void LevelEditorController::loadTileset(const QString &path)
 
         int idx = 0;
         for (int row = 0; row < rows; row++)
+        {
             for (int col = 0; col < cols; col++)
             {
                 Tile t;
@@ -224,6 +227,7 @@ void LevelEditorController::loadTileset(const QString &path)
 
                 tiles.append(t);
             }
+        }
 
         qDebug() << "[LevelEditorController] Tiles extracted:" << tiles.size();
 
@@ -450,7 +454,21 @@ void LevelEditorController::toggleExtraTileset(bool enabled)
 void LevelEditorController::addRowsAbove(int rows)
 {
     if (!m_canvas || rows <= 0)
+    {
         return;
+    }
 
     m_canvas->addRowsAbove(rows);
+}
+
+
+// Remove Rows from canvas
+void LevelEditorController::removeRowsAbove(int rows)
+{
+    if (!m_canvas || rows <= 0)
+    {
+        return;
+    }
+
+    m_canvas->removeRowsAbove(rows);
 }

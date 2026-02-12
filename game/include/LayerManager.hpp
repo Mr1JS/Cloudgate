@@ -64,10 +64,10 @@ public:
 private:
 
     /// Pointer to the virtual camera within the level
-    Camera* m_camera;
+    Camera*                                                         m_camera;
 
     /// Container for the layers
-    std::multiset<std::pair <SDLRenderable*, int>, compareLayer> m_renderables;
+    std::multiset<std::pair <SDLRenderable*, int>, compareLayer>    m_renderables;
 
 };
 

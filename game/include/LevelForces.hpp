@@ -24,6 +24,9 @@ class LevelForces
 {
 public:
 
+    /**
+     * Constructor. Sets default gravity and damping values as follows: m_gravity(0,400), m_damping(0.7, 1.0)
+     */
     LevelForces();
 
     /**

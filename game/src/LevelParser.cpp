@@ -173,7 +173,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Init digits in StateController
-            m_level->getStateController()->initTimerDigits(tex, numFrames, frameWidth, frameHeight, layer);
+            m_level->getStateController()->initNumberDigits(tex, numFrames, frameWidth, frameHeight, layer);
         }
 
         if (v.first == "actor")

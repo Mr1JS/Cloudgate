@@ -1,29 +1,30 @@
 <RCC>
-  <qresource prefix="/resources">
-    <file>images/clouds.jpg</file>
-    <file>images/clouds.png</file>
-    <file>images/clouds2.png</file>
-    <file>images/test_image.jpg</file>
-    <file>images/test_image.png</file>
-    <file>images/tileset.png</file>
-    <file>images/snake.png</file>
-    <file>images/ghost.png</file>
-    <file>images/heart3.png</file>
-    <file>images/numbers.png</file>
-    <file>images/actors/MariosVergessenerZweiterBruder.png</file>
-    <file>images/actors/Celower.png</file>
-    <file>images/actors/jetlag.png</file>
-    <file>images/actors/Batonzo.png</file>
-    <file>images/actors/Merlower.png</file>
-    <file>images/actors/Namenloser.png</file>
-    <file>images/actors/Wiepower.png</file>
-    <file>images/backgrounds/mountain.png</file>
-    <file>images/backgrounds/skyIslands.jpg</file>
-    <file>images/backgrounds/lavaCastle.png</file>
-    <file>images/backgrounds/scifi.png</file>
-    <file>images/backgrounds/river.png</file>
-    <file>images/Time.png</file>
-    <file>images/Coin.png</file>
-    <file>images/None.png</file>
-  </qresource>
+    <qresource prefix="/resources">
+        <file>images/clouds.jpg</file>
+        <file>images/clouds.png</file>
+        <file>images/clouds2.png</file>
+        <file>images/test_image.jpg</file>
+        <file>images/test_image.png</file>
+        <file>images/tileset.png</file>
+        <file>images/snake.png</file>
+        <file>images/ghost.png</file>
+        <file>images/heart3.png</file>
+        <file>images/numbers.png</file>
+        <file>images/actors/MariosVergessenerZweiterBruder.png</file>
+        <file>images/actors/Celower.png</file>
+        <file>images/actors/jetlag.png</file>
+        <file>images/actors/Batonzo.png</file>
+        <file>images/actors/Merlower.png</file>
+        <file>images/actors/Namenloser.png</file>
+        <file>images/actors/Wiepower.png</file>
+        <file>images/backgrounds/mountain.png</file>
+        <file>images/backgrounds/skyIslands.jpg</file>
+        <file>images/backgrounds/lavaCastle.png</file>
+        <file>images/backgrounds/scifi.png</file>
+        <file>images/backgrounds/river.png</file>
+        <file>images/Time.png</file>
+        <file>images/Coin.png</file>
+        <file>images/None.png</file>
+        <file>fonts/Font-Solid-900.otf</file>
+    </qresource>
 </RCC>

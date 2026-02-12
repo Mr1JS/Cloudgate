@@ -99,7 +99,7 @@ void MovingRenderable::move()
 
 void MovingRenderable::render()
 {
-    if(readyToRender())
+    if (readyToRender())
     {
         Vector<int> position = computeTargetPosition();
 

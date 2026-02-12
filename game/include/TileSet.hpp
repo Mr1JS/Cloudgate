@@ -61,25 +61,33 @@ class TileSet : public StaticRenderable
     /// Returns the width of the rendering area
     int w();
 
-    /// Retruns the height of the rendering area
+    /// Returns the height of the rendering area
     int h();
 
     /// Destructor
     virtual ~TileSet();
 
-    TileSetRepresentation* tiles()
-    {
-        return m_tiles;
-    }
+    /// Return TileSetRepresentation
+    TileSetRepresentation* tiles();
 
-    SDL_Texture* texture() const { return m_texture; }
-    int tileWidth() const { return m_tileWidth; }
-    int tileHeight() const { return m_tileHeight; }
-    int tilesPerRow() const { return m_tilesPerRow; }
-    int tileOffset() const { return m_tileOffset; }
+    /// return texture
+    SDL_Texture* texture() const;
+
+    /// return width of a tile in tileset
+    int tileWidth() const;
+
+    /// return height of a tile in tileset
+    int tileHeight() const;
+
+    /// return tiles in a row of this tileset
+    int tilesPerRow() const;
+
+    /// return offset between tiles
+    int tileOffset() const;
+
 
   private:
-    /// With of the tiles
+    /// Width of the tiles
     int m_tileWidth;
 
     /// Height of the tiles

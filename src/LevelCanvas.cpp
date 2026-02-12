@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QDataStream>
 #include <QFileInfo>
+#include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QPair>
 #include <QMap>
@@ -304,7 +305,9 @@ static std::vector<int> flattenTileMap(
         const int x = it.key().first;
         const int y = it.key().second;
         if (x < 0 || x >= w || y < 0 || y >= h)
+        {
             continue;
+        }
         out[y * w + x] = it.value() + 1;
     }
 
@@ -322,7 +325,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     QMap<QPair<int, int>, int> out;
 
     if ((int)flat.size() != w * h)
+    {
         return out;
+    }
 
     for (int y = 0; y < h; ++y)
     {
@@ -330,7 +335,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
         {
             const int v = flat[y * w + x] - 1;
             if (v >= 0)
+            {
                 out.insert(qMakePair(x, y), v);
+            }
         }
     }
 
@@ -430,7 +437,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // ---------- path handling ----------
     QString p = xmlPath;
     if (p.startsWith("~"))
+    {
         p.replace(0, 1, QDir::homePath());
+    }
 
     QFileInfo xmlInfo(p);
     const QString outDir = xmlInfo.absolutePath();
@@ -811,7 +820,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         return;
     }
 
-    QTextStream ts(&f);
+    QXmlStreamWriter ts(&f);
+    ts.setAutoFormatting(true);
+    ts.writeStartDocument();
 
     int tilesPerRow = 0;
     int numRows = 0;
@@ -821,67 +832,75 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         numRows = m_tilesetImage.height() / (m_tileHeight + m_tileOffset);
     }
 
-    ts << "<level resources=\"" << baseName + ".h5" << "\">\n";
+    ts.writeStartElement("level");
+    ts.writeAttribute("resources", baseName + ".h5");
 
     // background still references the tileset for tilemap usage
     // (If you want XML to reference the PNG instead, tell me and I adapt)
-    ts << "  <background_tiles texture=\"" << "backgroundImg" << "\">\n";
-    ts << "    <background_path>" << m_background << "</background_path>\n";
-    ts << "    <layer>0</layer>\n";
-    ts << "  </background_tiles>\n";
+    ts.writeStartElement("background_tiles");
+    ts.writeAttribute("texture", "backgroundImg");
+    ts.writeTextElement("background_path", m_background);
+    ts.writeTextElement("layer", "0");
+    ts.writeEndElement();
 
-    ts << "  <collision_tiles texture=\"" << m_tilesetTextureName << "\" tiles=\"level1\">\n";
-    ts << "    <tileWidth>" << m_tileWidth << "</tileWidth>\n";
-    ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
-    ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
-    ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; 
-    ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
-    ts << "    <endIndex>" << m_endIndex << "</endIndex>\n";
-    ts << "    <layer>1</layer>\n";
-    ts << "  </collision_tiles>\n";
+    ts.writeStartElement("collision_tiles");
+    ts.writeAttribute("texture", m_tilesetTextureName);
+    ts.writeAttribute("tiles", "level1");
+    ts.writeTextElement("tileWidth", QString::number(m_tileWidth));
+    ts.writeTextElement("tileHeight", QString::number(m_tileHeight));
+    ts.writeTextElement("tilesPerRow", QString::number(tilesPerRow));
+    ts.writeTextElement("numRows", QString::number(numRows));
+    ts.writeTextElement("gridHeight", QString::number(m_gridHeight));
+    ts.writeTextElement("tileOffset", QString::number(m_tileOffset));
+    ts.writeTextElement("endIndex", QString::number(m_endIndex));
+    ts.writeTextElement("layer", "1");
+    ts.writeEndElement();
 
     // hp hearts
-    ts << "  <heart texture=\"heart\">\n";
-    ts << "    <tileWidth>" << 16 << "</tileWidth>\n";
-    ts << "    <tileHeight>" << 16 << "</tileHeight>\n";
-    ts << "    <layer>3</layer>\n";
-    ts << "  </heart>\n";
+    ts.writeStartElement("heart");
+    ts.writeAttribute("texture", "heart");
+    ts.writeTextElement("tileWidth", "16");
+    ts.writeTextElement("tileHeight", "16");
+    ts.writeTextElement("layer", "3");
+    ts.writeEndElement();
 
     // numbers
-    ts << "  <numbers texture=\"numbers\">\n";
-    ts << "    <num_frames>" << 10 << "</num_frames>\n";
-    ts << "    <frame_width>" << 10 << "</frame_width>\n";
-    ts << "    <frame_height>" << 10 << "</frame_height>\n";
-    ts << "    <layer>3</layer>\n";
-    ts << "  </numbers>\n";
-
+    ts.writeStartElement("numbers");
+    ts.writeAttribute("texture", "numbers");
+    ts.writeTextElement("num_frames", "10");
+    ts.writeTextElement("frame_width", "10");
+    ts.writeTextElement("frame_height", "10");
+    ts.writeTextElement("layer", "3");
+    ts.writeEndElement();
 
     // fixed values because all actors have the same settings except for name
-    ts << "  <actor texture=\"" << currentActorName << "\">\n";
-    ts << "    <num_frames>2</num_frames>\n";
-    ts << "    <frame_width>36</frame_width>\n";
-    ts << "    <frame_height>48</frame_height>\n";
-    ts << "    <position_x>50</position_x>\n";
-    ts << "    <position_y>450</position_y>\n";
-    ts << "    <layer>2</layer>\n";
-    ts << "  </actor>\n";
+    ts.writeStartElement("actor");
+    ts.writeAttribute("texture", currentActorName);
+    ts.writeTextElement("num_frames", "2");
+    ts.writeTextElement("frame_width", "36");
+    ts.writeTextElement("frame_height", "48");
+    ts.writeTextElement("position_x", "50");
+    ts.writeTextElement("position_y", "450");
+    ts.writeTextElement("layer", "2");
+    ts.writeEndElement();
 
     // keep forces block
-    ts << "  <level_forces>\n";
-    ts << "    <gravity_x>0</gravity_x>\n";
-    ts << "    <gravity_y>400</gravity_y>\n";
-    ts << "    <damping_x>0.7</damping_x>\n";
-    ts << "    <damping_y>1.0</damping_y>\n";
-    ts << "    <scrollSpeed>" << scrollSpeed << "</scrollSpeed>\n";
-    ts << "  </level_forces>\n";
+    ts.writeStartElement("level_forces");
+    ts.writeTextElement("gravity_x", "0");
+    ts.writeTextElement("gravity_y", "400");
+    ts.writeTextElement("damping_x", "0.7");
+    ts.writeTextElement("damping_y", "1.0");
+    ts.writeTextElement("scrollSpeed", QString::number(scrollSpeed));
+    ts.writeEndElement();
 
-    ts << "  <goal>\n";
-    ts << "    <type>" << goalType << "</type>\n";
-    ts << "    <value>" << goalValue << "</value>\n";
-    ts << "  </goal>\n";
+    ts.writeStartElement("goal");
+    ts.writeTextElement("type", QString::number(goalType));
+    ts.writeTextElement("value", QString::number(goalValue));
+    ts.writeEndElement();
 
-    ts << "</level>\n";
+    ts.writeEndElement(); // level
+    ts.writeEndDocument();
+
     f.close();
 
     qDebug() << "[LevelCanvas] XML saved:" << p;
@@ -1080,7 +1099,9 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     m_tilesetTextureName = !colTextureName.isEmpty() ? colTextureName : bgTextureName;
 
     if (colTilesDataset.isEmpty())
+    {
         colTilesDataset = "level1";
+    }
 
     // -------- build H5 path next to XML --------
     const QString h5Path = xmlInfo.absolutePath() + "/" + h5FileName;
@@ -1112,8 +1133,12 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         flatTiles.reserve(m_gridWidth * m_gridHeight);
 
         for (int y = 0; y < m_gridHeight; ++y)
+        {
             for (int x = 0; x < m_gridWidth; ++x)
+            {
                 flatTiles.push_back(tileArr[y][x]);
+            }
+        }
 
         m_levelData = unflattenTileMap(flatTiles, m_gridWidth, m_gridHeight, 0);
 
@@ -1342,4 +1367,39 @@ void LevelCanvas::addRowsAbove(int rows)
     update();
 
     qDebug() << "[LevelCanvas] Added" << rows << "rows ABOVE. New height:" << m_gridHeight;
+}
+
+// Remove rows from canvas
+void LevelCanvas::removeRowsAbove(int rows)
+{
+    if (rows <= 0 || m_gridHeight <= 25)
+    {
+        return;
+    }
+
+    // Remove 5 rows and min height is 25
+    int actualRows = qMin(rows, m_gridHeight - 25);
+    if (actualRows <= 0)
+    {
+        return;
+    }
+
+    // Move tiles up
+    QMap<QPair<int, int>, int> newData;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    {
+        int newY = it.key().second - actualRows;
+        if (newY >= 0)
+        {
+            newData.insert(qMakePair(it.key().first, newY), it.value());
+        }
+    }
+
+    m_levelData = newData;
+    m_gridHeight -= actualRows;
+    setHeight(m_gridHeight * m_tileHeight);
+    emit gridHeightChanged();
+    update();
+
+    qDebug() << "[LevelCanvas] Removed" << actualRows << "rows ABOVE. New height:" << m_gridHeight;
 }

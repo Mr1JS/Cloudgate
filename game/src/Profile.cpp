@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     int m_tileWidth, m_tileHeight, m_arrayWidth, m_arrayHeight, m_tileOffset, m_tilesPerRow, m_numRows;
     unsigned char keyR, keyG, keyB;
 
-    if(in.good())
+    if (in.good())
     {
         in >> texFileName;
         in >> actorFileName;
@@ -31,9 +31,9 @@ int main(int argc, char** argv)
 
 
     // Read tile indices
-    for(int i = 0; i < m_arrayHeight; i++)
+    for (int i = 0; i < m_arrayHeight; i++)
     {
-        for(int j = 0; j < m_arrayWidth; j++)
+        for (int j = 0; j < m_arrayWidth; j++)
         {
             int tileID;
             in >> tileID;

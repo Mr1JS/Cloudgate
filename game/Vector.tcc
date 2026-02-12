@@ -54,7 +54,7 @@ Vector<T>::~Vector<T>()
 template<typename T>
 Vector<T> Vector<T>::operator =(const Vector<T> & other)
 {
-    if(this != &other)
+    if (this != &other)
     {
         m_x = other.m_x;
         m_y = other.m_y;
