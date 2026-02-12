@@ -25,7 +25,7 @@ project1_c++/
 ├── game/                   # Spiel-Engine (aus uebung10)
 │   ├── src/                # Engine-Implementierung (Physik, Kamera, Level, Rendering)
 │   ├── include/            # Engine-Header
-│   ├── io/                 # HDF5-/Texture-IO-Helfer
+│   ├── io/                 # CRTP-basierte I/O-Frameworks zum Speichern und Laden
 │   ├── Vector.tcc
 │   └── TileTree.tcc
 ├── res/                    # Assets und Leveldaten
