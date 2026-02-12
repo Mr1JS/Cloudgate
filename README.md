@@ -15,7 +15,28 @@ Dieses Projekt kombiniert eine moderne Qt/QML-Benutzeroberfläche mit der vollst
 
 ## Projektstruktur
 
-> Wird gerade bearbeitet, bald verfügbar!
+```text
+project1_c++/
+├── CMakeLists.txt
+├── README.md
+├── src/                    # Qt/C++-Anwendung und QML-Bridge (GameView, Controller, main.cpp)
+├── include/                # Header der Qt/C++-Anwendung
+├── qml/                    # QML-Seiten und UI-Komponenten
+├── game/                   # Spiel-Engine (aus uebung10)
+│   ├── src/                # Engine-Implementierung (Physik, Kamera, Level, Rendering)
+│   ├── include/            # Engine-Header
+│   ├── io/                 # HDF5-/Texture-IO-Helfer
+│   ├── Vector.tcc
+│   └── TileTree.tcc
+├── res/                    # Assets und Leveldaten
+│   ├── images/             # Sprites, UI-Assets, Hintergründe, Actor-Bilder
+│   ├── tileDefinition/     # Tile-Regeln (XML)
+│   ├── *.xml               # Level-Beschreibungen
+│   └── *.h5                # Leveldaten (HDF5)
+├── cmake/                  # Zusätzliche CMake-Find-Module
+├── ext/HighFive/           # Externe HDF5-Bibliothek (Vendor-Code)
+└── build/                  # Build-Artefakte (lokal erzeugt)
+```
 
 ## Abhängigkeiten
 
