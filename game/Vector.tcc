@@ -48,7 +48,7 @@ Vector<T>::Vector(const Vector<T> & other)
 template<typename T>
 Vector<T>::~Vector<T>()
 {
-    // TODO Auto-generated destructor stub
+    // Auto-generated destructor stub
 }
 
 template<typename T>

@@ -478,7 +478,6 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         QImage img(m_tilesetPath);
         if (!img.isNull())
         {
-            // TODO: Change the Color format pls
             m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
         }
     }
@@ -538,29 +537,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         // ==========================================================
         using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
-        // TODO: when file is replaced then we have an error:
-        /* tileset saved
-        qt.gui.imageio: libpng warning: iCCP: known incorrect sRGB profile
-        qt.gui.imageio: libpng warning: iCCP: cHRM chunk does not match sRGB
-
-        tileset saved
-        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 30 x 36 x4
-        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 50 x 48 x4
-        [Hdf5Util - createDataset] WARNING: size has changed. resizing dataset
-        HDF5-DIAG: Error detected in HDF5 (1.10.10) thread 1:
-        #000: ../../../src/H5D.c line 861 in H5Dset_extent(): unable to set dataset extent
-            major: Dataset
-            minor: Can't set value
-        #001: ../../../src/H5Dint.c line 2801 in H5D__set_extent(): unable to modify size of dataspace
-            major: Dataset
-            minor: Unable to initialize object
-        #002: ../../../src/H5S.c line 1823 in H5S_set_extent(): dimension cannot exceed the existing maximal size (new: 65 max: 40)
-            major: Dataspace
-            minor: Bad value */
-        // otherwise if u create a file for that it works
-        // TODO: CURRENT ALTERNATIVE ... NEEDS TO BE INVESTIGATED
+        
         // ----------------------------------------------------------
-        // Ensure fresh HDF5 file (avoid file lock + stale datasets
+        // Ensure fresh HDF5 file (avoid file lock + stale datasets)
         // ----------------------------------------------------------
         if (QFile::exists(h5Path))
         {
