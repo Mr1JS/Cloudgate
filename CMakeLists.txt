@@ -158,7 +158,7 @@ qt_add_qml_module(appCloudgate_game
     QML_FILES
         qml/Main.qml
         qml/StyledButton.qml
-        qml/SecondPage.qml
+        qml/LevelStarter.qml
         qml/LevelEditor.qml
         qml/Character.qml
         qml/LevelSelector.qml

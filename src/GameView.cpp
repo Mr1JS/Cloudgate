@@ -390,7 +390,7 @@ void GameView::keyPressEvent(QKeyEvent *event)
     std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     // ESC-Taste wird in QML behandelt (nicht an SDL weitergeben)
     if (event->key() == Qt::Key_Escape) {
-        // ESC wird in SecondPage.qml behandelt
+        // ESC wird in LevelStarter.qml behandelt
         QQuickPaintedItem::keyPressEvent(event);
         return;
     }

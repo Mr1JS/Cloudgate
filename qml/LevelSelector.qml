@@ -119,8 +119,8 @@ Page {
                     {
                         console.log("Level gewählt:", file)
 
-                        // switch to SecondPage (created as Component to send file path too)
-                        var comp = Qt.createComponent("SecondPage.qml")
+                        // switch to LevelStarter (created as Component to send file path too)
+                        var comp = Qt.createComponent("LevelStarter.qml")
                         if (comp.status === Component.Ready) 
                         {
                             var page = comp.createObject(stackView)
@@ -135,7 +135,7 @@ Page {
                                 }
                             } else 
                             {
-                                console.error("Failed to create SecondPage")
+                                console.error("Failed to create LevelStarter")
                             }
                         }
                     }
