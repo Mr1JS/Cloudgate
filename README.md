@@ -198,10 +198,11 @@ brew install doxygen graphviz
 
 ```bash
 cd build
+cmake ..  #(falls vorher noch nicht ausgeführt)
 cmake --build . --target doc
 ```
 
-Die HTML-Dokumentation wird in `build/docs/html/` generiert. Öffne `build/docs/html/index.html` im Browser.
+Die HTML-Dokumentation wird in `build/docs/html/` generiert. Öffne `build/docs/html/index.html` oder `build/docs/html/files.html` im Browser.
 
 ### Was wird dokumentiert?
 
