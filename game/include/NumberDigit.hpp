@@ -1,3 +1,8 @@
+/**
+ * @file NumberDigit.hpp
+ * @brief Defines the NumberDigit class for rendering numeric digits
+ */
+
 /*
  *  NumberDigit.hpp
  *  Created on: Feb 01, 2026

@@ -1,3 +1,8 @@
+/**
+ * @file StateController.hpp
+ * @brief Defines the StateController class for managing game states, UI overlays and scoring
+ */
+
 /*
  *  StateController.hpp
  *

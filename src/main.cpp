@@ -1,3 +1,8 @@
+/**
+ * @file main.cpp
+ * @brief Main entry point for the Qt application
+ */
+
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <include/pages.h>

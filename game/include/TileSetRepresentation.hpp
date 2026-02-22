@@ -1,3 +1,8 @@
+/**
+ * @file TileSetRepresentation.hpp
+ * @brief Defines the TileSetRepresentation class for mapping between tile coordinates and physics
+ */
+
 /*
  *  TileSetRepresentation.hpp
  *  Created on: Dec 08, 2017

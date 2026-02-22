@@ -1,3 +1,9 @@
+/**
+ * @file Monster.cpp
+ * @brief Implementation of the Monster class with AI behavior for enemies (Ghost and Snake),
+ *        patrol movement, player pursuit and detection range logic
+ */
+
 /*
  *  Monster.cpp
  */

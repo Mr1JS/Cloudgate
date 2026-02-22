@@ -1,3 +1,9 @@
+/**
+ * @file pages.cpp
+ * @brief Implementation of the pages class for application navigation management,
+ *        controls page transitions and current page state in the Qt application
+ */
+
 #include "include/pages.h"
 
 pages::pages(QObject *parent)

@@ -1,3 +1,8 @@
+/**
+ * @file AnimatedRenderable.hpp
+ * @brief Defines the AnimatedRenderable class for objects with sprite-based animations
+ */
+
 /*
  *  AnimatedRenderable.cpp
  *

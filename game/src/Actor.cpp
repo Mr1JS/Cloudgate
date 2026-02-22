@@ -1,3 +1,9 @@
+/**
+ * @file Actor.cpp
+ * @brief Implementation of the Actor class for playable characters with movement control,
+ *        collision detection, health system, animation states and world interaction
+ */
+
 /*
  *  Actor.cpp
  *  Created on: Dec 08, 2017

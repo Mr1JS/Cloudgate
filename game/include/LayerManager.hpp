@@ -7,7 +7,10 @@
  *  Restricted usage. Licensed for participants of the course "The C++ Programming Language" only.
  *  No unauthorized distribution.
  */
-
+/**
+ * @file LayerManager.hpp
+ * @brief Defines the LayerManager class for managing and rendering multiple tile layers in a level
+ */
 #ifndef LAYERMANAGER_HPP_
 #define LAYERMANAGER_HPP_
 

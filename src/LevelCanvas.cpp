@@ -1,3 +1,9 @@
+/**
+ * @file LevelCanvas.cpp
+ * @brief Implementation of the LevelCanvas class for the visual level editor canvas,
+ *        handles tile placement, grid rendering, mouse interaction and level data management
+ */
+
 #include "include/LevelCanvas.hpp"
 #include "include/Util.hpp"
 #include <QPainter>

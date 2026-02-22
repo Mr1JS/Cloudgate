@@ -1,9 +1,3 @@
-/**
- * @file StyledButton.qml
- * @brief Custom styled button component with consistent appearance,
- *        reusable UI element for all menu buttons throughout the application
- */
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic

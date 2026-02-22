@@ -1,3 +1,8 @@
+/**
+ * @file Monster.hpp
+ * @brief Defines the Monster class for enemy entities (Ghost and Snake) with AI behavior
+ */
+
 /*
  *  Monster.hpp
  *  Feind (Ghost, Snake) mit Patrouillen-Bewegung

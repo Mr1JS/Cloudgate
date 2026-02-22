@@ -1,9 +1,3 @@
-/**
- * @file LevelEditor.qml
- * @brief Level editor UI for creating and modifying game levels,
- *        provides tileset palette, tile placement, actor placement and level save/load functionality
- */
-
 import QtQuick
 import QtQuick.Controls
 import Cloudgate_game 1.0
@@ -639,7 +633,7 @@ Page {
                         source: backgroundImageLevel    
                         fillMode: Image.PreserveAspectCrop 
                         // not 100% to see the tiles better
-                        opacity: 0.5
+                        opacity: 0.75
                     }
 
                     Flickable {

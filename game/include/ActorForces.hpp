@@ -1,3 +1,8 @@
+/**
+ * @file ActorForces.hpp
+ * @brief Defines the ActorForces struct for storing force values applied to actors
+ */
+
 /*
  *  ActorForce.cpp
  *  Created on: Dec 08, 2017

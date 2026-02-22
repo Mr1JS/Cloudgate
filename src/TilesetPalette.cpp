@@ -1,3 +1,9 @@
+/**
+ * @file TilesetPalette.cpp
+ * @brief Implementation of the TilesetPalette class for managing tileset selection in editor,
+ *        loads tileset images, provides tile grid and handles tile selection for placement
+ */
+
 #include "include/TilesetPalette.hpp"
 #include <QPainter>
 #include <QMouseEvent>

@@ -1,3 +1,9 @@
+/**
+ * @file LevelEditorController.cpp
+ * @brief Implementation of the LevelEditorController class for coordinating level editor operations,
+ *        manages tileset loading, actor placement, level saving/loading and editor state
+ */
+
 #include "include/LevelEditorController.hpp"
 #include "include/TilesetPalette.hpp"
 #include "include/LevelCanvas.hpp"

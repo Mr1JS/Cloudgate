@@ -1,3 +1,8 @@
+/**
+ * @file Vector.tcc
+ * @brief Template implementation for the Vector class
+ */
+
 /*
  *  Vector<T>.cpp
  *  Created on: Dec 08, 2017

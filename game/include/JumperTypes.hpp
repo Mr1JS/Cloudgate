@@ -1,3 +1,8 @@
+/**
+ * @file JumperTypes.hpp
+ * @brief Defines common type definitions and enumerations used throughout the jumper game
+ */
+
 /* Copyright (C) 2016 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *

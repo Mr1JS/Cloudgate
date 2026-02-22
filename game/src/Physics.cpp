@@ -10,6 +10,12 @@
  *  Box2D-Integration.
  */
 
+/**
+ * @file Physics.cpp
+ * @brief Implementation of the Physics class with Box2D integration for realistic physics simulation,
+ *        collision detection, rigid body dynamics and contact listeners for game events
+ */
+
 #include "game/include/Physics.hpp"
 #include "game/include/Actor.hpp"
 #include "game/include/Level.hpp"
