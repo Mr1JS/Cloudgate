@@ -70,7 +70,7 @@ public:
      */
     Level* level();
 
-    /// Retruns the current width of the window
+    /// Returns the current width of the window
     int w();
 
     /// Returns the current height of the window

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<level resources="level 1.h5">
+<level resources="level 4.h5">
     <background_tiles texture="backgroundImg">
-        <background_path>res/images/backgrounds/lavaCastle.png</background_path>
+        <background_path>res/images/backgrounds/mountain.png</background_path>
         <layer>0</layer>
     </background_tiles>
     <collision_tiles texture="tileset" tiles="level1">
@@ -9,7 +9,7 @@
         <tileHeight>32</tileHeight>
         <tilesPerRow>9</tilesPerRow>
         <numRows>15</numRows>
-        <gridHeight>65</gridHeight>
+        <gridHeight>25</gridHeight>
         <tileOffset>4</tileOffset>
         <endIndex>127</endIndex>
         <layer>1</layer>
@@ -38,10 +38,10 @@
         <gravity_y>400</gravity_y>
         <damping_x>0.7</damping_x>
         <damping_y>1.0</damping_y>
-        <scrollSpeed>12</scrollSpeed>
+        <scrollSpeed>4</scrollSpeed>
     </level_forces>
     <goal>
         <type>1</type>
-        <value>4</value>
+        <value>1</value>
     </goal>
 </level>

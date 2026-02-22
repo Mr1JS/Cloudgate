@@ -67,17 +67,17 @@ signals:
     void tilesetReady(const QList<Tile>& tiles, int tileW, int tileH, int offset, int endIndex);
 
 private:
-    TilesetPalette *m_palette = nullptr;
-    LevelCanvas *m_canvas = nullptr;
+    TilesetPalette* m_palette = nullptr;
+    LevelCanvas*    m_canvas = nullptr;
 
-    QString m_tilesetPath;
-    int m_tileWidth = 32;
-    int m_tileHeight = 32;
-    int m_tileOffset = 4;
-    int m_selectedTileIndex = -1;
-    int m_gridWidth = 20; // not changed in xml
-    int m_gridHeight = 25; // not changed in xml
-    int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
+    QString         m_tilesetPath;
+    int             m_tileWidth = 32;
+    int             m_tileHeight = 32;
+    int             m_tileOffset = 4;
+    int             m_selectedTileIndex = -1;
+    int             m_gridWidth = 20; // not changed in xml
+    int             m_gridHeight = 25; // not changed in xml
+    int             m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
 };
 
 #endif // LEVELEDITORCONTROLLER_HPP

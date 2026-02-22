@@ -61,9 +61,9 @@ std::string GetPathFromFileName(std::string filename);
 
 
 /**
- * @brief Tile-Infos aus RulesTiles.xml (name, type, Kollisionsform)
+ * @brief Tile-Info from RulesTiles.xml (name, type, collisionshape)
  * shape: "full" | "half_bottom" | "half_left" | "half_right" | "half_top"
- *        | "diag_tl_br" | "diag_tr_bl" (Diagonalen für Rampen/Hügel)
+ *        | "diag_tl_br" | "diag_tr_bl" (diagonals for ramps/slopes)
  */
 struct TileInfo
 {
@@ -73,8 +73,8 @@ struct TileInfo
 };
 
 /**
- * @brief Lädt Tile-Definitionen aus einer XML-Datei inkl. Kollisionsform.
- * @param xmlPath Pfad zur RulesTiles.xml
+ * @brief Load Tile-Definition from XML file incl. collisionshape.
+ * @param xmlPath Path to RulesTiles.xml
  * @return Map Tile-ID -> TileInfo (name, type, shape)
  */
 std::map<int, TileInfo> ParseXMLData(const std::string& xmlPath);

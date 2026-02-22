@@ -34,10 +34,10 @@ public:
         std::shared_ptr<T>(array, [](T* arr){delete[] arr;}) {}
 
     /// Returns a reference to the accessed array member
-    T& operator[](int i) { return this->get()[i]; }
+    T& operator[](int i)        { return this->get()[i]; }
 
     /// Returns a copy of the accessed array member
-    T operator[](int i) const { return this->get()[i]; } 
+    T operator[](int i) const   { return this->get()[i]; } 
 };
 
 } // namespase asteroids

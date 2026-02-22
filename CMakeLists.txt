@@ -101,7 +101,7 @@ set(GAME_SOURCES
     game/include/ActorForces.hpp
     game/include/AnimatedRenderable.hpp
     game/include/Camera.hpp
-    game/include/TimerDigit.hpp
+    game/include/NumberDigit.hpp
     game/include/LayerManager.hpp
     game/include/Level.hpp
     game/include/LevelForces.hpp
@@ -114,6 +114,7 @@ set(GAME_SOURCES
     game/include/StateController.hpp
     game/include/TileArray.hpp
     game/include/TileSet.hpp
+    game/include/TileSetRepresentation.hpp
     game/include/Util.hpp
     game/io/BaseHdf5IO.hpp
     game/io/Hdf5Util.hpp
@@ -125,7 +126,7 @@ set(GAME_SOURCES
     game/src/ActorForces.cpp
     game/src/AnimatedRenderable.cpp
     game/src/Camera.cpp
-    game/src/TimerDigit.cpp
+    game/src/NumberDigit.cpp
     game/src/LayerManager.cpp
     game/src/Level.cpp
     game/src/LevelForces.cpp
@@ -138,6 +139,7 @@ set(GAME_SOURCES
     game/src/StateController.cpp
     game/src/TileArray.cpp
     game/src/TileSet.cpp
+    game/src/TileSetRepresentation.cpp
     game/src/Util.cpp
 )
 
@@ -156,7 +158,7 @@ qt_add_qml_module(appCloudgate_game
     QML_FILES
         qml/Main.qml
         qml/StyledButton.qml
-        qml/SecondPage.qml
+        qml/LevelStarter.qml
         qml/LevelEditor.qml
         qml/Character.qml
         qml/LevelSelector.qml

@@ -305,7 +305,9 @@ static std::vector<int> flattenTileMap(
         const int x = it.key().first;
         const int y = it.key().second;
         if (x < 0 || x >= w || y < 0 || y >= h)
+        {
             continue;
+        }
         out[y * w + x] = it.value() + 1;
     }
 
@@ -323,7 +325,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     QMap<QPair<int, int>, int> out;
 
     if ((int)flat.size() != w * h)
+    {
         return out;
+    }
 
     for (int y = 0; y < h; ++y)
     {
@@ -331,7 +335,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
         {
             const int v = flat[y * w + x] - 1;
             if (v >= 0)
+            {
                 out.insert(qMakePair(x, y), v);
+            }
         }
     }
 
@@ -431,7 +437,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // ---------- path handling ----------
     QString p = xmlPath;
     if (p.startsWith("~"))
+    {
         p.replace(0, 1, QDir::homePath());
+    }
 
     QFileInfo xmlInfo(p);
     const QString outDir = xmlInfo.absolutePath();
@@ -470,7 +478,6 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         QImage img(m_tilesetPath);
         if (!img.isNull())
         {
-            // TODO: Change the Color format pls
             m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
         }
     }
@@ -530,29 +537,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         // ==========================================================
         using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
-        // TODO: when file is replaced then we have an error:
-        /* tileset saved
-        qt.gui.imageio: libpng warning: iCCP: known incorrect sRGB profile
-        qt.gui.imageio: libpng warning: iCCP: cHRM chunk does not match sRGB
-
-        tileset saved
-        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 30 x 36 x4
-        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 50 x 48 x4
-        [Hdf5Util - createDataset] WARNING: size has changed. resizing dataset
-        HDF5-DIAG: Error detected in HDF5 (1.10.10) thread 1:
-        #000: ../../../src/H5D.c line 861 in H5Dset_extent(): unable to set dataset extent
-            major: Dataset
-            minor: Can't set value
-        #001: ../../../src/H5Dint.c line 2801 in H5D__set_extent(): unable to modify size of dataspace
-            major: Dataset
-            minor: Unable to initialize object
-        #002: ../../../src/H5S.c line 1823 in H5S_set_extent(): dimension cannot exceed the existing maximal size (new: 65 max: 40)
-            major: Dataspace
-            minor: Bad value */
-        // otherwise if u create a file for that it works
-        // TODO: CURRENT ALTERNATIVE ... NEEDS TO BE INVESTIGATED
+        
         // ----------------------------------------------------------
-        // Ensure fresh HDF5 file (avoid file lock + stale datasets
+        // Ensure fresh HDF5 file (avoid file lock + stale datasets)
         // ----------------------------------------------------------
         if (QFile::exists(h5Path))
         {
@@ -1091,7 +1078,9 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     m_tilesetTextureName = !colTextureName.isEmpty() ? colTextureName : bgTextureName;
 
     if (colTilesDataset.isEmpty())
+    {
         colTilesDataset = "level1";
+    }
 
     // -------- build H5 path next to XML --------
     const QString h5Path = xmlInfo.absolutePath() + "/" + h5FileName;
@@ -1123,8 +1112,12 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         flatTiles.reserve(m_gridWidth * m_gridHeight);
 
         for (int y = 0; y < m_gridHeight; ++y)
+        {
             for (int x = 0; x < m_gridWidth; ++x)
+            {
                 flatTiles.push_back(tileArr[y][x]);
+            }
+        }
 
         m_levelData = unflattenTileMap(flatTiles, m_gridWidth, m_gridHeight, 0);
 
@@ -1359,12 +1352,16 @@ void LevelCanvas::addRowsAbove(int rows)
 void LevelCanvas::removeRowsAbove(int rows)
 {
     if (rows <= 0 || m_gridHeight <= 25)
+    {
         return;
+    }
 
     // Remove 5 rows and min height is 25
     int actualRows = qMin(rows, m_gridHeight - 25);
     if (actualRows <= 0)
+    {
         return;
+    }
 
     // Move tiles up
     QMap<QPair<int, int>, int> newData;

@@ -29,7 +29,7 @@ void LayerManager::addRenderable(SDLRenderable *r, int LayerID)
 
 void LayerManager::render()
 {
-    for(auto it: m_renderables)
+    for (auto it: m_renderables)
     {
          it.first->setOffset(m_camera->getPosition());
          it.first->render();
@@ -38,7 +38,7 @@ void LayerManager::render()
 
 LayerManager::~LayerManager()
 {
-    for(auto it: m_renderables)
+    for (auto it: m_renderables)
     {
         delete (it.first);
     }

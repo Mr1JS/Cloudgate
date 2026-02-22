@@ -633,7 +633,7 @@ Page {
                         source: backgroundImageLevel    
                         fillMode: Image.PreserveAspectCrop 
                         // not 100% to see the tiles better
-                        opacity: 0.75
+                        opacity: 0.5
                     }
 
                     Flickable {

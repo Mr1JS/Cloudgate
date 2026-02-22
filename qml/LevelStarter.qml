@@ -3,7 +3,7 @@ import QtQuick.Controls
 import Cloudgate_game 1.0
 
 Page {
-    id: secondPage
+    id: levelStarter
     
     // start game with level selected
     function initLevel(file) {

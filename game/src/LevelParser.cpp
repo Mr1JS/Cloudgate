@@ -173,7 +173,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Init digits in StateController
-            m_level->getStateController()->initTimerDigits(tex, numFrames, frameWidth, frameHeight, layer);
+            m_level->getStateController()->initNumberDigits(tex, numFrames, frameWidth, frameHeight, layer);
         }
 
         if (v.first == "actor")
@@ -198,7 +198,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float maxJumpHeight = v.second.get<float>("max_jump_height", 40.0f);
 
             startPos_Y = pos_y;
-            // TODO Jation & Pascal: the textureDataSet muust be changed. it must be dependent on the
+        
             // Create new actor
             SDL_Surface* surface = io.TextureIO::load("textures", textureDataset);
             if (surface == nullptr)

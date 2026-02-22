@@ -116,22 +116,22 @@ public:
 private:
 
     /// Jump force
-    Vector2f m_jumpForce;
+    Vector2f    m_jumpForce;
 
     /// Force that pushes the player
-    Vector2f m_moveForce;
+    Vector2f    m_moveForce;
 
     /// Maximum jump velocity
-    double m_maxJumpVelocity;
+    double      m_maxJumpVelocity;
 
     /// Maximum run velocity
-    double m_maxRunVelocity;
+    double      m_maxRunVelocity;
 
     /// Maxumin fall velocity
-    double m_maxFallingVelocity;
+    double      m_maxFallingVelocity;
 
     /// Maximum jump height
-    double m_maxJumpHeight;
+    double      m_maxJumpHeight;
 };
 
 }

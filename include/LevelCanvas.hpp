@@ -83,30 +83,30 @@ private:
     void getTilesRules();
     std::array<int, 3> getQMLValues();
     void setQMLValues(std::array<int, 3> qmlValues);
-    QList<Tile> m_tiles;
-    QMap<QPair<int, int>, int> m_levelData; // Grid position -> Tile index
-    QObject *m_qmlRoot;
+    QList<Tile>                 m_tiles;
+    QMap<QPair<int, int>, int>  m_levelData; // Grid position -> Tile index
+    QObject*                    m_qmlRoot;
 
-    int m_tileWidth = 32;
-    int m_tileHeight = 32;
-    int m_gridWidth = 20;  // not changeable in xml
-    int m_gridHeight = 25; // not changeable in xml
-    int m_currentTileIndex = -1;
-    int m_tileOffset = 4;
-    QColor m_backgroundColor;
+    int                         m_tileWidth = 32;
+    int                         m_tileHeight = 32;
+    int                         m_gridWidth = 20;  // not changeable in xml
+    int                         m_gridHeight = 25; // not changeable in xml
+    int                         m_currentTileIndex = -1;
+    int                         m_tileOffset = 4;
+    QColor                      m_backgroundColor;
 
     // ---- Tileset meta ----
-    QString m_tilesetPath = ":/resources/images/tileset.png";
-    QString m_tilesetTextureName = "tileset";
+    QString                     m_tilesetPath = ":/resources/images/tileset.png";
+    QString                     m_tilesetTextureName = "tileset";
 
     // relative path to the background chosen
-    QString m_background = "res/images/backgrounds/mountain.png";
+    QString                     m_background = "res/images/backgrounds/mountain.png";
 
     // Image member
-    QImage m_tilesetImage;
+    QImage                      m_tilesetImage;
 
-    bool m_extraTiles = false;
-    int m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
+    bool                        m_extraTiles = false;
+    int                         m_endIndex = 127; // at which point do the tiles split up between normal Tiles and extraTiles
 
     std::map<int, std::string>  m_tileType;
 

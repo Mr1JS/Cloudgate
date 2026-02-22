@@ -8,9 +8,11 @@
 
 #include <cmath>
 
-namespace jumper {
+namespace jumper
+{
 
-namespace {
+namespace
+{
     // Formel wie in TileSet.cpp – dort werden 9 und 4 hardcodiert
     constexpr int TILES_PER_ROW = 9;
     constexpr int TILE_OFFSET = 4;
@@ -20,9 +22,15 @@ namespace {
         int row = tileId / TILES_PER_ROW;
         int col = tileId % TILES_PER_ROW;
         src.x = col * tw + TILE_OFFSET;
-        if (col > 0) src.x += col * TILE_OFFSET;
+        if (col > 0)
+        {
+            src.x += col * TILE_OFFSET;
+        }
         src.y = row * th + TILE_OFFSET;
-        if (row > 0) src.y += row * TILE_OFFSET;
+        if (row > 0)
+        {
+            src.y += row * TILE_OFFSET;
+        }
         src.w = tw;
         src.h = th;
     }
@@ -96,7 +104,9 @@ void Monster::update(double dt, Actor* actor)
     {
         m_exhaustedTimer -= dt;
         if (m_exhaustedTimer <= 0.0)
+        {
             m_chaseTimer = chaseDuration;
+        }
         vel.setX((vel.x() > 0) ? m_moveSpeed : -m_moveSpeed);
         vel.setY(0.0);
     }
@@ -118,11 +128,15 @@ void Monster::update(double dt, Actor* actor)
             vel.setY((dy / dist) * chaseSpeed * 0.9);
 
             if (onGround && dy < -actorAboveThreshold)
+            {
                 vel.setY(jumpSpeed);
+            }
         }
         m_chaseTimer -= dt;
         if (m_chaseTimer <= 0.0)
+        {
             m_exhaustedTimer = exhaustedDuration;
+        }
     }
     else
     {
@@ -163,7 +177,10 @@ void Monster::update(double dt, Actor* actor)
 
 void Monster::render()
 {
-    if (!readyToRender()) return;
+    if (!readyToRender())
+    {
+        return;
+    }
 
     Vector<int> pos = computeTargetPosition();
     SDL_RendererFlip flip = (velocity().x() < 0) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
