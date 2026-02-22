@@ -45,12 +45,13 @@ public:
     /// Destructor
     virtual ~Actor();
 
-    /// Returns a collision object between two actors
+    /// Handles collision detection and response with another actor
     virtual void getCollision(Actor& other);
 
-    /// Renders the actors
+    /// Renders the actor sprite to screen
     virtual void render() override;
 
+    /// Sets the physical properties (forces, gravity, etc.) for this actor
     void setPhysics(ActorForces p);
 
     /**
