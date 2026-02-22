@@ -1,3 +1,8 @@
+/**
+ * @file LevelForces.hpp
+ * @brief Defines the LevelForces struct for global level forces like gravity and friction
+ */
+
 /*
  *  LevelForce.hpp
  *  Created on: Dec 08, 2017

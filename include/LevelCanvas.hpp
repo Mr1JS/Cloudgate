@@ -1,3 +1,8 @@
+/**
+ * @file LevelCanvas.hpp
+ * @brief Defines the LevelCanvas class for the visual level editor canvas
+ */
+
 #ifndef LEVELCANVAS_HPP
 #define LEVELCANVAS_HPP
 

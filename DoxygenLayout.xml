@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doxygenlayout version="1.0">
+  <!-- Navigation index tabs for HTML output -->
+  <navindex>
+    <tab type="mainpage" visible="yes" title=""/>
+    <tab type="files" visible="yes" title="">
+      <tab type="filelist" visible="yes" title="" intro=""/>
+    </tab>
+  </navindex>
+
+  <!-- Layout definition for a file page -->
+  <file>
+    <briefdescription visible="yes"/>
+    <detaileddescription title=""/>
+    <definition visible="no"/>
+    <includes visible="no"/>
+  </file>
+</doxygenlayout>

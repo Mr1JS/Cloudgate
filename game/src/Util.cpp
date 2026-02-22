@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file Util.cpp
+ * @brief Implementation of utility functions for SDL operations, string processing,
+ *        file I/O and other general utility functions for the game engine
+ */
+
 #include "game/include/Util.hpp"
 
 #include <iostream>

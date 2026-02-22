@@ -1,3 +1,8 @@
+/**
+ * @file GameView.hpp
+ * @brief Defines the GameView class for rendering the game in a Qt Quick item
+ */
+
 #ifndef GAMEVIEW_HPP
 #define GAMEVIEW_HPP
 

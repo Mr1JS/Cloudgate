@@ -1,3 +1,8 @@
+/**
+ * @file LevelParser.hpp
+ * @brief Defines the LevelParser class for loading and parsing XML-based level definitions
+ */
+
 /*
  *  LevelParser.hpp
  *  Created on: Jan 07, 2018

@@ -1,3 +1,8 @@
+/**
+ * @file BaseHdf5IO.tcc
+ * @brief Template implementation for the BaseHdf5IO class
+ */
+
 namespace jumper
 {
 

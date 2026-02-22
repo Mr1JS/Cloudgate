@@ -1,3 +1,8 @@
+/**
+ * @file Physics.hpp
+ * @brief Defines the Physics class for Box2D physics simulation and collision detection
+ */
+
 /*
  *  Physics.hpp
  *  Created on: Dec 08, 2017

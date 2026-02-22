@@ -1,3 +1,9 @@
+/**
+ * @file GameView.cpp
+ * @brief Implementation of the GameView class for rendering SDL game content in Qt Quick,
+ *        handles keyboard input forwarding, frame updates and game-GUI integration
+ */
+
 #include "include/GameView.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Level.hpp"

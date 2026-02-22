@@ -1,15 +1,9 @@
-/**
- * @file LevelStarter.qml
- * @brief Level starter page UI for initiating gameplay,
- *        bridges level selection and game view, handles level loading
- */
-
 import QtQuick
 import QtQuick.Controls
 import Cloudgate_game 1.0
 
 Page {
-    id: levelStarter
+    id: secondPage
     
     // start game with level selected
     function initLevel(file) {

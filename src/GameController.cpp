@@ -1,3 +1,9 @@
+/**
+ * @file GameController.cpp
+ * @brief Implementation of the GameController class for managing game lifecycle,
+ *        threading, level loading and communication between Qt GUI and SDL game engine
+ */
+
 #include "include/GameController.hpp"
 #include "game/include/MainWindow.hpp"
 #include <QDebug>

@@ -1,3 +1,8 @@
+/**
+ * @file TileTree.tcc
+ * @brief Template implementation for the TileTree class
+ */
+
 /*
  *  TileTree.cpp
  *  Created on: Dec 08, 2017

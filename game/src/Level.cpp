@@ -1,3 +1,9 @@
+/**
+ * @file Level.cpp
+ * @brief Implementation of the Level class as the central game engine with level logic,
+ *        monster management, physics simulation, collision detection and game loop
+ */
+
 /*
  *  Level.cpp
  *

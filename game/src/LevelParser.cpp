@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file LevelParser.cpp
+ * @brief Implementation of the LevelParser class for loading and parsing XML-based
+ *        level definitions with tile data, monster positions and level properties
+ */
+
 #include "game/include/LevelParser.hpp"
 
 #include "game/include/Actor.hpp"

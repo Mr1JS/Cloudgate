@@ -1,3 +1,9 @@
+/**
+ * @file SDLRenderable.cpp
+ * @brief Implementation of the SDLRenderable base class for all SDL-based render objects
+ *        with texture management, sprite clipping and screen position calculation
+ */
+
 /*
  *  SDLRenderable.cpp
  *  Created on: Dec 08, 2017

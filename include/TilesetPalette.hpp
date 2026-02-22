@@ -1,3 +1,8 @@
+/**
+ * @file TilesetPalette.hpp
+ * @brief Defines the TilesetPalette class for managing tile selection in the level editor
+ */
+
 #ifndef TILESETPALETTE_HPP
 #define TILESETPALETTE_HPP
 

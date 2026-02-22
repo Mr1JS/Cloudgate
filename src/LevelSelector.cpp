@@ -1,3 +1,9 @@
+/**
+ * @file LevelSelector.cpp
+ * @brief Implementation of the LevelSelector class as a Qt model for level selection,
+ *        provides level list data to QML, handles level discovery and selection logic
+ */
+
 #include "include/LevelSelector.hpp"
 #include <QDir>
 #include <QFileInfo>

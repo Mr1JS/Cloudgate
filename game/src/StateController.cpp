@@ -1,3 +1,9 @@
+/**
+ * @file StateController.cpp
+ * @brief Implementation of the StateController class for managing game states
+ *        (menu, playing, pause, game over), score system and UI overlay rendering
+ */
+
 #include "game/include/StateController.hpp"
 
 #include <fstream>

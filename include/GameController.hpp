@@ -1,3 +1,8 @@
+/**
+ * @file GameController.hpp
+ * @brief Defines the GameController class for managing game lifecycle and threading
+ */
+
 #ifndef GAMECONTROLLER_HPP
 #define GAMECONTROLLER_HPP
 

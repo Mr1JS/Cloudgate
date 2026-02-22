@@ -1,3 +1,8 @@
+/**
+ * @file Tile.hpp
+ * @brief Defines the Tile struct for representing a single tile in the level editor
+ */
+
 #ifndef TILE_HPP
 #define TILE_HPP
 

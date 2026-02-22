@@ -1,3 +1,8 @@
+/**
+ * @file Camera.hpp
+ * @brief Defines the Camera class for viewport management and scrolling in the game
+ */
+
 /*
  *  Camera.hpp
  *

@@ -1,3 +1,8 @@
+/**
+ * @file TileSetIO.tcc
+ * @brief Template implementation for the TileSetIO class
+ */
+
 
 namespace jumper
 {

@@ -1,3 +1,8 @@
+/**
+ * @file TileSet.hpp
+ * @brief Defines the TileSet class for managing tile graphics and level tile data
+ */
+
 /*
  *  TileSet.hpp
  *  Created on: Dec 08, 2017

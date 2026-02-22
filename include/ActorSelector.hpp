@@ -1,3 +1,8 @@
+/**
+ * @file ActorSelector.hpp
+ * @brief Defines the ActorSelector class for selecting actor sprites in the level editor
+ */
+
 #include <QObject>
 #include <QVector>
 #include <QPixmap>

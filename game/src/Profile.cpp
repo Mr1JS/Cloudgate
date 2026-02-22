@@ -1,3 +1,9 @@
+/**
+ * @file Profile.cpp
+ * @brief Profiling tool for performance measurement and analysis of tile arrays,
+ *        useful for optimization and debugging of level data structures
+ */
+
 #include "include/TileArray.hpp"
 #include "include/TileTree.hpp"
 

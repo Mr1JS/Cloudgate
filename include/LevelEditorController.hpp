@@ -1,3 +1,8 @@
+/**
+ * @file LevelEditorController.hpp
+ * @brief Defines the LevelEditorController class for managing level editor operations
+ */
+
 #ifndef LEVELEDITORCONTROLLER_HPP
 #define LEVELEDITORCONTROLLER_HPP
 

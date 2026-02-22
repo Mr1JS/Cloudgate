@@ -1,3 +1,8 @@
+/**
+ * @file LevelSelector.hpp
+ * @brief Defines the LevelSelector class for selecting levels to play or edit
+ */
+
 #include <QAbstractListModel>
 #include <QVector>
 #include <QString>

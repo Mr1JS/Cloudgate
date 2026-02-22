@@ -1,3 +1,8 @@
+/**
+ * @file Actor.hpp
+ * @brief Defines the Actor class for movable game characters that interact and collide with other objects
+ */
+
 /*
  *  Actor.hpp
  *  Created on: Dec 08, 2017

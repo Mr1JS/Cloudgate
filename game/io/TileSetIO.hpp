@@ -1,3 +1,8 @@
+/**
+ * @file TileSetIO.hpp
+ * @brief Defines the TileSetIO template class for tileset I/O with HDF5
+ */
+
 #ifndef IO_TILESETIO_HPP
 #define IO_TILESETIO_HPP
 

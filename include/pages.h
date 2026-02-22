@@ -1,3 +1,8 @@
+/**
+ * @file pages.h
+ * @brief Defines the pages class for managing application page navigation
+ */
+
 #ifndef PAGES_H
 #define PAGES_H
 

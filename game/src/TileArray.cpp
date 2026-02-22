@@ -1,3 +1,9 @@
+/**
+ * @file TileArray.cpp
+ * @brief Implementation of the TileArray class for efficient storage and management
+ *        of 2D tile data with fast access to individual tiles in the level grid
+ */
+
 /*
  *  TileArray.cpp
  *  Created on: Dec 08, 2017

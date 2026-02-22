@@ -9,6 +9,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file AnimatedRenderable.cpp
+ * @brief Implementation of the AnimatedRenderable class for sprite-based animations with
+ *        frame management, animation sequences and time-controlled playback
+ */
+
 #include "game/include/AnimatedRenderable.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Util.hpp"

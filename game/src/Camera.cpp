@@ -1,3 +1,9 @@
+/**
+ * @file Camera.cpp
+ * @brief Implementation of the Camera class for dynamic viewport management, scrolling,
+ *        player tracking and screen boundaries within the level
+ */
+
 /*
  *  Camera.cpp
  *
