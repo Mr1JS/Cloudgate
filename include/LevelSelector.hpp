@@ -11,7 +11,8 @@ class LevelSelector : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    // for more readable code
+
+    /// enum with name, file and win condition data (for more readable code)
     enum Roles
     {
         NameRole = Qt::UserRole + 1,
@@ -20,24 +21,34 @@ public:
         GoalValueRole
     };
 
+    /// QObject based Constructor
     explicit LevelSelector(QObject *parent = nullptr);
-    // QAbstractListModel functions to transfer infos between qml and cpp
+
+    /// @return rowCount - QAbstractListModel function to transfer rowCount between qml and cpp
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+
+    /// @return data - QAbstractListModel function to transfer index and role between qml and cpp
     QVariant data(const QModelIndex &index, int role) const override;
+
+    /// @return roleNames - QAbstractListModel function to transfer Roles enum between qml and cpp
     QHash<int, QByteArray> roleNames() const override;
 
+    /// Reload the levels
     Q_INVOKABLE void reload();
 
 private:
-    // struct to coordinate the data better
+
+    /// Find all levels
+    void scanFolder();
+
+    /// Struct to coordinate the level data better
     struct Level 
     {
-        QString name;
-        QString file;
-        int     goalType = 0;  
-        int     goalValue = 0; 
+        QString name; /// Name of level
+        QString file; /// File path of level
+        int     goalType = 0;   /// Type of win condition
+        int     goalValue = 0; /// Value of win condition
     };
 
-    QVector<Level> m_levels;
-    void scanFolder();
+    QVector<Level> m_levels; /// List of all levels
 };
