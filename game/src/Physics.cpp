@@ -784,7 +784,10 @@ void Physics::update()
 
     // Coyote-Time ablaufen lassen
     m_coyoteTimeLeft -= static_cast<float>(dt);
-    if (m_coyoteTimeLeft < 0.0f) m_coyoteTimeLeft = 0.0f;
+    if (m_coyoteTimeLeft < 0.0f)
+    {
+        m_coyoteTimeLeft = 0.0f;
+    }
 
     if (onGround)
     {
@@ -1163,9 +1166,11 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 
 std::pair<std::string, std::string> Physics::getTileData(int tileId)
 {
-    auto it = m_tileData.find(tileId);
-    if (it == m_tileData.end())
+    auto it = m_level->tileData()->find(tileId);
+    if (it == m_level->tileData()->end())
+    {
         return { "", "" };
+    }
     const TileInfo& t = it->second;
     return { t.name, t.type };
 }
