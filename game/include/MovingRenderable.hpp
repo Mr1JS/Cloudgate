@@ -1,3 +1,8 @@
+/**
+ * @file MovingRenderable.hpp
+ * @brief Defines the MovingRenderable base class for renderable objects with velocity and movement
+ */
+
 /*
  *  MovingRenderable.hpp *
  *  Created on: Dec 08, 2017
@@ -8,8 +13,8 @@
  *  No unauthorized distribution.
  */
 
-#ifndef ACTOR_H
-#define ACTOR_H
+#ifndef MOVING_RENDERABLE_H
+#define MOVING_RENDERABLE_H
 
 #include "SDLRenderable.hpp"
 #include "Vector.hpp"
@@ -29,35 +34,35 @@ class MovingRenderable: public SDLRenderable
 {
 public:
 
-
+    /// Creates a MovingRenderable instance without a texture
     MovingRenderable(MainWindow* mw = 0, SDL_Texture* t = 0) : SDLRenderable(mw, t) {}
 
     /**
-     * @brief	Creates an actor from the given texture
+     * @brief	Creates a MovingRenderable instance from the given texture
      *
      * @param	mainWindow	A pointer to a MainWindow instance
-     * @param	texture		A pointer to a SDL texture for the actor
+     * @param	texture		A pointer to a SDL texture for the renderable
      */
     MovingRenderable(MainWindow* mainWindow, std::string filename);
 
     /**
-     * @brief	Creates an actor from the given texture
+     * @brief	Creates a MovingRenderable instance from the given texture
      *
      * @param	mainWindow	A pointer to a MainWindow instance
-     * @param	texture		A pointer to a SDL texture for the actor
-     * @param	position	Initial position of the actor (in world coordinates)
-     * @param	angle		Initial rotation angle of the actor
+     * @param	texture		A pointer to a SDL texture for the renderable
+     * @param	position	Initial position of the renderable (in world coordinates)
+     * @param	angle		Initial rotation angle of the renderable
      */
     MovingRenderable(MainWindow* mainWindow, SDL_Texture* texture,
                      const Vector<double>& position, const double angle = 0.0);
 
-    /// Rotates the actor by \ref angle degrees
+    /// Rotates the renderable by \ref angle degrees
     void operator*=(double angle);
 
-    /// Adds \ref vec to the current position of the actor
+    /// Adds \ref vec to the current position of the renderable
     void operator+=(const Vector<double>& vec);
 
-    /// Subtracts \ref vec from the current position of the actor
+    /// Subtracts \ref vec from the current position of the renderable
     void operator-=(const Vector<double>& vec);
 
     /// Sets the current rotation to \ref angle
@@ -84,6 +89,7 @@ public:
     /// Rendering
     virtual void render() override;
 
+    /// destructor
     virtual ~MovingRenderable() {};
 
 protected:
@@ -105,4 +111,4 @@ protected:
 
 }
 
-#endif // ACTOR_H
+#endif // MOVING_RENDERABLE_H

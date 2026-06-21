@@ -1,3 +1,9 @@
+/**
+ * @file GameView.cpp
+ * @brief Implementation of the GameView class for rendering SDL game content in Qt Quick,
+ *        handles keyboard input forwarding, frame updates and game-GUI integration
+ */
+
 #include "include/GameView.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Level.hpp"
@@ -24,6 +30,9 @@ GameView::GameView(QQuickItem *parent)
     , m_gameWidth(800)
     , m_gameHeight(600)
 {
+    // Keep painting in CPU image mode for deterministic SDL->QImage pipeline.
+    setRenderTarget(QQuickPaintedItem::Image);
+    setOpaquePainting(true);
     setAntialiasing(false);
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
@@ -104,6 +113,7 @@ void GameView::setLevelPath(const QString& path)
 
 void GameView::setPaused(bool paused)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (m_paused != paused)
     {
         m_paused = paused;
@@ -114,6 +124,7 @@ void GameView::setPaused(bool paused)
 
 void GameView::startGame()
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (m_running)
     {
         qDebug() << "Game is already running";
@@ -126,7 +137,8 @@ void GameView::startGame()
         return;
     }
 
-    try {
+    try
+    {
         // Get absolute path to level.xml
         QString absoluteLevelPath = m_levelPath;
         if (absoluteLevelPath.isEmpty())
@@ -208,6 +220,7 @@ void GameView::startGame()
 
 void GameView::stopGame()
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running)
     {
         return;
@@ -225,10 +238,12 @@ void GameView::stopGame()
 
 void GameView::updateGame()
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow || m_paused)
     {
         // Wenn pausiert, nur repaint triggern (für statisches Bild)
-        if (m_running && m_gameWindow) {
+        if (m_running && m_gameWindow)
+        {
             update();
         }
         return;
@@ -271,21 +286,19 @@ void GameView::updateGame()
     // Update game with keyboard states
     m_gameWindow->update(keystates);
 
-    // TODO: GameController should be implemented somewhere here
-
     // Prüfe, ob Actor außerhalb des Kamera-Bereichs ist (Game Over)
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
-    if(m_running && m_gameWindow && m_gameWindow->level())
+    if (m_running && m_gameWindow && m_gameWindow->level())
     {
         // Use the new isGameOver() method that checks both HP and camera bounds
-        if(m_gameWindow->level()->isGameOver())
+        if (m_gameWindow->level()->isGameOver())
         {
             // Game Over: Stoppe das Spiel
             stopGame();
             emit gameOver();
         }
 
-        if(m_gameWindow && m_gameWindow->level() && m_gameWindow->level()->isLevelFinished())
+        if (m_gameWindow && m_gameWindow->level() && m_gameWindow->level()->isLevelFinished())
         {
             stopGame();
             emit levelFinished();
@@ -300,6 +313,7 @@ void GameView::updateGame()
 
 void GameView::paint(QPainter *painter)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow)
     {
         // Draw black background
@@ -327,11 +341,22 @@ void GameView::paint(QPainter *painter)
     m_gameWindow->render();
 
     // Copy SDL renderer content to QImage
-    // Create a surface to read pixels from renderer
-    int width = m_gameWidth > 0 ? m_gameWidth : 800;
-    int height = m_gameHeight > 0 ? m_gameHeight : 600;
-    SDL_Surface* surface = SDL_CreateRGBSurface(0, width, height, 32,
-                                                0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    // Use the real renderer output size (important on HiDPI / scaling setups).
+    int width = 0;
+    int height = 0;
+    if (SDL_GetRendererOutputSize(renderer, &width, &height) != 0 || width <= 0 || height <= 0)
+    {
+        width = m_gameWidth > 0 ? m_gameWidth : 800;
+        height = m_gameHeight > 0 ? m_gameHeight : 600;
+    }
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0,
+        width,
+        height,
+        32,
+        SDL_PIXELFORMAT_ARGB8888
+    );
     if (!surface) {
         painter->fillRect(boundingRect(), Qt::black);
         return;
@@ -368,9 +393,10 @@ void GameView::paint(QPainter *painter)
 
 void GameView::keyPressEvent(QKeyEvent *event)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     // ESC-Taste wird in QML behandelt (nicht an SDL weitergeben)
     if (event->key() == Qt::Key_Escape) {
-        // ESC wird in SecondPage.qml behandelt
+        // ESC wird in LevelStarter.qml behandelt
         QQuickPaintedItem::keyPressEvent(event);
         return;
     }
@@ -400,6 +426,7 @@ void GameView::keyPressEvent(QKeyEvent *event)
 
 void GameView::keyReleaseEvent(QKeyEvent *event)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow) {
         QQuickPaintedItem::keyReleaseEvent(event);
         return;

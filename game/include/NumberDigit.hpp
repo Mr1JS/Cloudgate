@@ -1,5 +1,10 @@
+/**
+ * @file NumberDigit.hpp
+ * @brief Defines the NumberDigit class for rendering numeric digits
+ */
+
 /*
- *  TimerDigit.hpp
+ *  NumberDigit.hpp
  *  Created on: Feb 01, 2026
  *      Author: Merlin Aubel
  */
@@ -17,38 +22,35 @@
 namespace jumper
 {
 
-//class MainWindow;
-
 /**
- * @brief 	A class to represent an object, that moves in a level
- * 			and interacts (collides) with other objects
+ * @brief A class to represent a number digit to show on screen (e.g. timer, coin count)
  */
-class TimerDigit : public AnimatedRenderable
+class NumberDigit : public AnimatedRenderable
 {
 public:
 
     /// Creates an digit for the given renderer from the given filename
-    TimerDigit(MainWindow* mainWindow, std::string filename);
+    NumberDigit(MainWindow* mainWindow, std::string filename);
 
     /// Creates an digit from a texture and animation information
-    TimerDigit(MainWindow* renderer, SDL_Texture* texture, int frameWidth, int frameHeight, int numFrames);
+    NumberDigit(MainWindow* renderer, SDL_Texture* texture, int frameWidth, int frameHeight, int numFrames);
 
     /// Destructor
-    virtual ~TimerDigit();
+    virtual ~NumberDigit();
 
     /// Renders the digits
     virtual void render() override;
 
+    /// advance to the next digit (e.g. from 5 to 6)
     virtual void nextFrame() override;
 
+    /// Set value to display for this digit. Only numbers from 0 to 9 are valid.
     void setValue(unsigned int value);
 
 protected:
 
-    // value of the digit
+    // value of the digit, will always be a number from 0-9
     unsigned int m_value;
-
-
 };
 
 } /* namespace jumper */

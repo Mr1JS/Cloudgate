@@ -1,3 +1,8 @@
+/**
+ * @file TextureIO.hpp
+ * @brief Defines the TextureIO template class for SDL texture I/O with HDF5
+ */
+
 #ifndef IO_TEXTUREIO_HPP
 #define IO_TEXTUREIO_HPP
 

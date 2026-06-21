@@ -1,0 +1,90 @@
+# Doxyfile for Cloudgate Game Project
+
+PROJECT_NAME           = "Cloudgate Game"
+PROJECT_NUMBER         = @PROJECT_VERSION@
+PROJECT_BRIEF          = "A 2D game engine with Qt/QML interface and SDL2 rendering"
+
+OUTPUT_DIRECTORY       = @DOXYGEN_OUTPUT_DIR@
+INPUT                  = @DOXYGEN_INPUT_DIR@
+RECURSIVE              = YES
+FILE_PATTERNS          = *.cpp *.hpp *.h *.qml
+EXTENSION_MAPPING      = qml=C++
+FILE_VERSION_FILTER    = 
+LAYOUT_FILE            = @CMAKE_SOURCE_DIR@/DoxygenLayout.xml
+
+# Extract only documented elements (not everything)
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_SCOPE_NAMES       = NO
+HIDE_COMPOUND_REFERENCE = NO
+
+# Generate HTML documentation
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+
+# No LaTeX/PDF
+GENERATE_LATEX         = NO
+
+# Disable most diagrams to simplify output
+HAVE_DOT               = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+CLASS_DIAGRAMS         = NO
+CLASS_GRAPH            = NO
+COLLABORATION_GRAPH    = NO
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+GRAPHICAL_HIERARCHY    = NO
+DIRECTORY_GRAPH        = NO
+UML_LOOK               = NO
+DOT_IMAGE_FORMAT       = svg
+
+# Source code browsing
+SOURCE_BROWSER         = NO
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = NO
+
+# Cross-referencing
+REFERENCES_RELATION    = NO
+REFERENCED_BY_RELATION = NO
+
+# Disable alphabetical class index
+ALPHABETICAL_INDEX     = NO
+
+# Exclude build directories and auto-generated files
+EXCLUDE_PATTERNS       = */build/* \
+                         */CMakeFiles/* \
+                         */.git/* \
+                         *_autogen/* \
+                         *_qmltyperegistrations.cpp
+
+# Automatically create brief descriptions from first line
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+
+# Simple tree view focusing on files only
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+
+# Show ONLY files, hide everything else
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = NO
+SHOW_INCLUDE_FILES     = YES
+SHOW_GROUPED_MEMB_INC  = NO
+INLINE_INFO            = YES
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = YES
+
+# Hide all class-related documentation
+HIDE_IN_BODY_DOCS      = YES
+INTERNAL_DOCS          = NO
+HIDE_FRIEND_COMPOUNDS  = YES
+HIDE_CLASS_METHODS_IN_FILE_DOC = YES
+
+# Warnings
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES

@@ -1,3 +1,8 @@
+/**
+ * @file BaseHdf5IO.hpp
+ * @brief Defines the BaseHdf5IO template class for HDF5 file I/O operations
+ */
+
 #ifndef IO_HDF5IO_HPP
 #define IO_HDF5IO_HPP
 

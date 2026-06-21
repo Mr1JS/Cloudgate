@@ -1,3 +1,8 @@
+/**
+ * @file main.cpp
+ * @brief Main entry point for the Qt application
+ */
+
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <include/pages.h>
@@ -13,12 +18,25 @@
 #include "include/GameView.hpp"
 #include "include/LevelSelector.hpp"
 #include "include/ActorSelector.hpp"
-
+#include "include/EndlessLevelGenerator.hpp"
 
 int main(int argc, char *argv[])
 {
     // style for buttons in the qml --> Leveleditor.qml
     qputenv("QT_QUICK_CONTROLS_STYLE", QByteArray("Fusion"));
+
+#ifdef Q_OS_LINUX
+    // Lab machines often run compositor/driver combinations where threaded
+    // render loops with embedded SDL readback are unstable.
+    if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP"))
+    {
+        qputenv("QSG_RENDER_LOOP", QByteArray("basic"));
+    }
+    if (qEnvironmentVariableIsEmpty("JUMPER_SDL_SOFTWARE"))
+    {
+        qputenv("JUMPER_SDL_SOFTWARE", QByteArray("1"));
+    }
+#endif
 
     // need for rednering with SDL2 and not OpenGL
     QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
@@ -37,6 +55,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<GameView>("Cloudgate_game", 1, 0, "GameView");
     qmlRegisterType<LevelSelector>("Cloudgate_game", 1, 0, "LevelSelector");
     qmlRegisterType<ActorSelector>("Cloudgate_game", 1, 0, "ActorSelector");
+    qmlRegisterType<EndlessLevelGenerator>("Cloudgate_game", 1, 0, "EndlessLevelGenerator");
 
     QObject::connect(
         &engine,

@@ -8,6 +8,11 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file SDLRenderable.hpp
+ * @brief Defines the SDLRenderable base class for objects rendered using SDL
+ */
+
 #ifndef SDLRENDERABLE_HPP
 #define SDLRENDERABLE_HPP
 

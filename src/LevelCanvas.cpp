@@ -1,3 +1,9 @@
+/**
+ * @file LevelCanvas.cpp
+ * @brief Implementation of the LevelCanvas class for the visual level editor canvas,
+ *        handles tile placement, grid rendering, mouse interaction and level data management
+ */
+
 #include "include/LevelCanvas.hpp"
 #include "include/Util.hpp"
 #include <QPainter>
@@ -8,6 +14,7 @@
 #include <QDir>
 #include <QDataStream>
 #include <QFileInfo>
+#include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QPair>
 #include <QMap>
@@ -27,9 +34,134 @@ static jumper::shared_array<T> makeSharedArrayCopy(const std::vector<T> &v)
 }
 
 LevelCanvas::LevelCanvas(QQuickItem *parent)
-    : QQuickPaintedItem(parent), m_backgroundColor(92, 130, 161)
+    : QQuickPaintedItem(parent),
+      m_qmlRoot(nullptr),
+      m_backgroundColor(92, 130, 161)
 {
     setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+    getTilesRules();
+}
+
+void LevelCanvas::setQML(QObject *root)
+{
+    m_qmlRoot = root;
+    if (!m_qmlRoot)
+    {
+        qWarning() << "[LevelCanvas] setQML called with null root.";
+    }
+}
+
+std::array<int, 3> LevelCanvas::getQMLValues()
+{
+    // Default to sane values if QML isn't available
+    std::array<int, 3> values{8, 0, 0};
+
+    if (!m_qmlRoot)
+    {
+        qWarning() << "[LevelCanvas] QML root not set; using defaults.";
+        return values;
+    }
+
+    auto findObject = [this](const char *name) -> QObject *
+    {
+        return m_qmlRoot->findChild<QObject *>(name);
+    };
+
+    if (QObject *scrollSpeed = findObject("scrollSpeed"))
+    {
+        QVariant v = scrollSpeed->property("value");
+        if (v.isValid())
+        {
+            values[0] = v.toInt();
+        }
+    }
+
+    int goalType = 0;
+    if (QObject *buttonCoins = findObject("buttonCoins"))
+    {
+        if (buttonCoins->property("checked").toBool())
+        {
+            goalType = 1;
+        }
+    }
+    if (QObject *buttonTime = findObject("buttonTime"))
+    {
+        if (buttonTime->property("checked").toBool())
+        {
+            goalType = 2;
+        }
+    }
+    values[1] = goalType;
+
+    int goalValue = 0;
+    if (goalType == 1)
+    {
+        if (QObject *coinInput = findObject("coinInput"))
+        {
+            goalValue = coinInput->property("text").toString().toInt();
+        }
+    }
+    else if (goalType == 2)
+    {
+        if (QObject *timeInput = findObject("timeInput"))
+        {
+            goalValue = timeInput->property("text").toString().toInt();
+        }
+    }
+    values[2] = goalValue;
+
+    return values;
+}
+
+void LevelCanvas::setQMLValues(std::array<int, 3> qmlValues)
+{
+    if (!m_qmlRoot)
+    {
+        qWarning() << "[LevelCanvas] QML root not set; cannot apply values.";
+        return;
+    }
+
+    const int scrollSpeed = qmlValues[0];
+    const int goalType = qmlValues[1];
+    const int goalValue = qmlValues[2];
+
+    auto findObject = [this](const char *name) -> QObject *
+    {
+        return m_qmlRoot->findChild<QObject *>(name);
+    };
+
+    if (QObject *scrollSpeedObj = findObject("scrollSpeed"))
+    {
+        scrollSpeedObj->setProperty("value", scrollSpeed);
+    }
+
+    if (QObject *buttonNone = findObject("buttonNone"))
+    {
+        buttonNone->setProperty("checked", goalType == 0);
+    }
+    if (QObject *buttonCoins = findObject("buttonCoins"))
+    {
+        buttonCoins->setProperty("checked", goalType == 1);
+    }
+    if (QObject *buttonTime = findObject("buttonTime"))
+    {
+        buttonTime->setProperty("checked", goalType == 2);
+    }
+
+    if (goalType == 1)
+    {
+        if (QObject *coinInput = findObject("coinInput"))
+        {
+            coinInput->setProperty("text", QString::number(goalValue));
+        }
+    }
+    else if (goalType == 2)
+    {
+        if (QObject *timeInput = findObject("timeInput"))
+        {
+            timeInput->setProperty("text", QString::number(goalValue));
+        }
+    }
 }
 
 void LevelCanvas::setTileset(const QList<Tile> &tiles, int tileW, int tileH, int offset, int endIndex)
@@ -55,6 +187,20 @@ void LevelCanvas::placeTile(int tileIndex)
 {
     m_currentTileIndex = tileIndex;
     qDebug() << "Current tile set:" << tileIndex;
+}
+// get types of each tileID
+void LevelCanvas::getTilesRules()
+{
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp();
+    std::string rulesPath = appDir.absoluteFilePath("res/tileDefinition/RulesTiles.xml").toStdString();
+    std::map<int, jumper::TileInfo> tilesInfo = jumper::ParseXMLData(rulesPath);
+    // filter the types and set them in m_tileType
+    for (const auto& [tileID, tileInfo] : tilesInfo) 
+    {
+        m_tileType[tileID] = tileInfo.type;
+    }
+
 }
 
 void LevelCanvas::clearLevel()
@@ -96,6 +242,9 @@ void LevelCanvas::clearLevel()
     setHeight(m_gridHeight * m_tileHeight);
     setWidth(m_gridWidth * m_tileWidth);
 
+    // set background image to base value
+    setBackground("res/images/backgrounds/mountain.png");
+    
     emit gridHeightChanged();
     emit gridWidthChanged();
     update();
@@ -106,7 +255,7 @@ void LevelCanvas::paint(QPainter *painter)
     painter->setRenderHint(QPainter::Antialiasing, false);
     painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    painter->fillRect(boundingRect(), Qt::white);
+    painter->fillRect(boundingRect(), Qt::transparent);
 
     // Draw placed tiles
     for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
@@ -133,6 +282,24 @@ void LevelCanvas::paint(QPainter *painter)
 
             painter->drawPixmap(targetRect, m_tiles[tileIndex].pixmap, croppedSource);
         }
+
+        // player spawnpoint marked red
+        painter->setBrush(QColor(255, 0, 0, 60));
+        painter->setPen(QPen(QColor(255, 0, 0, 180), 2));
+
+        // because of the borders of the game, it doesnt start at (0|max)
+        for (int y = m_gridHeight - 3; y < m_gridHeight - 1; ++y)
+        {
+            for (int x = 1; x < 3; ++x)
+            {
+                QRect r(x * m_tileWidth,
+                        y * m_tileHeight,
+                        m_tileWidth,
+                        m_tileHeight);
+
+                painter->drawRect(r);
+            }
+        }
     }
 
     // Grid as overlay
@@ -152,6 +319,13 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
     int gridX = event->position().x() / m_tileWidth;
     int gridY = event->position().y() / m_tileHeight;
 
+    // 2x2 player spawnpoint in grid, so no placing tiles allowed
+    if (gridX >= 1 && gridX < 3 && gridY >= m_gridHeight - 3 && gridY < m_gridHeight - 1)
+    {
+        qDebug() << "Character Spawnpoint - click ignored";
+        return;
+    }
+
     if (gridX >= 0 && gridX < m_gridWidth && gridY >= 0 && gridY < m_gridHeight)
     {
         // Protect frame tiles
@@ -164,13 +338,13 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
 
         if (m_levelData.contains(pos))
         {
-            // Right click or placing Tile on extraTile (1x2 Tile)
+            // Right click (Deleting) or placing Tile on extraTile (1x2 Tile)
             if (event->button() == Qt::RightButton || (m_levelData[pos] != m_currentTileIndex && m_levelData[pos] >= m_endIndex))
             {
                 // if extraTile
                 if (m_levelData[pos] >= m_endIndex)
                 {
-                    // is Upper or Lower Part
+                    // is Upper or Lower Part of extraTile and delete the other part too
                     if (m_levelData[pos] % 2 != m_endIndex % 2)
                     {
                         QPair<int, int> pos2(gridX, gridY - 1);
@@ -184,7 +358,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                         qDebug() << "Tile deleted at (" << gridX << "," << gridY + 1 << ")";
                     }
                 }
-
+                // remove selected part
                 m_levelData.remove(pos);
                 update();
                 qDebug() << "Tile deleted at (" << gridX << "," << gridY << ")";
@@ -205,7 +379,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 if (m_currentTileIndex % 2 != m_endIndex % 2 && gridY != 0)
                 {
                     QPair<int, int> pos2(gridX, gridY - 1);
-                    // special case: extraTile on extraTile
+                    // handle special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 != m_endIndex % 2)
@@ -220,7 +394,7 @@ void LevelCanvas::mousePressEvent(QMouseEvent *event)
                 else if (m_currentTileIndex % 2 == m_endIndex % 2 && gridY != m_gridHeight - 1)
                 {
                     QPair<int, int> pos2(gridX, gridY + 1);
-                    // special case: extraTile on extraTile
+                    // handle special case: extraTile on extraTile
                     if (m_levelData.contains(pos2))
                     {
                         if (m_levelData[pos2] >= m_endIndex && m_levelData[pos2] % 2 == m_endIndex % 2)
@@ -261,7 +435,9 @@ static std::vector<int> flattenTileMap(
         const int x = it.key().first;
         const int y = it.key().second;
         if (x < 0 || x >= w || y < 0 || y >= h)
+        {
             continue;
+        }
         out[y * w + x] = it.value() + 1;
     }
 
@@ -279,7 +455,9 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
     QMap<QPair<int, int>, int> out;
 
     if ((int)flat.size() != w * h)
+    {
         return out;
+    }
 
     for (int y = 0; y < h; ++y)
     {
@@ -287,21 +465,28 @@ static QMap<QPair<int, int>, int> unflattenTileMap(
         {
             const int v = flat[y * w + x] - 1;
             if (v >= 0)
+            {
                 out.insert(qMakePair(x, y), v);
+            }
         }
     }
 
     return out;
 }
 // count how many tiles have coins in them
-static int countCoins(const QMap<QPair<int, int>, int> &map)
+int LevelCanvas::countCoins(const QMap<QPair<int, int>, int> &map)
 {
     int coinsAmount = 0;
     for (auto it = map.begin(); it != map.end(); ++it)
     {
-        if (it.value() == 118)
+        // dynamic checking if tileId is a coin (allows unlimited coin variants) and we dont need to have a set id to check
+        // and make sure the value is a valid index
+        if (it.value() >= 0 && it.value() < m_tileType.size())
         {
-            coinsAmount++;
+            if (m_tileType[it.value()] == "collectible")
+            {
+                coinsAmount++;
+            }
         }
     }
 
@@ -312,7 +497,7 @@ static int countCoins(const QMap<QPair<int, int>, int> &map)
 // Helper: save QImage RGBA8888 into a vector<uint8_t>
 // -----------------------------------------------
 static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &outBytes, int &H, int &W)
-{
+{ // TODO: is this needed? because I do not think that we have to save the colour too to h5. The prof did not do it. 
     if (image.isNull())
     {
         return false;
@@ -382,7 +567,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     // ---------- path handling ----------
     QString p = xmlPath;
     if (p.startsWith("~"))
+    {
         p.replace(0, 1, QDir::homePath());
+    }
 
     QFileInfo xmlInfo(p);
     const QString outDir = xmlInfo.absolutePath();
@@ -407,22 +594,26 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
     std::string absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml").toStdString();
 
     QString currentActorName = QString::fromStdString(jumper::getLevelActor(absoluteLevelPath));
+    if (currentActorName == QString(""))
+    {
+        currentActorName = QString("MariosVergessenerZweiterBruder");
+    }
+
+    // get full path for background Image (use appDir of code above)
+    QString absoluteBackgroundPath = appDir.absoluteFilePath(m_background);
 
     // ---------- prepare tileset image ----------
     if (!m_tilesetPath.isEmpty())
     {
-        std::cout << "\ntileset saved\n";
         QImage img(m_tilesetPath);
         if (!img.isNull())
         {
-            std::cout << "\ntileset saved\n";
-            // TODO: Change the Color format pls
             m_tilesetImage = img.convertToFormat(QImage::Format_RGBA8888);
         }
     }
 
     // ---------- prepare background image ----------
-    QImage bgImg(":/resources/images/backgroundMountain.png");
+    QImage bgImg(absoluteBackgroundPath);
     if (!bgImg.isNull())
     {
         bgImg = bgImg.convertToFormat(QImage::Format_RGBA8888);
@@ -476,29 +667,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         // ==========================================================
         using IO = jumper::BaseHdf5IO<jumper::hdf5features::TileSetIO>;
         IO io;
-        // TODO: when file is replaced then we have an error:
-        /* tileset saved
-        qt.gui.imageio: libpng warning: iCCP: known incorrect sRGB profile
-        qt.gui.imageio: libpng warning: iCCP: cHRM chunk does not match sRGB
-
-        tileset saved
-        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 30 x 36 x4
-        [LevelCanvas] Saved actor texture to H5: /textures/ "mario1" dim= 50 x 48 x4
-        [Hdf5Util - createDataset] WARNING: size has changed. resizing dataset
-        HDF5-DIAG: Error detected in HDF5 (1.10.10) thread 1:
-        #000: ../../../src/H5D.c line 861 in H5Dset_extent(): unable to set dataset extent
-            major: Dataset
-            minor: Can't set value
-        #001: ../../../src/H5Dint.c line 2801 in H5D__set_extent(): unable to modify size of dataspace
-            major: Dataset
-            minor: Unable to initialize object
-        #002: ../../../src/H5S.c line 1823 in H5S_set_extent(): dimension cannot exceed the existing maximal size (new: 65 max: 40)
-            major: Dataspace
-            minor: Bad value */
-        // otherwise if u create a file for that it works
-        // TODO: CURRENT ALTERNATIVE ... NEEDS TO BE INVESTIGATED
+        
         // ----------------------------------------------------------
-        // Ensure fresh HDF5 file (avoid file lock + stale datasets
+        // Ensure fresh HDF5 file (avoid file lock + stale datasets)
         // ----------------------------------------------------------
         if (QFile::exists(h5Path))
         {
@@ -758,7 +929,9 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         return;
     }
 
-    QTextStream ts(&f);
+    QXmlStreamWriter ts(&f);
+    ts.setAutoFormatting(true);
+    ts.writeStartDocument();
 
     int tilesPerRow = 0;
     int numRows = 0;
@@ -768,66 +941,75 @@ void LevelCanvas::saveLevel(const QString &xmlPath)
         numRows = m_tilesetImage.height() / (m_tileHeight + m_tileOffset);
     }
 
-    ts << "<level resources=\"" << baseName + ".h5" << "\">\n";
+    ts.writeStartElement("level");
+    ts.writeAttribute("resources", baseName + ".h5");
 
     // background still references the tileset for tilemap usage
     // (If you want XML to reference the PNG instead, tell me and I adapt)
-    ts << "  <background_tiles texture=\"" << "backgroundImg" << "\">\n";
-    ts << "    <layer>0</layer>\n";
-    ts << "  </background_tiles>\n";
+    ts.writeStartElement("background_tiles");
+    ts.writeAttribute("texture", "backgroundImg");
+    ts.writeTextElement("background_path", m_background);
+    ts.writeTextElement("layer", "0");
+    ts.writeEndElement();
 
-    ts << "  <collision_tiles texture=\"" << m_tilesetTextureName << "\" tiles=\"level1\">\n";
-    ts << "    <tileWidth>" << m_tileWidth << "</tileWidth>\n";
-    ts << "    <tileHeight>" << m_tileHeight << "</tileHeight>\n";
-    ts << "    <tilesPerRow>" << tilesPerRow << "</tilesPerRow>\n";
-    ts << "    <numRows>" << numRows << "</numRows>\n";
-    ts << "    <gridHeight>" << m_gridHeight << "</gridHeight>\n"; // switch with code from develop branch
-    ts << "    <tileOffset>" << m_tileOffset << "</tileOffset>\n";
-    ts << "    <switchIndex>" << m_endIndex << "</switchIndex>\n";
-    ts << "    <layer>1</layer>\n";
-    ts << "  </collision_tiles>\n";
+    ts.writeStartElement("collision_tiles");
+    ts.writeAttribute("texture", m_tilesetTextureName);
+    ts.writeAttribute("tiles", "level1");
+    ts.writeTextElement("tileWidth", QString::number(m_tileWidth));
+    ts.writeTextElement("tileHeight", QString::number(m_tileHeight));
+    ts.writeTextElement("tilesPerRow", QString::number(tilesPerRow));
+    ts.writeTextElement("numRows", QString::number(numRows));
+    ts.writeTextElement("gridHeight", QString::number(m_gridHeight));
+    ts.writeTextElement("tileOffset", QString::number(m_tileOffset));
+    ts.writeTextElement("endIndex", QString::number(m_endIndex));
+    ts.writeTextElement("layer", "1");
+    ts.writeEndElement();
 
     // hp hearts
-    ts << "  <heart texture=\"heart\">\n";
-    ts << "    <tileWidth>" << 16 << "</tileWidth>\n";
-    ts << "    <tileHeight>" << 16 << "</tileHeight>\n";
-    ts << "    <layer>3</layer>\n";
-    ts << "  </heart>\n";
+    ts.writeStartElement("heart");
+    ts.writeAttribute("texture", "heart");
+    ts.writeTextElement("tileWidth", "16");
+    ts.writeTextElement("tileHeight", "16");
+    ts.writeTextElement("layer", "3");
+    ts.writeEndElement();
 
     // numbers
-    ts << "  <numbers texture=\"numbers\">\n";
-    ts << "    <num_frames>" << 10 << "</num_frames>\n";
-    ts << "    <frame_width>" << 10 << "</frame_width>\n";
-    ts << "    <frame_height>" << 10 << "</frame_height>\n";
-    ts << "    <layer>3</layer>\n";
-    ts << "  </numbers>\n";
-
+    ts.writeStartElement("numbers");
+    ts.writeAttribute("texture", "numbers");
+    ts.writeTextElement("num_frames", "10");
+    ts.writeTextElement("frame_width", "10");
+    ts.writeTextElement("frame_height", "10");
+    ts.writeTextElement("layer", "3");
+    ts.writeEndElement();
 
     // fixed values because all actors have the same settings except for name
-    ts << "  <actor texture=\"" << currentActorName << "\">\n";
-    ts << "    <num_frames>2</num_frames>\n";
-    ts << "    <frame_width>36</frame_width>\n";
-    ts << "    <frame_height>48</frame_height>\n";
-    ts << "    <position_x>50</position_x>\n";
-    ts << "    <position_y>450</position_y>\n";
-    ts << "    <layer>2</layer>\n";
-    ts << "  </actor>\n";
+    ts.writeStartElement("actor");
+    ts.writeAttribute("texture", currentActorName);
+    ts.writeTextElement("num_frames", "2");
+    ts.writeTextElement("frame_width", "36");
+    ts.writeTextElement("frame_height", "48");
+    ts.writeTextElement("position_x", "50");
+    ts.writeTextElement("position_y", "450");
+    ts.writeTextElement("layer", "2");
+    ts.writeEndElement();
 
     // keep forces block
-    ts << "  <level_forces>\n";
-    ts << "    <gravity_x>0</gravity_x>\n";
-    ts << "    <gravity_y>400</gravity_y>\n";
-    ts << "    <damping_x>0.7</damping_x>\n";
-    ts << "    <damping_y>1.0</damping_y>\n";
-    ts << "    <scrollSpeed>" << scrollSpeed << "</scrollSpeed>\n";
-    ts << "  </level_forces>\n";
+    ts.writeStartElement("level_forces");
+    ts.writeTextElement("gravity_x", "0");
+    ts.writeTextElement("gravity_y", "400");
+    ts.writeTextElement("damping_x", "0.7");
+    ts.writeTextElement("damping_y", "1.0");
+    ts.writeTextElement("scrollSpeed", QString::number(scrollSpeed));
+    ts.writeEndElement();
 
-    ts << "  <goal>\n";
-    ts << "    <type>" << goalType << "</type>\n";
-    ts << "    <value>" << goalValue << "</value>\n";
-    ts << "  </goal>\n";
+    ts.writeStartElement("goal");
+    ts.writeTextElement("type", QString::number(goalType));
+    ts.writeTextElement("value", QString::number(goalValue));
+    ts.writeEndElement();
 
-    ts << "</level>\n";
+    ts.writeEndElement(); // level
+    ts.writeEndDocument();
+
     f.close();
 
     qDebug() << "[LevelCanvas] XML saved:" << p;
@@ -892,6 +1074,25 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
             else if (elementName == "background_tiles")
             {
                 bgTextureName = xml.attributes().value("texture").toString();
+
+                while (!(xml.isEndElement() && xml.name().toString() == "background_tiles"))
+                {
+                    xml.readNext();
+                    if (xml.isStartElement())
+                    {
+                        QString childName = xml.name().toString();
+
+                        if (childName == "background_path")
+                        {
+                            QString v = xml.readElementText();
+                            if (v != "")
+                            {
+                                setBackground(v);
+                            }
+                        }
+                    }
+                }
+                
             }
             else if (elementName == "collision_tiles")
             {
@@ -1007,7 +1208,9 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
     m_tilesetTextureName = !colTextureName.isEmpty() ? colTextureName : bgTextureName;
 
     if (colTilesDataset.isEmpty())
+    {
         colTilesDataset = "level1";
+    }
 
     // -------- build H5 path next to XML --------
     const QString h5Path = xmlInfo.absolutePath() + "/" + h5FileName;
@@ -1039,8 +1242,12 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
         flatTiles.reserve(m_gridWidth * m_gridHeight);
 
         for (int y = 0; y < m_gridHeight; ++y)
+        {
             for (int x = 0; x < m_gridWidth; ++x)
+            {
                 flatTiles.push_back(tileArr[y][x]);
+            }
+        }
 
         m_levelData = unflattenTileMap(flatTiles, m_gridWidth, m_gridHeight, 0);
 
@@ -1094,6 +1301,19 @@ void LevelCanvas::loadLevel(const QString &xmlPath)
 void LevelCanvas::setExtraTiles(bool mode)
 {
     m_extraTiles = mode;
+}
+
+// used every time in this class to change m_background so the emit signal is centralized here
+void LevelCanvas::setBackground(QString background)
+{
+    m_background = background;
+
+    emit backgroundChanged(m_background);
+}
+
+QString LevelCanvas::background()
+{
+    return m_background;
 }
 
 void LevelCanvas::setQML(QObject* root)
@@ -1256,4 +1476,39 @@ void LevelCanvas::addRowsAbove(int rows)
     update();
 
     qDebug() << "[LevelCanvas] Added" << rows << "rows ABOVE. New height:" << m_gridHeight;
+}
+
+// Remove rows from canvas
+void LevelCanvas::removeRowsAbove(int rows)
+{
+    if (rows <= 0 || m_gridHeight <= 25)
+    {
+        return;
+    }
+
+    // Remove 5 rows and min height is 25
+    int actualRows = qMin(rows, m_gridHeight - 25);
+    if (actualRows <= 0)
+    {
+        return;
+    }
+
+    // Move tiles up
+    QMap<QPair<int, int>, int> newData;
+    for (auto it = m_levelData.constBegin(); it != m_levelData.constEnd(); ++it)
+    {
+        int newY = it.key().second - actualRows;
+        if (newY >= 0)
+        {
+            newData.insert(qMakePair(it.key().first, newY), it.value());
+        }
+    }
+
+    m_levelData = newData;
+    m_gridHeight -= actualRows;
+    setHeight(m_gridHeight * m_tileHeight);
+    emit gridHeightChanged();
+    update();
+
+    qDebug() << "[LevelCanvas] Removed" << actualRows << "rows ABOVE. New height:" << m_gridHeight;
 }

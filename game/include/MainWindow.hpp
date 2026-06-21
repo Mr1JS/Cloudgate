@@ -1,3 +1,8 @@
+/**
+ * @file MainWindow.hpp
+ * @brief Defines the MainWindow class which manages the SDL window and rendering loop
+ */
+
 /*
  *  MainWindow.hpp *
  *  Created on: Dec 08, 2017
@@ -70,7 +75,7 @@ public:
      */
     Level* level();
 
-    /// Retruns the current width of the window
+    /// Returns the current width of the window
     int w();
 
     /// Returns the current height of the window
@@ -89,6 +94,9 @@ private:
 
     /// SDL main window struct
     SDL_Window*			m_window;
+
+    /// Optional offscreen render target for deterministic readback
+    SDL_Texture*        m_offscreenTarget;
 
     /// Window width
     int					m_width;
