@@ -1,3 +1,8 @@
+/**
+ * @file Renderable.hpp
+ * @brief Defines the Renderable base interface for all objects that can be rendered
+ */
+
 /*
  *  Renderable.hpp
  *  Created on: Dec 08, 2017

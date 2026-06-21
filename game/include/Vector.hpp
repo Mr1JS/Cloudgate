@@ -1,3 +1,8 @@
+/**
+ * @file Vector.hpp
+ * @brief Defines the Vector template class for 2D/3D vector operations
+ */
+
 /*
  *  Vector.hpp
  *  Created on: Dec 08, 2017
@@ -139,7 +144,10 @@ private:
 template<typename T>
 Vector<T> operator* (T s, const Vector<T>& v);
 
+/// Rename of Vector<double>
 typedef Vector<double>  Vector2f;
+
+/// Representation of a pixel as Vector<int>
 typedef Vector<int>     Pixel;
 
 } /* namespace jumper */

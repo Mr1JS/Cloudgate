@@ -1,3 +1,9 @@
+/**
+ * @file Main.qml
+ * @brief Main application window and navigation controller for the game,
+ *        manages page switching between menu, character selection, level editor and gameplay
+ */
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic

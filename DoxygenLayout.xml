@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doxygenlayout version="1.0">
+  <!-- Navigation index tabs for HTML output -->
+  <navindex>
+    <tab type="mainpage" visible="yes" title=""/>
+    <tab type="files" visible="yes" title="">
+      <tab type="filelist" visible="yes" title="" intro=""/>
+    </tab>
+  </navindex>
+
+  <!-- Layout definition for a class page -->
+  <class>
+    <briefdescription visible="yes"/>
+    <detaileddescription title=""/>
+    <includes visible="no"/>
+    <inheritancegraph visible="no"/>
+    <collaborationgraph visible="no"/>
+    <memberdecl>
+      <nestedclasses visible="yes" title=""/>
+      <publictypes title=""/>
+      <services title=""/>
+      <interfaces title=""/>
+      <publicslots title=""/>
+      <signals title=""/>
+      <publicmethods title=""/>
+      <publicstaticmethods title=""/>
+      <publicattributes title=""/>
+      <publicstaticattributes title=""/>
+      <protectedtypes title=""/>
+      <protectedslots title=""/>
+      <protectedmethods title=""/>
+      <protectedstaticmethods title=""/>
+      <protectedattributes title=""/>
+      <protectedstaticattributes title=""/>
+      <packagetypes title=""/>
+      <packagemethods title=""/>
+      <packagestaticmethods title=""/>
+      <packageattributes title=""/>
+      <packagestaticattributes title=""/>
+      <properties title=""/>
+      <events title=""/>
+      <privatetypes title=""/>
+      <privateslots title=""/>
+      <privatemethods title=""/>
+      <privatestaticmethods title=""/>
+      <privateattributes title=""/>
+      <privatestaticattributes title=""/>
+      <friends title=""/>
+      <related title="" subtitle=""/>
+    </memberdecl>
+    <memberdef>
+      <inlineclasses title=""/>
+      <typedefs title=""/>
+      <enums title=""/>
+      <services title=""/>
+      <interfaces title=""/>
+      <constructors title=""/>
+      <functions title=""/>
+      <related title=""/>
+      <variables title=""/>
+      <properties title=""/>
+      <events title=""/>
+    </memberdef>
+    <allmemberslink visible="yes"/>
+    <usedfiles visible="no"/>
+  </class>
+
+  <!-- Layout definition for a file page -->
+  <file>
+    <briefdescription visible="yes"/>
+    <detaileddescription title=""/>
+    <includes visible="yes"/>
+    <includegraph visible="no"/>
+    <includedbygraph visible="no"/>
+    <sourcelink visible="no"/>
+    <memberdecl>
+      <classes visible="yes" title=""/>
+      <defines visible="yes" title=""/>
+      <typedefs visible="yes" title=""/>
+      <enums visible="yes" title=""/>
+      <functions visible="yes" title=""/>
+      <variables visible="yes" title=""/>
+    </memberdecl>
+    <memberdef>
+      <inlineclasses title=""/>
+      <defines title=""/>
+      <typedefs title=""/>
+      <enums title=""/>
+      <functions title=""/>
+      <variables title=""/>
+    </memberdef>
+  </file>
+</doxygenlayout>

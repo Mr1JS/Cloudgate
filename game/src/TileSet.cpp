@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file TileSet.cpp
+ * @brief Implementation of the TileSet class for loading, managing and rendering tilesets
+ *        with tileset graphics, tile properties and layer-based rendering
+ */
+
 #include "game/include/TileSet.hpp"
 
 #include "game/include/MainWindow.hpp"
@@ -130,6 +136,38 @@ namespace jumper
         }
         SDL_DestroyTexture(m_texture);
     }
+
+    TileSetRepresentation* TileSet::tiles()
+    {
+        return m_tiles;
+    }
+
+
+    SDL_Texture* TileSet::texture() const
+    {
+        return m_texture;
+    }
+    
+    int TileSet::tileWidth() const
+    {
+        return m_tileWidth;
+    }
+    
+    int TileSet::tileHeight() const
+    {
+        return m_tileHeight;
+    }
+    
+    int TileSet::tilesPerRow() const
+    {
+        return m_tilesPerRow;
+    }
+    
+    int TileSet::tileOffset() const
+    {
+        return m_tileOffset;
+    }
+    
 
     int TileSet::w()
     {

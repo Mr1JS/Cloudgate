@@ -1,3 +1,8 @@
+/**
+ * @file TileSetRepresentation.hpp
+ * @brief Defines the TileSetRepresentation class for mapping between tile coordinates and physics
+ */
+
 /*
  *  TileSetRepresentation.hpp
  *  Created on: Dec 08, 2017
@@ -11,7 +16,10 @@
 #ifndef UEBUNG08_SRC_TILESETREPRESENTATION_HPP_
 #define UEBUNG08_SRC_TILESETREPRESENTATION_HPP_
 
-/// Proxy class to implement [][]-access
+namespace jumper
+{
+
+    /// Proxy class to implement [][]-access
 class TileIndexProxy
 {
 public:
@@ -48,16 +56,16 @@ public:
     virtual ~TileSetRepresentation() {}
 
     /// Returns the number of managed columns
-    int width() const { return m_w; }
+    int width() const;
 
-    /// Retruns the number of managed rows
-    int height() const { return m_h; }
+    /// Returns the number of managed rows
+    int height() const;
 
     /// Returns the tile height
-    int tileHeight() const { return m_tileHeight; }
+    int tileHeight() const;
 
-    /// Retruns the tile width
-    int tileWidth() const { return m_tileWidth; }
+    /// Returns the tile width
+    int tileWidth() const;
 
 protected:
     /// x position
@@ -82,5 +90,6 @@ protected:
 
 };
 
+} // namespace jumper
 
 #endif /* UEBUNG08_SRC_TILESETREPRESENTATION_HPP_ */

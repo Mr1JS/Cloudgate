@@ -1,3 +1,9 @@
+/**
+ * @file GameController.cpp
+ * @brief Implementation of the GameController class for managing game lifecycle,
+ *        threading, level loading and communication between Qt GUI and SDL game engine
+ */
+
 #include "include/GameController.hpp"
 #include "game/include/MainWindow.hpp"
 #include <QDebug>
@@ -16,7 +22,8 @@ GameController::GameController(QObject *parent)
     QString levelPath = appDir.absoluteFilePath("res/level.xml");
 
     // Fallback: try relative path from current working directory
-    if (!QFile::exists(levelPath)) {
+    if (!QFile::exists(levelPath))
+    {
         levelPath = "res/level.xml";
     }
 
@@ -30,7 +37,8 @@ GameController::~GameController()
 
 void GameController::setLevelPath(const QString& path)
 {
-    if (m_levelPath != path) {
+    if (m_levelPath != path)
+    {
         m_levelPath = path;
         emit levelPathChanged();
     }
@@ -38,7 +46,8 @@ void GameController::setLevelPath(const QString& path)
 
 void GameController::setRunning(bool running)
 {
-    if (m_running != running) {
+    if (m_running != running)
+    {
         m_running = running;
         emit runningChanged();
     }
@@ -46,21 +55,25 @@ void GameController::setRunning(bool running)
 
 void GameController::startGame()
 {
-    if (m_running) {
+    if (m_running)
+    {
         qDebug() << "Game is already running";
         return;
     }
 
-    try {
+    try
+    {
         // Convert to absolute path if relative
         QString absoluteLevelPath = m_levelPath;
-        if (!QDir::isAbsolutePath(absoluteLevelPath)) {
+        if (!QDir::isAbsolutePath(absoluteLevelPath))
+        {
             QDir appDir(QCoreApplication::applicationDirPath());
             appDir.cdUp();
             absoluteLevelPath = appDir.absoluteFilePath(m_levelPath);
 
             // If still doesn't exist, try from current working directory
-            if (!QFile::exists(absoluteLevelPath)) {
+            if (!QFile::exists(absoluteLevelPath))
+            {
                 QDir currentDir = QDir::current();
                 absoluteLevelPath = currentDir.absoluteFilePath(m_levelPath);
             }
@@ -84,14 +97,17 @@ void GameController::startGame()
         emit gameStarted();
 
         // Run game loop
-        if (m_gameWindow) {
+        if (m_gameWindow)
+        {
             m_gameWindow->run();
         }
 
         setRunning(false);
         emit gameStopped();
 
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         qDebug() << "Error starting game:" << e.what();
         setRunning(false);
         emit gameStopped();
@@ -100,14 +116,16 @@ void GameController::startGame()
 
 void GameController::stopGame()
 {
-    if (!m_running) {
+    if (!m_running)
+    {
         return;
     }
 
     setRunning(false);
     m_gameWindow.reset();
 
-    if (m_gameThread) {
+    if (m_gameThread)
+    {
         m_gameThread->quit();
         m_gameThread->wait();
         m_gameThread->deleteLater();

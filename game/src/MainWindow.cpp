@@ -1,3 +1,9 @@
+/**
+ * @file MainWindow.cpp
+ * @brief Implementation of the MainWindow class for managing the SDL window,
+ *        renderer initialization, texture loading and basic rendering loop
+ */
+
 /*
  *  MainWindow.cpp *
  *  Created on: Dec 08, 2017

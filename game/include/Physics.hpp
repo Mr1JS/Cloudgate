@@ -1,3 +1,8 @@
+/**
+ * @file Physics.hpp
+ * @brief Defines the Physics class for Box2D physics simulation and collision detection
+ */
+
 /*
  *  Physics.hpp
  *  Created on: Dec 08, 2017
@@ -7,7 +12,7 @@
  *  Restricted usage. Licensed for participants of the course "The C++ Programming Language" only.
  *  No unauthorized distribution.
  *
- *  Modifiziert für Box2D-Integration.
+ *  Modified for Box2D-Integration.
  */
 
 #ifndef PHYSICS_H
@@ -23,7 +28,8 @@
 #include <vector>
 #include <box2d/box2d.h>
 
-namespace jumper {
+namespace jumper
+{
 
 class Actor;
 class Level;
@@ -35,158 +41,185 @@ class Physics;
 class ContactListener : public b2ContactListener
 {
 public:
+    /// creates an instance of ContactListener, attached to given Player and Level
     ContactListener(Actor* actor, Level* level, Physics* physics);
 
+    /// @brief called when player interacts with the hitbox of any other object in the world
+    /// @param contact 
     void BeginContact(b2Contact* contact) override;
+
+    /// @brief called when player contact with the hitbox of another object ends
+    /// @param contact 
     void EndContact(b2Contact* contact) override;
 
 private:
+
+    /// the actor whose contact should be checked
     Actor*      m_actor;
+
+    /// the level that is being played
     Level*      m_level;
+
+    /// the physics instance to be used
     Physics*    m_physics;
 };
 
 /**
- * @brief Box2D-basierte Physik-Engine.
- *        Berechnet Kollisionen und Bewegung über Box2D.
+ * @brief Box2D-based physics engine.
+ *        Handles collision and movement using Box2D.
  */
 class Physics
 {
 public:
-	/// Konstruktor mit Actor und Level
+	/// Constructor with Actor and Level
     Physics(Actor* actor, Level* level);
 
-    /// Destruktor
+    /// Destructor
     ~Physics();
 
-    /// Führt einen Physik-Update-Schritt aus
+    /// Executes one update step for physics
     void update();
 
-    /// Wird vom ContactListener bei Hazard-Kollision aufgerufen
+    /// Called by ContactListener when colliding with a hazard
     void handleHazardContact(int tileId, const b2Vec2& tileCenter, const b2Vec2& actorCenter);
 
-    /// Wendet Knockback an (z.B. bei Monster-Kollision). otherCenter in Pixel-Koordinaten.
+    /// Apply knockback (e.g. when colliding with a monster).
+    /// @param otherCenter center in pixel coordinates.
     void applyKnockbackFromPosition(const Vector2f& otherCenter);
 
-    b2Body* getActorBody() const { return m_actorBody; }
-    unsigned int getLastHazardDamageTicks() const { return m_lastHazardDamageTicks; }
+    /// returns Box2D body of actor
+    b2Body* getActorBody() const;
 
-    /// true = Spieler kann Schaden nehmen; false = noch unverwundbar
+    /// return time passed since last taking damage from a hazard
+    unsigned int getLastHazardDamageTicks() const;
+
+    /// true = player can take damage; false = still invincible
     bool canTakeDamage() const;
 
-    /// Kamera darf sich erst nach CAMERA_DELAY_MS bewegen (z.B. 5 Sekunden nach Levelstart)
+    /// Camera is only allowed to move after CAMERA_DELAY_MS time (e.g. 5s after level start)
     bool isCameraMovementEnabled() const;
+
+    /// update time when damage was last taken (in ticks)
     void setLastHazardDamageTicks(unsigned int t);
 
-    /// Bewegungssperre nach Schaden (ms)
+    /// Movement lock after taking damage (ms)
     static constexpr unsigned int MOVEMENT_LOCK_MS = 250;
-    /// Unverwundbarkeit nach Schaden (ms) - 2 Sekunden
+
+    /// Invincibility after taking damage (ms) - 2 seconds
     static constexpr unsigned int INVINCIBILITY_MS = 2000;
 
     // get Tile Data in ContactListener
     std::pair<std::string, std::string> getTileData(int tileId);
 
-    /// Tile-ID (0-basiert) zu einem type aus RulesTiles.xml; -1 wenn nicht gefunden
+    /// Return Tile id (0-based) from RulesTiles.xml; -1 if not found
     int getTileIdByType(const std::string& type) const;
 
-    /// Alle Tile-IDs (0-basiert) mit gegebenem type (z.B. "enemy" für Monster)
+    /// Return all tile ids (0-based) of given type (e.g. "enemy" for monsters)
     std::vector<int> getTileIdsByType(const std::string& type) const;
 
-    /// Level-Ausdehnung in Tiles (für Prüfung z.B. gy+1 < getLevelHeight())
+    /// Return level width in tiles
     int getLevelWidth() const;
+
+    /// Return level height in tiles
     int getLevelHeight() const;
 
-    /// Body nach Kontakt-Callback zerstören (z.B. gesammelte Münze)
+    /// Queue Box2D body to be destroyed during next update step (e.g. coin after collection)
     void queueBodyForDestruction(b2Body* body);
 
-    /// Nach Ersetzen eines Tiles (z.B. random-Box): in nächstem update() Body für (gx, gy) anlegen
+    /// Queue creation of a body during next update step (e.g. after destroying a box and spawning an item)
     void queueCreateBodyForTile(int gx, int gy);
 
-    /// Feder/Spring (z.B. Tile 120): Actor mit factor-facher Sprungkraft nach oben schleudern
+    /// Apply increased jump height by given factor (for jumping on a spring)
     void applySpringLaunch(float factor);
 
-    /// Von ContactListener aufgerufen: Wandkontakt (verhindert Drücken in Wand → Zittern)
+    /// Called by contact listener when interacting with a wall - prevents jittering when walking into it
     void addWallContact(float normalX);
+
+    /// Called by ContactListener when wall contact ends
     void removeWallContact(float normalX);
 
 private:
 
-    /// Erstellt statische Box2D-Bodies aus den Level-Tiles
+    /// Create static Box2D-Bodies from level tiles
     void buildLevelBodies();
 
-    /// Erstellt einen statischen Body für die Tile an (gx, gy); liest aktuellen Wert aus m_tiles
+    /// Create static body for tile at (gx, gy), depending on tileId at (gx, gy)
     void createBodyForTile(int gx, int gy);
 
-    /// Konvertiert Pixel-Position zu Box2D-Koordinaten (Meter, Y invertiert)
+    /// Convert pixel position to Box2D coordinates (meter, Y inverted)
     b2Vec2 toBox2D(const Vector2f& pixel) const;
 
-    /// Konvertiert Box2D-Position zurück zu Pixel
+    /// Convert Box2D position to pixels
     Vector2f fromBox2D(const b2Vec2& world) const;
 
-    /// Wendet Spielersteuerung auf den Box2D-Body an
+    /// Apply player controls to Box2D body
     void applyPlayerInput(double dt);
 
-    /// Prüft und korrigiert Kamera-Grenzen
+    /// Check and correct camera bounds
     void enforceCameraBounds();
 
-    /// Geschlossene Türen öffnen (Nähe oder Coin-Ziel erfüllt)
+    /// Open closed doors when near door or coin target reached
     void updateDoors();
 
-    /// Der Actor im Level
-    Actor*                  m_actor;
+    /// Pointer to actor in level
+    Actor*                              m_actor;
 
-    /// Tile-Set für Kollisionsgeometrie
-    TileSetRepresentation*  m_tiles;
+    /// TileSet for collision geometry
+    TileSetRepresentation*              m_tiles;
 
-    /// Das Level
-    Level*                  m_level;
+    /// The level
+    Level*                              m_level;
 
-    /// Box2D-Welt
-    b2World*                m_world;
+    /// Box2D World
+    b2World*                            m_world;
 
-    /// Box2D-Body des Actors
-    b2Body*                 m_actorBody;
+    /// Box2D-Body of Actor
+    b2Body*                             m_actorBody;
 
     /// Contact-Listener (Ownership)
-    ContactListener*        m_contactListener;
+    ContactListener*                    m_contactListener;
 
-    /// Letzter Ticks-Wert für Delta-Zeit
-    unsigned int            m_lastTicks;
+    /// Last Ticks value for delta time
+    unsigned int                        m_lastTicks;
 
-    /// Level-Start-Zeitpunkt (SDL_GetTicks), ab dem die Kamera nach CAMERA_DELAY_MS scrollen darf
-    unsigned int            m_cameraStartTicks;
+    /// Level start time (SDL_GetTicks), from which camera is allowed to move after CAMERA_DELAY_MS
+    unsigned int                        m_cameraStartTicks;
 
-    /// Zeitpunkt des letzten Hazard-Schadens
-    unsigned int            m_lastHazardDamageTicks;
-    /// Bis zu diesem Zeitpunkt (SDL_GetTicks) ist der Spieler unverwundbar
-    unsigned int            m_invincibleUntilTicks;
+    /// Time of last damage taken
+    unsigned int                        m_lastHazardDamageTicks;
 
-    /// Bis zu diesem Zeitpunkt (SDL_GetTicks) kann der Spieler sich nicht bewegen (nach Schaden)
-    unsigned int            m_movementLockedUntilTicks;
+    /// Time until which plaer is invincible (SDL_GetTicks)
+    unsigned int                        m_invincibleUntilTicks;
 
-    /// Wandkontakte: wenn > 0, darf sich der Actor nicht in diese Richtung bewegen (verhindert Hängen/Zittern)
-    int                     m_wallContactLeft;
-    int                     m_wallContactRight;
+    /// Time (SDL_GetTicks) until which player is unable to move (after taking damage)
+    unsigned int                        m_movementLockedUntilTicks;
 
-    /// Coyote-Time: Sprung noch möglich für kurze Zeit nach Verlassen des Bodens (Sekunden)
-    float                   m_coyoteTimeLeft;
+    /// Left wall contact where player is not allowed to move past (prevents hanging/jittering)
+    int                                 m_wallContactLeft;
 
-    /// Skalierung Pixel pro Meter für Box2D
-    static constexpr float  PIXELS_PER_METER = 32.0f;
+    /// Right wall contact where player is not allowed to move past (prevents hanging/jittering)
+    int                                 m_wallContactRight;
 
-    /// Y-Offset der Tile-Welt in Pixel
-    static constexpr float  TILE_Y_OFFSET = 600.0f;
+    /// Coyote-Time: Jump still possible after moving past ground (seconds)
+    float                               m_coyoteTimeLeft;
 
-    /// Verzögerung in ms, bis die Kamera sich zu bewegen beginnt (5 Sekunden)
-    static constexpr unsigned int CAMERA_DELAY_MS = 5000;
-    /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
-    std::map<int, TileInfo> m_tileData;
+    /// Scaling of pixels per meter for Box2D
+    static constexpr float              PIXELS_PER_METER = 32.0f;
 
-    /// Bodies, die nach dem Kontakt-Callback zerstört werden (z.B. Collectibles)
-    std::vector<b2Body*> m_bodiesToDestroy;
+    /// Y-Offset of tile world in pixels
+    static constexpr float              TILE_Y_OFFSET = 600.0f;
 
-    /// (gx, gy) für die im nächsten update() ein neuer Body erzeugt werden soll (z.B. nach random-Box)
-    std::vector<std::pair<int, int>> m_tilesToCreateBodyFor;
+    /// Delay in ms, until camera starts moving (5 seconds)
+    static constexpr unsigned int       CAMERA_DELAY_MS = 5000;
+
+    /// Tile definitions (name, type, shape) from RulesTiles.xml
+    std::map<int, TileInfo>             m_tileData;
+
+    /// Bodies, to be destroyed in next update step (e.g. Collectibles after contact)
+    std::vector<b2Body*>                m_bodiesToDestroy;
+
+    /// (gx, gy) for bodies to be created in next update() step (e.g. after destroying random-box)
+    std::vector<std::pair<int, int>>    m_tilesToCreateBodyFor;
 };
 
 } // namespace jumper

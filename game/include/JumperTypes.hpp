@@ -1,3 +1,8 @@
+/**
+ * @file JumperTypes.hpp
+ * @brief Defines common type definitions and enumerations used throughout the jumper game
+ */
+
 /* Copyright (C) 2016 Uni Osnabrück
  * This file is part of the LAS VEGAS Reconstruction Toolkit,
  *
@@ -34,9 +39,11 @@ namespace jumper
 {
 
 /**
- * @brief x y tileId
+ * @brief tuple consisting of {x, y, tileId}
  */
 typedef std::tuple<int, int, int> Tile;
+
+/// a \ref std::list of \ref Tile elements
 typedef std::list<Tile>			  TileList;
 
 }
