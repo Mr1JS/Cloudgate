@@ -1,115 +1,115 @@
-# Cloudgate Game - Projekt 1
+# Cloudgate Game - Project 1
 
-Ein Qt/QML-basiertes Spiel mit integrierter Physik-Engine, Level-System und Camera-Steuerung aus uebung10. Das Spiel läuft direkt im Qt-Fenster, nicht in einem separaten SDL2-Fenster.
+A Qt/QML-based game with an integrated physics engine, level system, and camera control from uebung10. The game runs directly in the Qt window, not in a separate SDL2 window.
 
-## Übersicht
+## Overview
 
-Dieses Projekt kombiniert eine moderne Qt/QML-Benutzeroberfläche mit der vollständigen Spiel-Engine aus uebung10. Das Spiel wird direkt im Qt-Fenster gerendert und bietet:
+This project combines a modern Qt/QML user interface with the complete game engine from uebung10. The game is rendered directly in the Qt window and offers:
 
-- **Physik-Engine**: Vollständige Kollisionserkennung und Physik-Simulation
-- **Level-System**: Laden von Leveln aus HDF5-Dateien
-- **Camera-System**: Automatische Camera, die dem Spieler folgt
-- **Actor-System**: Animierte Spielfigur mit Sprung- und Bewegungsmechanik
-- **Tile-System**: Rendering von Hintergrund- und Kollisions-Tiles
-- **SDL2-Integration**: SDL2 wird mit verstecktem Fenster verwendet und in Qt/QML eingebettet
+- **Physics Engine**: Full collision detection and physics simulation
+- **Level System**: Loading levels from HDF5 files
+- **Camera System**: Automatic camera that follows the player
+- **Actor System**: Animated player character with jump and movement mechanics
+- **Tile System**: Rendering of background and collision tiles
+- **SDL2 Integration**: SDL2 is used with a hidden window and embedded in Qt/QML
 
-## Projektstruktur
+## Project Structure
 
 ```text
 project1_c++/
 ├── CMakeLists.txt
 ├── README.md
-├── src/                    # Qt/C++-Anwendung und QML-Bridge (GameView, Controller, main.cpp)
-├── include/                # Header der Qt/C++-Anwendung
-├── qml/                    # QML-Seiten und UI-Komponenten
-├── game/                   # Spiel-Engine (aus uebung10)
-│   ├── src/                # Engine-Implementierung (Physik, Kamera, Level, Rendering)
-│   ├── include/            # Engine-Header
-│   ├── io/                 # CRTP-basierte I/O-Frameworks zum Speichern und Laden
+├── src/                    # Qt/C++ application and QML bridge (GameView, Controller, main.cpp)
+├── include/                # Qt/C++ application headers
+├── qml/                    # QML pages and UI components
+├── game/                   # Game engine (from uebung10)
+│   ├── src/                # Engine implementation (physics, camera, level, rendering)
+│   ├── include/            # Engine headers
+│   ├── io/                 # CRTP-based I/O frameworks for saving and loading
 │   ├── Vector.tcc
 │   └── TileTree.tcc
-├── res/                    # Assets und Leveldaten
-│   ├── images/             # Sprites, UI-Assets, Hintergründe, Actor-Bilder
-│   ├── tileDefinition/     # Tile-Regeln (XML)
-│   ├── *.xml               # Level-Beschreibungen
-│   └── *.h5                # Leveldaten (HDF5)
-├── cmake/                  # Zusätzliche CMake-Find-Module
-├── ext/HighFive/           # Externe HDF5-Bibliothek (Vendor-Code)
-└── build/                  # Build-Artefakte (lokal erzeugt)
+├── res/                    # Assets and level data
+│   ├── images/             # Sprites, UI assets, backgrounds, actor images
+│   ├── tileDefinition/     # Tile rules (XML)
+│   ├── *.xml               # Level descriptions
+│   └── *.h5                # Level data (HDF5)
+├── cmake/                  # Additional CMake find modules
+├── ext/HighFive/           # External HDF5 library (vendor code)
+└── build/                  # Build artifacts (generated locally)
 ```
 
-## Abhängigkeiten
+## Dependencies
 
-### System-Abhängigkeiten
+### System Dependencies
 
 - **Qt 6.8.x** (Quick, Widgets, Quick Controls)
-- **SDL2** und **SDL2_image**
-- **HDF5** (C, CXX, HL Komponenten)
+- **SDL2** and **SDL2_image**
+- **HDF5** (C, CXX, HL components)
 - **Boost** (filesystem, system)
 - **Box2D**
 
-### ⚠️ Qt-Version (Wichtig!)
+### ⚠️ Qt Version (Important!)
 
-Dieses Projekt erfordert **Qt 6.8.x**.
+This project requires **Qt 6.8.x**.
 
-Viele Linux-Distributionen (z. B. Ubuntu 22.04) liefern standardmäßig ältere Qt-6-Versionen (z. B. 6.2 oder 6.4). Diese Versionen können zu Build- oder QML-Problemen führen.
+Many Linux distributions (e.g. Ubuntu 22.04) ship older Qt 6 versions by default (e.g. 6.2 or 6.4). These versions can cause build or QML issues.
 
-#### Installierte Version prüfen
+#### Check Installed Version
 
 ```bash
 qmake6 --version
-# oder
+# or
 qtpaths6 --version
 ```
 
-Falls die Version nicht **6.8.x** ist, muss Qt 6.8 manuell installiert werden.
+If the version is not **6.8.x**, Qt 6.8 must be installed manually.
 
 ---
 
-### Installation von Qt 6.8 (offizieller Weg)
+### Installing Qt 6.8 (Official Method)
 
-#### 1. Qt Online Installer herunterladen
+#### 1. Download the Qt Online Installer
 
-Besuche: https://www.qt.io/download
+Visit: https://www.qt.io/download
 
-#### 2. Im Installer auswählen
+#### 2. Select in the Installer
 
 - **Qt → 6.8.x → Desktop gcc 64-bit**
 - Qt Quick
 - Qt Quick Controls
 
-Standardmäßiger Installationspfad: `~/Qt/6.8.x/gcc_64`
+Default installation path: `~/Qt/6.8.x/gcc_64`
 
-#### 3. Environment korrekt setzen
+#### 3. Set the Environment Correctly
 
-Falls Qt außerhalb der Systempfade installiert ist (z. B. `~/Qt/6.8.x/gcc_64`), muss die Umgebung angepasst werden.
+If Qt is installed outside the system paths (e.g. `~/Qt/6.8.x/gcc_64`), the environment must be adjusted.
 
-**Temporär (für aktuelle Shell):**
+**Temporarily (for current shell):**
 ```bash
 export Qt6_DIR=~/Qt/6.8.x/gcc_64/lib/cmake/Qt6
 export PATH=~/Qt/6.8.x/gcc_64/bin:$PATH
 export LD_LIBRARY_PATH=~/Qt/6.8.x/gcc_64/lib:$LD_LIBRARY_PATH
 ```
 
-**Permanent (empfohlen):**
+**Permanently (recommended):**
 
-In `~/.bashrc` oder `~/.zshrc` hinzufügen:
+Add to `~/.bashrc` or `~/.zshrc`:
 ```bash
 export Qt6_DIR=$HOME/Qt/6.8.x/gcc_64/lib/cmake/Qt6
 export PATH=$HOME/Qt/6.8.x/gcc_64/bin:$PATH
 export LD_LIBRARY_PATH=$HOME/Qt/6.8.x/gcc_64/lib:$LD_LIBRARY_PATH
 ```
 
-Danach:
+Then run:
 ```bash
 source ~/.bashrc
 ```
 
 ---
 
-### Installation weiterer Abhängigkeiten (Ubuntu/Debian)
+### Installing Further Dependencies (Ubuntu/Debian)
 
-> ⚠️ **Hinweis:** Qt sollte **nicht** über `apt install qt6-*` installiert werden, wenn explizit Qt 6.8 benötigt wird.
+> ⚠️ **Note:** Qt should **not** be installed via `apt install qt6-*` if Qt 6.8 is explicitly required.
 
 ```bash
 sudo apt update
@@ -121,9 +121,9 @@ sudo apt install -y \
     libbox2d-dev
 ```
 
-## Kompilierung
+## Building
 
-### 1. Build-Verzeichnis erstellen
+### 1. Create Build Directory
 
 ```bash
 cd project1
@@ -131,20 +131,20 @@ mkdir -p build
 cd build
 ```
 
-### 2. CMake konfigurieren
+### 2. Configure CMake
 
-**Standard (Qt im System-Pfad):**
+**Standard (Qt in system path):**
 ```bash
 cmake ..
 ```
 
-**Falls Qt manuell installiert wurde (z.B. Qt 6.8.x):**
+**If Qt was installed manually (e.g. Qt 6.8.x):**
 ```bash
 cmake -B . -S .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.8.x/gcc_64
 ```
 
-#### MacOS (Eine Option auswählen)
-Dieser Befehl dient dazu, die Qt-Version zu ermitteln, wenn diese bei der Standardversion nicht gefunden werden kann. In diesem Fall muss der `PATH` manuell eingegeben werden. 
+#### macOS (Choose one option)
+This command is used to detect the Qt version if it cannot be found at the default location. In that case the `PATH` must be entered manually.
 
 Option 1:
 ```bash
@@ -157,13 +157,13 @@ Option 2:
 ~/Qt/6.10.1/macos/bin/qt-cmake -S . -B build -DCMAKE_PREFIX_PATH=~/Qt/6.10.1/macos
 ```
 
-### 3. Kompilieren
+### 3. Compile
 
 ```bash
 make
 ```
 
-### 4. Ausführen
+### 4. Run
 
 ```bash
 # Copy resources to build directory
@@ -173,11 +173,11 @@ cp -r ../res ./
 ./appCloudgate_game
 ```
 
-## Dokumentation
+## Documentation
 
-Das Projekt nutzt **Doxygen** zur automatischen Generierung von API-Dokumentation.
+The project uses **Doxygen** for automatic API documentation generation.
 
-### Doxygen installieren
+### Install Doxygen
 
 **Windows:**
 ```powershell
@@ -194,78 +194,77 @@ sudo apt install doxygen graphviz
 brew install doxygen graphviz
 ```
 
-### Dokumentation generieren
+### Generate Documentation
 
 ```bash
 cd build
-cmake ..  #(falls vorher noch nicht ausgeführt)
+cmake ..  # (if not already run)
 cmake --build . --target doc
 ```
 
-Die HTML-Dokumentation wird in `build/docs/html/` generiert. Öffne `build/docs/html/index.html` oder `build/docs/html/files.html` im Browser.
+The HTML documentation is generated in `build/docs/html/`. Open `build/docs/html/index.html` or `build/docs/html/files.html` in your browser.
 
-### Was wird dokumentiert?
+### What Gets Documented?
 
-Doxygen extrahiert automatisch:
-- Alle Klassen und ihre Hierarchie
-- Funktionen und Methoden mit Signaturen
-- Member-Variablen
-- Vererbungsbeziehungen
-- Call-Graphen (wer ruft welche Funktion auf)
-- Include-Abhängigkeiten
-- Klassendiagramme (UML-Style)
+Doxygen automatically extracts:
+- All classes and their hierarchy
+- Functions and methods with signatures
+- Member variables
+- Inheritance relationships
+- Call graphs (who calls which function)
+- Include dependencies
+- Class diagrams (UML-style)
 
-Die Dokumentation wird automatisch generiert, auch ohne spezielle Kommentare im Code.
+Documentation is generated automatically, even without special comments in the code.
 
-## Verwendung
+## Usage
 
-### Hauptmenü
+### Main Menu
 
-Nach dem Start erscheint das Hauptmenü mit drei Optionen:
+After launching, the main menu appears with three options:
 
-1. **Start**: Öffnet die Spiel-Seite mit dem eingebetteten Spiel
-2. **LevelEditor**: Öffnet den Level-Editor
-3. **Setting**: Öffnet die Einstellungen
+1. **Start**: Opens the game page with the embedded game
+2. **LevelEditor**: Opens the level editor
+3. **Setting**: Opens the settings
 
-### Spiel-Steuerung
+### Game Controls
 
-- **Pfeiltasten Links/Rechts**: Bewegung nach links/rechts
-- **Leertaste**: Springen
-- **A/D**: Spielfigur umdrehen
-- **ESC**: Zurück zum Hauptmenü
+- **Arrow Keys Left/Right**: Move left/right
+- **Space**: Jump
+- **A/D**: Flip the player character
+- **ESC**: Return to main menu
 
-### Spiel-Fenster
+### Game Window
 
-Wenn du auf "Start" klickst, öffnet sich die Spiel-Seite. Das Spiel läuft direkt im Qt-Fenster (800x600 Pixel) und wird in Echtzeit gerendert. Es gibt keine separaten Fenster mehr.
+When you click "Start", the game page opens. The game runs directly in the Qt window (800×600 pixels) and is rendered in real time. There are no separate windows anymore.
 
-## Bekannte Probleme / Einschränkungen
+## Known Issues / Limitations
 
-- Das Rendering kopiert bei jedem Frame die Pixel (kann bei hohen Auflösungen langsam sein)
-- SDL2-Tastatur-Events müssen manuell von Qt konvertiert werden
-- Das versteckte SDL2-Fenster wird trotzdem erstellt (benötigt für den Renderer)
-- Die Spiel-Größe ist fest auf 800x600 Pixel eingestellt
-- Die Kamera scrollt nur vertikal (feste X-Position)
+- The renderer copies pixels every frame (can be slow at high resolutions)
+- SDL2 keyboard events must be manually converted from Qt
+- The hidden SDL2 window is still created (required for the renderer)
+- The game size is fixed at 800×600 pixels
+- The camera only scrolls vertically (fixed X position)
 
 ## Troubleshooting
 
-### Spiel startet nicht
+### Game Does Not Start
 
-- Überprüfe, ob die Level-Dateien (`res/level.xml`, `res/level.h5`) existieren
-- Überprüfe die Debug-Ausgaben für Pfad-Informationen
-- Stelle sicher, dass SDL2 korrekt initialisiert wurde
+- Check whether the level files (`res/level.xml`, `res/level.h5`) exist
+- Check the debug output for path information
+- Make sure SDL2 was initialized correctly
 
-### Keine Tastatur-Eingabe
+### No Keyboard Input
 
-- Stelle sicher, dass das `GameView` den Fokus hat (`setFocus(true)`)
-- Überprüfe die `convertQtKeyToSDL()`-Methode für die Tasten-Mapping
+- Make sure `GameView` has focus (`setFocus(true)`)
+- Check the `convertQtKeyToSDL()` method for key mapping
 
-### Rendering-Probleme
+### Rendering Issues
 
-- Überprüfe, ob `SDL_RenderReadPixels()` erfolgreich ist
-- Stelle sicher, dass der Renderer korrekt initialisiert wurde
-- Überprüfe die Pixel-Format-Konvertierung
+- Check whether `SDL_RenderReadPixels()` succeeds
+- Make sure the renderer was initialized correctly
+- Check the pixel format conversion
 
-## Lizenz
+## License
 
-Siehe LICENSE-Datei für Details.
-
+See the LICENSE file for details.
