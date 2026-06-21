@@ -1,199 +1,199 @@
-# Präsentationsskript: Speichern & Laden im Game
+# Presentation Script: Saving & Loading in the Game
 
-## 🎮 Überblick - Was mache ich?
-**"Ich bin für das Speichern und Laden von Levels zuständig - sowohl im Level-Editor als auch im eigentlichen Spiel."**
-
----
-
-## 📁 Welche Dateiformate nutzen wir?
-
-Wir verwenden **2 Arten von Dateien**:
-
-1. **XML-Dateien** (z.B. `level_master.xml`)
-   - Speichern die **Konfiguration**
-   - Zum Beispiel: Tile-Größe, Level-Dimensionen, wo liegen die Bilder?
-   
-2. **HDF5-Dateien** (z.B. `level_master.h5`)
-   - Speichern die **Bilddaten** (Textures)
-   - Die eigentlichen Tile-Grafiken (Bilder für Wände, Boden, etc.)
+## 🎮 Overview - What Am I Responsible For?
+**"I am responsible for saving and loading levels — both in the Level Editor and in the actual game."**
 
 ---
 
-## 🎨 TEIL 1: Level-Editor - Speichern
+## 📁 What File Formats Do We Use?
 
-**"Wenn ein Designer ein neues Level im Editor erstellt und speichern möchte:"**
+We use **2 types of files**:
 
-### Schritt-für-Schritt:
+1. **XML files** (e.g. `level_master.xml`)
+   - Store the **configuration**
+   - For example: tile size, level dimensions, where are the images located?
 
-1. **Benutzer klickt auf "Speichern"**
-   - Im Level-Editor gibt es einen Speichern-Button
-
-2. **File-Dialog öffnet sich**
-   - Der Benutzer wählt wo und unter welchem Namen gespeichert wird
-   - Standard-Speicherort: `res/level_master.xml`
-
-3. **Daten sammeln**
-   - Das Canvas (die Zeichenfläche) sammelt alle platzierten Tiles
-   - Jedes Tile hat eine Position (X, Y) und eine Tile-ID
-
-4. **XML-Datei schreiben**
-   - Speichert: Level-Dimensionen, Tile-Konfiguration
-   - Verweist auf die HDF5-Datei mit den Bildern
-
-5. **HDF5-Datei schreiben**
-   - Speichert: Die Tile-Anordnung als Zahlengitter
-   - Jede Zahl steht für ein bestimmtes Tile
-
-6. **Fertig!** ✅
-   - Der Benutzer bekommt eine Bestätigung
+2. **HDF5 files** (e.g. `level_master.h5`)
+   - Store the **image data** (textures)
+   - The actual tile graphics (images for walls, floors, etc.)
 
 ---
 
-## 📂 TEIL 2: Level-Editor - Laden
+## 🎨 PART 1: Level Editor — Saving
 
-**"Wenn ein Designer ein existierendes Level bearbeiten möchte:"**
+**"When a designer creates a new level in the editor and wants to save it:"**
 
-### Schritt-für-Schritt:
+### Step by Step:
 
-1. **Benutzer klickt auf "Laden"**
-   - File-Dialog öffnet sich
+1. **User clicks "Save"**
+   - There is a Save button in the Level Editor
 
-2. **XML-Datei auswählen**
-   - Der Benutzer wählt z.B. `level 1.xml`
+2. **File dialog opens**
+   - The user chooses where and under what name to save
+   - Default save location: `res/level_master.xml`
 
-3. **XML-Datei lesen**
-   - System liest: Tile-Größe, Tile-Offset, Grid-Dimensionen
-   - Findet heraus: Welche HDF5-Datei gehört dazu?
+3. **Collecting data**
+   - The canvas (the drawing area) collects all placed tiles
+   - Each tile has a position (X, Y) and a tile ID
 
-4. **HDF5-Datei öffnen**
-   - System lädt die Tile-Grafiken (Bilder)
-   - Lädt die Tile-Anordnung (welches Tile wo platziert ist)
+4. **Writing the XML file**
+   - Saves: level dimensions, tile configuration
+   - References the HDF5 file containing the images
 
-5. **Tileset erstellen**
-   - Alle Tiles werden in einzelne Bilder zerlegt
-   - Diese werden in die **Palette** geladen (zur Auswahl)
-   - Das Level-Grid wird im **Canvas** angezeigt (zum Bearbeiten)
+5. **Writing the HDF5 file**
+   - Saves: the tile arrangement as a numeric grid
+   - Each number represents a specific tile
 
-6. **Fertig!** ✅
-   - Der Designer kann jetzt das Level bearbeiten
+6. **Done!** ✅
+   - The user receives a confirmation
 
 ---
 
-## 🎮 TEIL 3: Game - Level laden
+## 📂 PART 2: Level Editor — Loading
 
-**"Wenn ein Spieler ein Level startet:"**
+**"When a designer wants to edit an existing level:"**
 
-### Schritt-für-Schritt:
+### Step by Step:
 
-1. **Spieler wählt ein Level**
-   - Zum Beispiel "Level 1"
+1. **User clicks "Load"**
+   - File dialog opens
 
-2. **Level-Konstruktor wird aufgerufen**
+2. **Select an XML file**
+   - The user selects e.g. `level 1.xml`
+
+3. **Reading the XML file**
+   - System reads: tile size, tile offset, grid dimensions
+   - Determines: which HDF5 file belongs to this level?
+
+4. **Opening the HDF5 file**
+   - System loads the tile graphics (images)
+   - Loads the tile arrangement (which tile is placed where)
+
+5. **Creating the tileset**
+   - All tiles are split into individual images
+   - These are loaded into the **palette** (for selection)
+   - The level grid is displayed in the **canvas** (for editing)
+
+6. **Done!** ✅
+   - The designer can now edit the level
+
+---
+
+## 🎮 PART 3: Game — Loading a Level
+
+**"When a player starts a level:"**
+
+### Step by Step:
+
+1. **Player selects a level**
+   - For example "Level 1"
+
+2. **Level constructor is called**
    ```
    Level level(mainWindow, "res/level 1.xml");
    ```
 
-3. **LevelParser liest die Dateien**
-   - Öffnet die XML-Datei
-   - Liest alle Konfigurationen:
-     - Wo ist der Spieler-Start?
-     - Wo sind Monster?
-     - Wo sind Wände?
-     - Wo ist das Ziel?
+3. **LevelParser reads the files**
+   - Opens the XML file
+   - Reads all configurations:
+     - Where is the player spawn?
+     - Where are the enemies?
+     - Where are the walls?
+     - Where is the goal?
 
-4. **HDF5-Datei laden**
-   - Lädt die Tile-Grafiken
-   - Lädt die Level-Geometrie
+4. **Loading the HDF5 file**
+   - Loads the tile graphics
+   - Loads the level geometry
 
-5. **Spielelemente erstellen**
-   - **TileSet**: Alle Wände, Böden, Plattformen
-   - **Spieler** (Actor): An der Start-Position
-   - **Monster**: An ihren Positionen
-   - **Physik**: Kollisions-System aktivieren
-   - **Kamera**: Positionierung
+5. **Creating game objects**
+   - **TileSet**: All walls, floors, platforms
+   - **Player** (Actor): At the spawn position
+   - **Enemies**: At their respective positions
+   - **Physics**: Collision system activated
+   - **Camera**: Positioning
 
-6. **Level ist spielbereit!** 🎮
-   - Der Spieler kann loslegen
+6. **Level is ready to play!** 🎮
+   - The player can start
 
 ---
 
-## 🔄 Zusammenfassung: Der Kreislauf
+## 🔄 Summary: The Cycle
 
 ```
 ┌─────────────────┐
-│  Level-Designer │
-│  erstellt Level │
+│  Level Designer │
+│  creates level  │
 └────────┬────────┘
          │
          ↓
-    [SPEICHERN]
+     [SAVE]
          │
          ↓
 ┌────────────────────┐
 │  XML + HDF5 Files  │
-│   auf Festplatte   │
+│    on disk         │
 └────────┬───────────┘
          │
          ↓
-     [LADEN]
+     [LOAD]
          │
     ┌────┴────┐
     │         │
     ↓         ↓
-[Editor]  [Game]
-bearbeiten spielen
+[Editor]   [Game]
+ edit it   play it
 ```
 
 ---
 
-## 💡 Warum 2 Dateiformate (XML + HDF5)?
+## 💡 Why 2 File Formats (XML + HDF5)?
 
 **XML:**
-- ✅ Einfach zu lesen und bearbeiten (Text-Datei)
-- ✅ Gut für Konfiguration
-- ❌ Schlecht für große Bilder
+- ✅ Easy to read and edit (text file)
+- ✅ Great for configuration
+- ❌ Bad for large images
 
 **HDF5:**
-- ✅ Sehr effizient für große Datenmengen
-- ✅ Perfekt für Bilder und Arrays
-- ❌ Nicht direkt lesbar (Binär-Format)
+- ✅ Very efficient for large amounts of data
+- ✅ Perfect for images and arrays
+- ❌ Not directly readable (binary format)
 
-**Zusammen = Perfekte Kombination! 🎯**
-
----
-
-## 🎤 Abschluss
-
-**"Unser Speicher- und Lade-System ermöglicht es:**
-- **Designern**, Levels einfach zu erstellen und zu speichern
-- **Dem Spiel**, diese Levels schnell und effizient zu laden
-- **Allen**, mit den gleichen Dateien zu arbeiten - Editor und Game nutzen das gleiche Format!"
+**Together = The perfect combination! 🎯**
 
 ---
 
-## ❓ Mögliche Fragen aus dem Publikum
+## 🎤 Closing
 
-**Q: "Warum nicht alles in einer Datei speichern?"**
-A: XML ist für Konfiguration besser lesbar. HDF5 ist für große Datenmengen effizienter. Beide zusammen geben uns Flexibilität.
-
-**Q: "Was passiert, wenn eine Datei fehlt?"**
-A: Das System zeigt eine Fehlermeldung und lädt das Level nicht. Es gibt Fallback auf Standard-Werte wo möglich.
-
-**Q: "Können Spieler ihre eigenen Levels erstellen?"**
-A: Ja! Sie können den Level-Editor nutzen, speichern, und dann im Game spielen - es verwendet die gleichen Dateien!
+**"Our save and load system allows:**
+- **Designers** to easily create and save levels
+- **The game** to load those levels quickly and efficiently
+- **Everyone** to work with the same files — the Editor and the Game use the same format!"
 
 ---
 
-## 🎯 Die wichtigsten Klassen (Technisch)
+## ❓ Possible Questions from the Audience
 
-Falls technische Fragen kommen:
+**Q: "Why not store everything in a single file?"**
+A: XML is more readable for configuration. HDF5 is more efficient for large amounts of data. Together they give us the best of both worlds.
 
-- **LevelEditorController**: Koordiniert Speichern/Laden im Editor
-- **LevelCanvas**: Verwaltet das Level-Grid und schreibt Daten
-- **Level**: Repräsentiert ein spielbares Level
-- **LevelParser**: Liest XML und HDF5 für das Game
-- **BaseHdf5IO**: Technische HDF5-Implementierung
+**Q: "What happens if a file is missing?"**
+A: The system shows an error message and does not load the level. There are fallback values where possible.
+
+**Q: "Can players create their own levels?"**
+A: Yes! They can use the Level Editor to create and save a level, then play it in the Game — it uses the same files!
 
 ---
 
-**Viel Erfolg bei deiner Präsentation! 🚀**
+## 🎯 Key Classes (Technical)
+
+In case of technical questions:
+
+- **LevelEditorController**: Coordinates saving/loading in the editor
+- **LevelCanvas**: Manages the level grid and writes data
+- **Level**: Represents a playable level
+- **LevelParser**: Reads XML and HDF5 for the game
+- **BaseHdf5IO**: Low-level HDF5 implementation
+
+---
+
+**Good luck with your presentation! 🚀**
