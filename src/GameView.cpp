@@ -1,3 +1,9 @@
+/**
+ * @file GameView.cpp
+ * @brief Implementation of the GameView class for rendering SDL game content in Qt Quick,
+ *        handles keyboard input forwarding, frame updates and game-GUI integration
+ */
+
 #include "include/GameView.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Level.hpp"
@@ -24,6 +30,9 @@ GameView::GameView(QQuickItem *parent)
     , m_gameWidth(800)
     , m_gameHeight(600)
 {
+    // Keep painting in CPU image mode for deterministic SDL->QImage pipeline.
+    setRenderTarget(QQuickPaintedItem::Image);
+    setOpaquePainting(true);
     setAntialiasing(false);
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
@@ -48,13 +57,15 @@ GameView::~GameView()
 
 void GameView::initializeSDL()
 {
-    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER) < 0) {
+    if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER) < 0)
+    {
         qDebug() << "SDL could not initialize:" << SDL_GetError();
         return;
     }
 
     int imgFlags = IMG_INIT_PNG;
-    if (!(IMG_Init(imgFlags) & imgFlags)) {
+    if (!(IMG_Init(imgFlags) & imgFlags))
+    {
         qDebug() << "SDL_image could not initialize:" << IMG_GetError();
     }
 
@@ -63,7 +74,8 @@ void GameView::initializeSDL()
 
 void GameView::cleanupSDL()
 {
-    if (m_initialized) {
+    if (m_initialized)
+    {
         IMG_Quit();
         SDL_Quit();
         m_initialized = false;
@@ -80,7 +92,8 @@ void GameView::geometryChange(const QRectF &newGeometry, const QRectF &oldGeomet
     QQuickPaintedItem::geometryChange(newGeometry, oldGeometry);
 
     // Verwende die Größe des Parent-Elements (ganzes Fenster)
-    if (newGeometry.width() > 0 && newGeometry.height() > 0) {
+    if (newGeometry.width() > 0 && newGeometry.height() > 0)
+    {
         m_gameWidth = newGeometry.width();
         m_gameHeight = newGeometry.height();
 
@@ -91,7 +104,8 @@ void GameView::geometryChange(const QRectF &newGeometry, const QRectF &oldGeomet
 
 void GameView::setLevelPath(const QString& path)
 {
-    if (m_levelPath != path) {
+    if (m_levelPath != path)
+    {
         m_levelPath = path;
         emit levelPathChanged();
     }
@@ -99,7 +113,9 @@ void GameView::setLevelPath(const QString& path)
 
 void GameView::setPaused(bool paused)
 {
-    if (m_paused != paused) {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
+    if (m_paused != paused)
+    {
         m_paused = paused;
         emit pausedChanged();
         update();  // Trigger repaint
@@ -108,34 +124,43 @@ void GameView::setPaused(bool paused)
 
 void GameView::startGame()
 {
-    if (m_running) {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
+    if (m_running)
+    {
         qDebug() << "Game is already running";
         return;
     }
 
-    if (!m_initialized) {
+    if (!m_initialized)
+    {
         qDebug() << "SDL not initialized";
         return;
     }
 
-    try {
+    try
+    {
         // Get absolute path to level.xml
         QString absoluteLevelPath = m_levelPath;
-        if (absoluteLevelPath.isEmpty()) {
+        if (absoluteLevelPath.isEmpty())
+        {
             QDir appDir(QCoreApplication::applicationDirPath());
             appDir.cdUp();
             absoluteLevelPath = appDir.absoluteFilePath("res/level.xml");
 
-            if (!QFile::exists(absoluteLevelPath)) {
+            if (!QFile::exists(absoluteLevelPath))
+            {
                 QDir currentDir = QDir::current();
                 absoluteLevelPath = currentDir.absoluteFilePath("res/level.xml");
             }
-        } else if (!QDir::isAbsolutePath(absoluteLevelPath)) {
+        }
+        else if (!QDir::isAbsolutePath(absoluteLevelPath))
+        {
             QDir appDir(QCoreApplication::applicationDirPath());
             appDir.cdUp();
             absoluteLevelPath = appDir.absoluteFilePath(absoluteLevelPath);
 
-            if (!QFile::exists(absoluteLevelPath)) {
+            if (!QFile::exists(absoluteLevelPath))
+            {
                 QDir currentDir = QDir::current();
                 absoluteLevelPath = currentDir.absoluteFilePath(m_levelPath);
             }
@@ -144,7 +169,8 @@ void GameView::startGame()
         qDebug() << "Starting game with level:" << absoluteLevelPath;
         qDebug() << "Level file exists:" << QFile::exists(absoluteLevelPath);
 
-        if (!QFile::exists(absoluteLevelPath)) {
+        if (!QFile::exists(absoluteLevelPath))
+        {
             qDebug() << "Level file not found:" << absoluteLevelPath;
             return;
         }
@@ -182,7 +208,9 @@ void GameView::startGame()
         // Initial render
         update();
 
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e)
+    {
         qDebug() << "Error starting game:" << e.what();
         m_running = false;
         emit runningChanged();
@@ -192,7 +220,9 @@ void GameView::startGame()
 
 void GameView::stopGame()
 {
-    if (!m_running) {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
+    if (!m_running)
+    {
         return;
     }
 
@@ -208,9 +238,12 @@ void GameView::stopGame()
 
 void GameView::updateGame()
 {
-    if (!m_running || !m_gameWindow || m_paused) {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
+    if (!m_running || !m_gameWindow || m_paused)
+    {
         // Wenn pausiert, nur repaint triggern (für statisches Bild)
-        if (m_running && m_gameWindow) {
+        if (m_running && m_gameWindow)
+        {
             update();
         }
         return;
@@ -221,7 +254,8 @@ void GameView::updateGame()
 
     // Process SDL events (but don't show window)
     SDL_Event e;
-    while (SDL_PollEvent(&e)) {
+    while (SDL_PollEvent(&e))
+    {
         // Handle events if needed, but ignore SDL_QUIT
         if (e.type == SDL_QUIT) {
             // Ignorieren, da wir kein sichtbares Fenster haben
@@ -240,9 +274,11 @@ void GameView::updateGame()
     memcpy(keystates, sdlKeystates, numKeys);
 
     // Füge unsere getrackten Qt-Tastatur-Zustände hinzu
-    for (auto it = m_keyStates.begin(); it != m_keyStates.end(); ++it) {
+    for (auto it = m_keyStates.begin(); it != m_keyStates.end(); ++it)
+    {
         SDL_Scancode scancode = convertQtKeyToSDLScancode(it.key());
-        if (scancode != SDL_SCANCODE_UNKNOWN && scancode < numKeys) {
+        if (scancode != SDL_SCANCODE_UNKNOWN && scancode < numKeys)
+        {
             keystates[scancode] = it.value() ? 1 : 0;
         }
     }
@@ -250,21 +286,19 @@ void GameView::updateGame()
     // Update game with keyboard states
     m_gameWindow->update(keystates);
 
-    // TODO: GameController should be implemented somewhere here
-
     // Prüfe, ob Actor außerhalb des Kamera-Bereichs ist (Game Over)
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
-    if(m_running && m_gameWindow && m_gameWindow->level())
+    if (m_running && m_gameWindow && m_gameWindow->level())
     {
         // Use the new isGameOver() method that checks both HP and camera bounds
-        if(m_gameWindow->level()->isGameOver())
+        if (m_gameWindow->level()->isGameOver())
         {
             // Game Over: Stoppe das Spiel
             stopGame();
             emit gameOver();
         }
 
-        if(m_gameWindow->level()->isLevelFinished())
+        if (m_gameWindow && m_gameWindow->level() && m_gameWindow->level()->isLevelFinished())
         {
             stopGame();
             emit levelFinished();
@@ -279,7 +313,9 @@ void GameView::updateGame()
 
 void GameView::paint(QPainter *painter)
 {
-    if (!m_running || !m_gameWindow) {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
+    if (!m_running || !m_gameWindow)
+    {
         // Draw black background
         painter->fillRect(boundingRect(), Qt::black);
         painter->setPen(Qt::white);
@@ -288,7 +324,8 @@ void GameView::paint(QPainter *painter)
     }
 
     // WICHTIG: Wenn pausiert, KEIN Rendering - das verhindert, dass GameView über das Menü rendert
-    if (m_paused) {
+    if (m_paused)
+    {
         // Rendere nichts - das Menü liegt darüber
         return;
     }
@@ -304,11 +341,22 @@ void GameView::paint(QPainter *painter)
     m_gameWindow->render();
 
     // Copy SDL renderer content to QImage
-    // Create a surface to read pixels from renderer
-    int width = m_gameWidth > 0 ? m_gameWidth : 800;
-    int height = m_gameHeight > 0 ? m_gameHeight : 600;
-    SDL_Surface* surface = SDL_CreateRGBSurface(0, width, height, 32,
-                                                0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    // Use the real renderer output size (important on HiDPI / scaling setups).
+    int width = 0;
+    int height = 0;
+    if (SDL_GetRendererOutputSize(renderer, &width, &height) != 0 || width <= 0 || height <= 0)
+    {
+        width = m_gameWidth > 0 ? m_gameWidth : 800;
+        height = m_gameHeight > 0 ? m_gameHeight : 600;
+    }
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+        0,
+        width,
+        height,
+        32,
+        SDL_PIXELFORMAT_ARGB8888
+    );
     if (!surface) {
         painter->fillRect(boundingRect(), Qt::black);
         return;
@@ -345,9 +393,10 @@ void GameView::paint(QPainter *painter)
 
 void GameView::keyPressEvent(QKeyEvent *event)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     // ESC-Taste wird in QML behandelt (nicht an SDL weitergeben)
     if (event->key() == Qt::Key_Escape) {
-        // ESC wird in SecondPage.qml behandelt
+        // ESC wird in LevelStarter.qml behandelt
         QQuickPaintedItem::keyPressEvent(event);
         return;
     }
@@ -377,6 +426,7 @@ void GameView::keyPressEvent(QKeyEvent *event)
 
 void GameView::keyReleaseEvent(QKeyEvent *event)
 {
+    std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     if (!m_running || !m_gameWindow) {
         QQuickPaintedItem::keyReleaseEvent(event);
         return;

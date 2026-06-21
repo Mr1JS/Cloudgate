@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file LevelForces.cpp
+ * @brief Implementation of the LevelForces struct for global physical forces like
+ *        gravity, air resistance and friction that affect all objects in the level
+ */
+
 #include "game/include/LevelForces.hpp"
 
 namespace jumper

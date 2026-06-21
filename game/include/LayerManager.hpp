@@ -7,7 +7,10 @@
  *  Restricted usage. Licensed for participants of the course "The C++ Programming Language" only.
  *  No unauthorized distribution.
  */
-
+/**
+ * @file LayerManager.hpp
+ * @brief Defines the LayerManager class for managing and rendering multiple tile layers in a level
+ */
 #ifndef LAYERMANAGER_HPP_
 #define LAYERMANAGER_HPP_
 
@@ -53,7 +56,7 @@ public:
     LayerManager(Camera* cam);
 
     /// Adds a renderable to the given layer
-    void addRenderable(SDLRenderable*r, int LayerID);
+    void addRenderable(SDLRenderable* r, int LayerID);
 
     /// Renders all incrementally starting with layer 0
     void render();
@@ -64,10 +67,10 @@ public:
 private:
 
     /// Pointer to the virtual camera within the level
-    Camera* m_camera;
+    Camera*                                                         m_camera;
 
     /// Container for the layers
-    std::multiset<std::pair <SDLRenderable*, int>, compareLayer> m_renderables;
+    std::multiset<std::pair <SDLRenderable*, int>, compareLayer>    m_renderables;
 
 };
 

@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file LayerManager.cpp
+ * @brief Implementation of the LayerManager class for managing and rendering multiple
+ *        tile layers with different rendering priorities in the level
+ */
+
 #include "game/include/LayerManager.hpp"
 
 #include <iostream>
@@ -24,13 +30,12 @@ LayerManager::LayerManager(Camera* cam)
 
 void LayerManager::addRenderable(SDLRenderable *r, int LayerID)
 {
-    m_renderables.insert(Layer(r,LayerID));
+    m_renderables.insert(Layer(r, LayerID));
 }
-
 
 void LayerManager::render()
 {
-    for(auto it: m_renderables)
+    for (auto it: m_renderables)
     {
          it.first->setOffset(m_camera->getPosition());
          it.first->render();
@@ -39,7 +44,7 @@ void LayerManager::render()
 
 LayerManager::~LayerManager()
 {
-    for(auto it: m_renderables)
+    for (auto it: m_renderables)
     {
         delete (it.first);
     }

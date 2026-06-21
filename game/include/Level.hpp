@@ -1,3 +1,8 @@
+/**
+ * @file Level.hpp
+ * @brief Defines the Level class which represents a complete game level with actors, monsters and physics
+ */
+
 /*
  *  Level.hpp
  *
@@ -131,19 +136,37 @@ public:
     /// @param targetValue value to meet for goal type, if necessary
     void setGoalCondition(int type, int targetValue);
 
+    /// Aktueller Zielmodus (z.B. GOAL_COINS)
+    GoalType goalType() const { return m_goalType; }
+
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
     
     /// get res path
     std::string getResPath();
+
     /// set scroll speed in camera
     void setCameraSettings(float scrollSpeed, float pos_y);
+
+    /// removes Tile at (gx, gy) coordinates from map (e.g. a collected coin)
+    void removeTileAt(int gx, int gy);
+
+    /// Returns tile id at (gx, gy), 0 = empty, otherwise tileId from RulesTiles.xml +1
+    int getTileAt(int gx, int gy) const;
+
+    /// Set Tile at (gx, gy), value = 0 empty, otherwise tileId from RulesTiles.xml +1
+    void setTileAt(int gx, int gy, int value);
+
+    /// Spawns a monster (Ghost or Snake) at (gx, gy). gy = ground row; top tile: gy=-1.
+    /// Uses the same monster ai as spawnMonsters() (Snake: move left-right, Ghost: 5s pursuit).
+    void spawnMonsterAt(int gx, int gy, Monster::Type type);
 
 private:
 
     /// Updates the actor accordint to the given keyboard states
     void updateActor(const Uint8* keystates);
 
+    /// Spawn monsters, as defined in level definition
     void spawnMonsters();
 
     /// A SDL texture for the actor
@@ -173,7 +196,7 @@ private:
     /// For managing level states such as hp, time elapsed and other things
     StateController*        m_stateController;
 
-    /// Monster-Liste für Update (Renderables werden von LayerManager verwaltet)
+    /// Monster-Liste for update() (Renderables are managed by LayerManager)
     std::vector<Monster*>   m_monsters;
 
     /// Type of goal requirement, e.g. time, coins, etc.
@@ -187,6 +210,9 @@ private:
 
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";
+
+    /// Whether spacebar was pressed in previous frame (for not setting wantsToJump twice)
+    bool                    m_prevSpacePressed = false;
 };
 
 } /* namespace jumper */

@@ -1,3 +1,9 @@
+/**
+ * @file LevelEditor.qml
+ * @brief Level editor UI for creating and modifying game levels,
+ *        provides tileset palette, tile placement, actor placement and level save/load functionality
+ */
+
 import QtQuick
 import QtQuick.Controls
 import Cloudgate_game 1.0
@@ -7,6 +13,12 @@ Page {
 
     // Enable focus for keyboard input
     focus: true
+
+    // load font for the new Icons
+    FontLoader {
+        id: fontAwesome
+        source: "qrc:/resources/fonts/Font-Solid-900.otf"
+    }
 
     // ESC key handler
     Keys.onPressed: function (event) {
@@ -43,17 +55,11 @@ Page {
         }
     }
 
+    property string backgroundImageLevel: "qrc:/resources/images/backgrounds/mountain.png"
+
     Rectangle {
         anchors.fill: parent
-        color: "#5c82a1" // RGB 92, 130, 161
-
-        Image {
-            id: editorBackground
-            anchors.fill: parent
-            source: "/resources/images/clouds2.png"
-            fillMode: Image.PreserveAspectCrop
-            opacity: 0.3
-        }
+        color: "#5c82a1" // RGB 92, 130, 16
 
         // Top bar with buttons
         Rectangle {
@@ -66,7 +72,7 @@ Page {
             opacity: 0.9
 
             // Check if there's enough space for all buttons
-            property bool showAllButtons: width > 700
+            property bool showAllButtons: width > 1000
 
             Row {
                 anchors.centerIn: parent
@@ -81,6 +87,17 @@ Page {
                 Button {
                     text: "+ 5 Tile above"
                     onClicked: editorController.addRowsAbove(5)
+                }
+
+                Button {
+                    text: "- 5 Tile above"
+                    enabled: levelCanvas.gridHeight > 25
+                    onClicked: editorController.removeRowsAbove(5)
+                }
+
+                Button {
+                    text: "Background"
+                    onClicked: editorController.loadBackground()
                 }
 
                 Button {
@@ -120,11 +137,6 @@ Page {
                 }
 
                 Button {
-                    text: "+ 5 Tile above"
-                    onClicked: editorController.addRowsAbove(5)
-                }
-
-                Button {
                     id: menuButton
                     text: "Menu ▼"
                     onClicked: dropdownMenu.open()
@@ -145,6 +157,21 @@ Page {
                             text: "Load"
                             onTriggered: editorController.loadLevel()
                         }
+                        MenuItem {
+                            text: "Background"
+                            onTriggered: editorController.loadBackground()
+                        }
+
+                        MenuItem {
+                            text: "+ 5 Tile above"
+                            onClicked: editorController.addRowsAbove(5)
+                        }
+
+                        MenuItem {
+                            text: "- 5 Tile above"
+                            enabled: levelCanvas.gridHeight > 25
+                            onClicked: editorController.removeRowsAbove(5)
+                        }
                     }
                 }
 
@@ -156,156 +183,287 @@ Page {
                 }
             }
 
-            Text {
-                id: text1
-                y: 8
-                width: 82
-                height: 17
-                color: "#ffffff"
-                text: qsTr("Scroll Speed")
-                font.pixelSize: 14
+            // Right side - minimal controls
+            Row {
                 anchors.right: parent.right
-                anchors.rightMargin: 247
-            }
+                anchors.rightMargin: 30
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 30
 
-            Slider {
-                id: scrollSpeed
-                objectName: "scrollSpeed"
-                y: 31
-                width: 76
-                height: 13
-                value: 4
-                transformOrigin: Item.Center
-                snapMode: RangeSlider.SnapAlways
-                stepSize: 1
-                to: 10
-                from: 1
-                anchors.right: parent.right
-                anchors.rightMargin: 253
-            }
+                // Scroll Speed
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 3
 
-            Text {
-                id: text2
-                y: 23
-                width: 82
-                height: 17
-                color: "#ffffff"
-                text: qsTr("Win Condition")
-                font.pixelSize: 14
-                anchors.right: parent.right
-                anchors.rightMargin: 136
-            }
+                    Text {
+                        id: text1
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "SCROLL SPEED"
+                        color: "#FFFFFF"
+                        font.pixelSize: 14
+                        font.letterSpacing: 1
+                        font.bold: true
+                    }
 
-            Button {
-                id: timed
-                objectName: "buttonTime"
-                y: 41
-                width: 25
-                height: 19
-                text: qsTr("⏳")
-                checkable: true
-                ButtonGroup.group: buttonGroup
-                background: Rectangle {
-                    border.color: parent.checked ? "green" : "#404040"
-                    border.width: 2
-                    radius: 6
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 6
+
+                        Slider {
+                            id: scrollSpeed
+                            objectName: "scrollSpeed"
+                            // y: 31
+                            width: 76
+                            height: 13
+                            value: 4
+                            transformOrigin: Item.Center
+                            snapMode: RangeSlider.SnapAlways
+                            stepSize: 1
+                            to: 10
+                            from: 1
+
+                            background: Rectangle {
+                                x: scrollSpeed.leftPadding
+                                y: scrollSpeed.topPadding + scrollSpeed.availableHeight / 2 - height / 2
+                                width: scrollSpeed.availableWidth
+                                height: 3
+                                radius: 2
+                                color: "#404040"
+
+                                Rectangle {
+                                    width: scrollSpeed.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#4a9eff"
+                                    radius: 2
+                                }
+                            }
+
+                            handle: Rectangle {
+                                x: scrollSpeed.leftPadding + scrollSpeed.visualPosition * (scrollSpeed.availableWidth - width)
+                                y: scrollSpeed.topPadding + scrollSpeed.availableHeight / 2 - height / 2
+                                width: 14
+                                height: 14
+                                radius: 7
+                                color: scrollSpeed.pressed ? "#3a8eef" : "#4a9eff"
+                                border.color: "#2a7edf"
+                                border.width: 2
+                            }
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: scrollSpeed.value
+                            color: "#e0e0e0"
+                            font.pixelSize: 11
+                            font.bold: true
+                            width: 15
+                        }
+                    }
                 }
-                anchors.right: parent.right
-                anchors.rightMargin: 90
-            }
-
-            Button {
-                id: coins
-                objectName: "buttonCoins"
-                x: 525
-                y: 20
-                width: 25
-                height: 20
-                text: qsTr("🪙")
-                checkable: true
-                ButtonGroup.group: buttonGroup
-                background: Rectangle {
-                    border.color: parent.checked ? "green" : "#404040"
-                    border.width: 2
-                    radius: 6
-                }
-                anchors.right: parent.right
-                anchors.rightMargin: 90
-            }
-
-            Button {
-                id: none
-                objectName: "buttonNone"
-                x: 525
-                y: 0
-                width: 25
-                height: 19
-                text: qsTr("⌀")
-                checkable: true
-                ButtonGroup.group: buttonGroup
-                background: Rectangle {
-                    border.color: parent.checked ? "green" : "#404040"
-                    border.width: 2
-                    radius: 6
-                }
-                anchors.right: parent.right
-                anchors.rightMargin: 90
-                checked: true
-            }
-            Item {
-                y: 44
-                width: 24
-                height: 13
-                anchors.right: parent.right
-                anchors.rightMargin: 60
 
                 Rectangle {
-                    anchors.fill: parent
-                    anchors.rightMargin: -5
-                    color: "white"
-                    radius: 2
-                    border.color: "gray"
-                    border.width: 1
-                }
-                TextInput {
-                    id: timeInput
-                    objectName: "timeInput"
-                    text: qsTr("999")
-                    font.pixelSize: 11
-                    horizontalAlignment: Text.AlignHCenter
-                    inputMask: "000"
-                    anchors.fill: parent
-                    anchors.margins: 1
-                    anchors.rightMargin: -5
-                }
-            }
-
-            Item {
-                x: 556
-                y: 23
-                width: 24
-                height: 13
-                anchors.right: parent.right
-                anchors.rightMargin: 60
-                Rectangle {
-                    color: "#ffffff"
-                    radius: 2
-                    border.color: "#808080"
-                    border.width: 1
-                    anchors.fill: parent
-                    anchors.rightMargin: -5
+                    width: 2
+                    height: 40
+                    color: "#404040"
+                    anchors.verticalCenter: parent.verticalCenter
                 }
 
-                TextInput {
-                    id: coinInput
-                    objectName: "coinInput"
-                    text: qsTr("99")
-                    anchors.fill: parent
-                    anchors.margins: 1
-                    anchors.rightMargin: -5
-                    font.pixelSize: 11
-                    horizontalAlignment: Text.AlignHCenter
-                    inputMask: "00"
+                // Win Condition
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+
+                    Text {
+                        id: text2
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "WIN CONDITION"
+                        color: "#909090"
+                        font.pixelSize: 9
+                        font.bold: true
+                    }
+
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 30
+
+                        // None button
+                        Column {
+                            spacing: 3
+
+                            Button {
+                                id: none
+                                objectName: "buttonNone"
+                                width: 25
+                                height: 25
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                checkable: true
+                                checked: true
+                                ButtonGroup.group: buttonGroup
+
+                                contentItem: Text {
+                                    text: "\uf05e"
+                                    font.family: fontAwesome.name
+                                    font.pixelSize: 14
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: parent.checked ? "#4a9eff" : "#606060"
+                                }
+
+                                background: Rectangle {
+                                    color: parent.checked ? "#1a1a1a" : "#2a2a2a"
+                                    radius: 6
+                                    border.color: parent.checked ? "#4a9eff" : "#404040"
+                                    border.width: 2
+                                }
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "None"
+                                color: none.checked ? "#4a9eff" : "#606060"
+                                font.pixelSize: 8
+                                font.bold: true
+                            }
+                        }
+
+                        // Coins
+                        Column {
+                            spacing: 3
+
+                            Button {
+                                id: coins
+                                objectName: "buttonCoins"
+                                width: 25
+                                height: 25
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                checkable: true
+                                ButtonGroup.group: buttonGroup
+
+                                contentItem: Text {
+                                    text: "\uf51e"
+                                    font.family: fontAwesome.name
+                                    font.pixelSize: 14
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: parent.checked ? "#ffd700" : "#606060"
+                                }
+
+                                background: Rectangle {
+                                    color: parent.checked ? "#1a1a1a" : "#2a2a2a"
+                                    radius: 6
+                                    border.color: parent.checked ? "#ffd700" : "#404040"
+                                    border.width: 2
+                                }
+                            }
+
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 3
+
+                                Rectangle {
+                                    width: 25
+                                    height: 13
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: "#1a1a1a"
+                                    radius: 3
+                                    border.color: coins.checked ? "#ffd700" : "#404040"
+                                    border.width: 1
+                                    opacity: coins.checked ? 1.0 : 0.4
+
+                                    TextInput {
+                                        id: coinInput
+                                        objectName: "coinInput"
+                                        text: "99"
+                                        anchors.centerIn: parent
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: "#e0e0e0"
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        inputMask: "00"
+                                        selectByMouse: true
+                                        enabled: coins.checked
+                                    }
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "coins"
+                                    color: coins.checked ? "#FFFFFF" : "#909090"
+                                    font.pixelSize: 8
+                                }
+                            }
+                        }
+
+                        // Timer
+                        Column {
+                            spacing: 3
+
+                            Button {
+                                id: timed
+                                objectName: "buttonTime"
+                                width: 25
+                                height: 25
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                checkable: true
+                                ButtonGroup.group: buttonGroup
+
+                                contentItem: Text {
+                                    text: "\uf017"
+                                    font.family: fontAwesome.name
+                                    font.pixelSize: 14
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: parent.checked ? "#ff6b6b" : "#606060"
+                                }
+
+                                background: Rectangle {
+                                    color: parent.checked ? "#1a1a1a" : "#2a2a2a"
+                                    radius: 6
+                                    border.color: parent.checked ? "#ff6b6b" : "#404040"
+                                    border.width: 2
+                                }
+                            }
+
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 3
+
+                                Rectangle {
+                                    width: 25
+                                    height: 13
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: "#1a1a1a"
+                                    radius: 3
+                                    border.color: timed.checked ? "#ff6b6b" : "#404040"
+                                    border.width: 1
+                                    opacity: timed.checked ? 1.0 : 0.4
+
+                                    TextInput {
+                                        id: timeInput
+                                        objectName: "timeInput"
+                                        text: "999"
+                                        anchors.centerIn: parent
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: "#e0e0e0"
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        inputMask: "000"
+                                        selectByMouse: true
+                                        enabled: timed.checked
+                                    }
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "sec"
+                                    color: timed.checked ? "#FFFFFF" : "#909090"
+                                    font.pixelSize: 8
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -476,6 +634,13 @@ Page {
                     anchors.margins: 5
                     color: "white"
                     radius: 5
+                    Image {
+                        anchors.fill: parent  
+                        source: backgroundImageLevel    
+                        fillMode: Image.PreserveAspectCrop 
+                        // not 100% to see the tiles better
+                        opacity: 0.5
+                    }
 
                     Flickable {
                         id: canvasFlickable
@@ -504,47 +669,34 @@ Page {
                             height: 800 // 25 tiles * 32px
                             gridWidth: 20
                             gridHeight: 25
+                            onBackgroundChanged: function (path) 
+                            {
+                                // cut away "res" and replace with "qrc:/resources"
+                                backgroundImageLevel = "qrc:/resources" + path.slice(3)
+                            }
                         }
                     }
-
-                    Text {
+                    
+                    Rectangle {
                         anchors.bottom: parent.bottom
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottomMargin: 5
-                        text: "Scroll to see the entire level | Right-click to delete tiles"
-                        color: "#666666"
-                        font.pixelSize: 10
-                        visible: levelCanvas.width > canvasFlickable.width
-                                 || levelCanvas.height > canvasFlickable.height
+                        color: "white"
+                        radius: 4
+                        width: textItem.implicitWidth + 1
+                        height: textItem.implicitHeight + 1
+                        opacity: 0.75
+
+                        Text {
+                            id: textItem
+                            anchors.centerIn: parent
+                            text: "Scroll to see the entire level | Right-click to delete tiles"
+                            color: "#020202"
+                            font.pixelSize: 12
+                        }
                     }
                 }
             }
-        }
-
-        Text {
-            id: text3
-            x: 588
-            y: 45
-            width: 82
-            height: 13
-            color: "#ffffff"
-            text: qsTr("seconds")
-            anchors.right: parent.right
-            anchors.rightMargin: -30
-            font.pixelSize: 11
-        }
-
-        Text {
-            id: text4
-            x: 588
-            y: 24
-            width: 82
-            height: 12
-            color: "#ffffff"
-            text: qsTr("coins")
-            anchors.right: parent.right
-            anchors.rightMargin: -30
-            font.pixelSize: 11
         }
     }
 

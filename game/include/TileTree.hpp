@@ -1,3 +1,8 @@
+/**
+ * @file TileTree.hpp
+ * @brief Defines the TileTree template class for hierarchical tile data structures
+ */
+
 /*
  *  TileTree.hpp
  *  Created on: Dec 08, 2017
@@ -21,6 +26,7 @@
 namespace jumper
 {
 
+/// Flag for split axis
 enum SplitAxis
 {
     HORIZONTAL,
@@ -41,6 +47,7 @@ public:
     class IndexHelper: public TileIndexProxy
     {
     public:
+        /// Constructor with pointer to parent tree and Y position of access
         IndexHelper(TileTree* parent, int y) : m_parent(parent), m_y(y) {}
 
         /// Parent tree. Used to access the tiles via \ref get
@@ -100,7 +107,7 @@ protected:
     TileTree* 		m_sub2;
 
     /// Array of tiles stored in the leafs
-    T*	        m_tiles;
+    T*	            m_tiles;
 
     /// Number of tiles on the tile leaf array
     int				m_numTiles;

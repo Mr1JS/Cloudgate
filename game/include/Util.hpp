@@ -1,3 +1,8 @@
+/**
+ * @file Util.hpp
+ * @brief Defines utility functions for the game engine
+ */
+
 /*
  *  Util.hpp
  *  Created on: Dec 08, 2017
@@ -61,16 +66,37 @@ std::string GetPathFromFileName(std::string filename);
 
 
 /**
- * @brief Loads tile names from an XML file
- *
- * Parses an XML file containing tile definitions and extracts
- * tile IDs with their corresponding names.
- *
- * @param xmlPath Path to the XML file
- * @return Map of tile IDs to tile names
+ * @brief Tile-Info from RulesTiles.xml (name, type, collisionshape)
+ * shape: "full" | "half_bottom" | "half_left" | "half_right" | "half_top"
+ *        | "diag_tl_br" | "diag_tr_bl" (diagonals for ramps/slopes)
  */
-std::map<int, std::pair<std::string, std::string>> ParseXMLData(const std::string& xmlPath);
+struct TileInfo
+{
+    std::string name;
+    std::string type;
+    std::string shape = "full";
+};
 
+/**
+ * @brief Load Tile-Definition from XML file incl. collisionshape.
+ * @param xmlPath Path to RulesTiles.xml
+ * @return Map Tile-ID -> TileInfo (name, type, shape)
+ */
+std::map<int, TileInfo> ParseXMLData(const std::string& xmlPath);
+
+/**
+ * @brief get current actor
+ * @param path path to level_master
+ * @return name of current actor
+ */
+std::string getLevelActor(const std::string& path);
+
+/**
+ * @brief update actor in all xmls
+ * @param filePath path to directory of all levels
+ * @param newActor name of new actor
+ */
+void updateActor(const std::string &filePath, const std::string &newActor);
 } // namespace jumper
 
 

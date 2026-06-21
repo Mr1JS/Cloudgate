@@ -1,3 +1,9 @@
+/**
+ * @file pages.cpp
+ * @brief Implementation of the pages class for application navigation management,
+ *        controls page transitions and current page state in the Qt application
+ */
+
 #include "include/pages.h"
 
 pages::pages(QObject *parent)
@@ -31,7 +37,7 @@ QString pages::getPageInfo(int page){
         pageInfo = "Editor";
         break;
     case 2:
-        pageInfo = "Settings";
+        pageInfo = "Character";
         break;
     default:
         break;

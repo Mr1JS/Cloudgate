@@ -1,3 +1,9 @@
+/**
+ * @file Camera.cpp
+ * @brief Implementation of the Camera class for dynamic viewport management, scrolling,
+ *        player tracking and screen boundaries within the level
+ */
+
 /*
  *  Camera.cpp
  *
@@ -71,7 +77,7 @@ void Camera::update(double dt)
     m_scrollAccumulator += m_scrollSpeed * dt;
     
     // Wenn wir mindestens 1 Pixel bewegt haben, wende die Bewegung an
-    if(m_scrollAccumulator >= 1.0)
+    if (m_scrollAccumulator >= 1.0)
     {
         int pixelsToMove = static_cast<int>(m_scrollAccumulator);
         m_position.setY(m_position.y() - pixelsToMove);

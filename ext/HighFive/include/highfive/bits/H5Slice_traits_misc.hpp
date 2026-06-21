@@ -67,7 +67,7 @@ SliceTraits<Derivate>::select(const std::vector<size_t>& offset,
                               const std::vector<size_t>& count,
                               const std::vector<size_t>& stride) const {
     // hsize_t type convertion
-    // TODO : normalize hsize_t type in HighFive namespace
+    
     std::vector<hsize_t> offset_local(offset.size());
     std::vector<hsize_t> count_local(count.size());
     std::vector<hsize_t> stride_local(stride.size());

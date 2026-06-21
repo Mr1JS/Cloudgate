@@ -1,3 +1,9 @@
+/**
+ * @file LevelSelector.qml
+ * @brief Level selection page UI displaying available levels,
+ *        allows users to choose which level to play or edit
+ */
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Cloudgate_game 1.0
@@ -6,7 +12,7 @@ Page {
     id: levelSelectorPage
     Image {
         anchors.fill: parent
-        source: "qrc:/resources/images/LevelSelectorBackground.jpg"
+        source: "qrc:/resources/images/backgrounds/skyIslands.jpg"
         fillMode: Image.PreserveAspectCrop
         smooth: true
     }
@@ -91,10 +97,13 @@ Page {
                         text: "goal: "
                         font.pixelSize: 18
                     }
-                    Text 
+                    Image 
                     {
-                        text: goalType === 1 ? "🪙" : goalType === 2 ? "⏳" : goalType === 0 ? "Ø" : " "
-                        font.pixelSize: 18
+                        width: 20
+                        height: 20
+                        source: goalType === 1 ? "qrc:/resources/images/Coin.png" : goalType === 2 ? "qrc:/resources/images/Time.png" : goalType === 0 ? "qrc:/resources/images/None.png" : ""
+                        fillMode: Image.PreserveAspectFit
+                        visible: goalType >= 0 && goalType <= 2
                     }
                     Text 
                     {
@@ -116,8 +125,8 @@ Page {
                     {
                         console.log("Level gewählt:", file)
 
-                        // switch to SecondPage (created as Component to send file path too)
-                        var comp = Qt.createComponent("SecondPage.qml")
+                        // switch to LevelStarter (created as Component to send file path too)
+                        var comp = Qt.createComponent("LevelStarter.qml")
                         if (comp.status === Component.Ready) 
                         {
                             var page = comp.createObject(stackView)
@@ -127,11 +136,12 @@ Page {
                                 // Übergabe des Levels
                                 if (page.initLevel) 
                                 {
+                                    console.log(file)
                                     page.initLevel(file)
                                 }
                             } else 
                             {
-                                console.error("Failed to create SecondPage")
+                                console.error("Failed to create LevelStarter")
                             }
                         }
                     }

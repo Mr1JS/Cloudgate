@@ -1,3 +1,9 @@
+/**
+ * @file Monster.cpp
+ * @brief Implementation of the Monster class with AI behavior for enemies (Ghost and Snake),
+ *        patrol movement, player pursuit and detection range logic
+ */
+
 /*
  *  Monster.cpp
  */
@@ -8,9 +14,11 @@
 
 #include <cmath>
 
-namespace jumper {
+namespace jumper
+{
 
-namespace {
+namespace
+{
     // Formel wie in TileSet.cpp – dort werden 9 und 4 hardcodiert
     constexpr int TILES_PER_ROW = 9;
     constexpr int TILE_OFFSET = 4;
@@ -20,9 +28,15 @@ namespace {
         int row = tileId / TILES_PER_ROW;
         int col = tileId % TILES_PER_ROW;
         src.x = col * tw + TILE_OFFSET;
-        if (col > 0) src.x += col * TILE_OFFSET;
+        if (col > 0)
+        {
+            src.x += col * TILE_OFFSET;
+        }
         src.y = row * th + TILE_OFFSET;
-        if (row > 0) src.y += row * TILE_OFFSET;
+        if (row > 0)
+        {
+            src.y += row * TILE_OFFSET;
+        }
         src.w = tw;
         src.h = th;
     }
@@ -39,10 +53,11 @@ Monster::Monster(MainWindow* mw, SDL_Texture* tilesetTexture,
     , m_rightBound(rightBound)
     , m_groundY(0.0)
     , m_chaseTimer(0.0)
+    , m_exhaustedTimer(0.0)
 {
-    // Ghost: 144 Top, 145 Bottom | Snake: 146 Top, 147 Bottom (0-basiert: 143/144, 145/146)
-    int tileTop = (type == Type::Ghost) ? 144 : 146;
-    int tileBottom = (type == Type::Ghost) ? 145 : 147;
+    // Ghost: 131 Top, 132 Bottom | Snake: 133 Top, 134 Bottom (0-basiert: 131/132, 133/134)
+    int tileTop = (type == Type::Ghost) ? 131 : 133;
+    int tileBottom = (type == Type::Ghost) ? 132 : 134;
     setTileSourceRect(m_sourceRectTop, tileTop, tileWidth, tileHeight);
     setTileSourceRect(m_sourceRectBottom, tileBottom, tileWidth, tileHeight);
     m_targetRect.w = tileWidth;
@@ -79,8 +94,9 @@ void Monster::update(double dt, Actor* actor)
         return;
     }
 
-    const double chaseSpeed = 120.0;
+    const double chaseSpeed = 75.0;
     const double chaseDuration = 5.0;
+    const double exhaustedDuration = 5.0;
     const double jumpSpeed = -280.0;
     const double gravity = 400.0;
     const double actorAboveThreshold = 20.0;
@@ -89,10 +105,22 @@ void Monster::update(double dt, Actor* actor)
     Vector<double> vel = velocity();
     bool onGround = (pos.y() + h() >= m_groundY - 1.0);
 
-    if (actor && m_chaseTimer > 0.0)
+    // Erschöpft: 5 s nur Patrouille, dann wieder Jagd
+    if (m_exhaustedTimer > 0.0)
+    {
+        m_exhaustedTimer -= dt;
+        if (m_exhaustedTimer <= 0.0)
+        {
+            m_chaseTimer = chaseDuration;
+        }
+        vel.setX((vel.x() > 0) ? m_moveSpeed : -m_moveSpeed);
+        vel.setY(0.0);
+    }
+    // Jagd: 5 s verfolgen, dann erschöpft
+    else if (actor && m_chaseTimer > 0.0)
     {
         double ax = actor->worldPosition().x() + actor->w() / 2.0;
-        double ay = actor->worldPosition().y() + actor->h() / 2.0;  // Actor-Mitte
+        double ay = actor->worldPosition().y() + actor->h() / 2.0;
         double mx = pos.x() + w() / 2.0;
         double my = pos.y() + h() / 2.0;
 
@@ -100,15 +128,21 @@ void Monster::update(double dt, Actor* actor)
         double dy = ay - my;
         double dist = std::sqrt(dx * dx + dy * dy);
 
-        if (dist > 1.0)  // Normalisiere Richtung
+        if (dist > 1.0)
         {
             vel.setX((dx / dist) * chaseSpeed);
             vel.setY((dy / dist) * chaseSpeed * 0.9);
 
             if (onGround && dy < -actorAboveThreshold)
+            {
                 vel.setY(jumpSpeed);
+            }
         }
         m_chaseTimer -= dt;
+        if (m_chaseTimer <= 0.0)
+        {
+            m_exhaustedTimer = exhaustedDuration;
+        }
     }
     else
     {
@@ -149,7 +183,10 @@ void Monster::update(double dt, Actor* actor)
 
 void Monster::render()
 {
-    if (!readyToRender()) return;
+    if (!readyToRender())
+    {
+        return;
+    }
 
     Vector<int> pos = computeTargetPosition();
     SDL_RendererFlip flip = (velocity().x() < 0) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;

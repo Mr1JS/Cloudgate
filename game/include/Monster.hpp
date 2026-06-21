@@ -1,3 +1,8 @@
+/**
+ * @file Monster.hpp
+ * @brief Defines the Monster class for enemy entities (Ghost and Snake) with AI behavior
+ */
+
 /*
  *  Monster.hpp
  *  Feind (Ghost, Snake) mit Patrouillen-Bewegung
@@ -11,17 +16,20 @@
 
 #include <SDL.h>
 
-namespace jumper {
+namespace jumper
+{
 
 class Actor;
 class MainWindow;
 
 /**
- * @brief Monster (Ghost, Snake). Snake patrouilliert; Ghost verfolgt den Actor 5 Sek. und kann springen.
+ * @brief Monster (Ghost, Snake). Snake patrols; Ghost chases player on sight for 5s, then has a delay of 5s before chasing again.
  */
 class Monster : public MovingRenderable
 {
 public:
+
+    // enum for monster type classification
     enum class Type { Ghost, Snake };
 
     Monster(MainWindow* mw, SDL_Texture* tilesetTexture,
@@ -29,25 +37,42 @@ public:
             double leftBound, double rightBound,
             int tileWidth, int tileHeight, int tilesPerRow, int tileOffset);
 
-    /// Update: Snake patrouilliert; Ghost verfolgt Actor (wenn nicht null) 5 Sek., kann springen
+    /// Behavior logic: Snake patrols; Ghost chases on sight for 5s / then stops chasing for 5s in tandem
     void update(double dt, Actor* actor = nullptr);
 
+    /// Render monster sprite to screen
     virtual void render() override;
 
+    // return type of this monster
     Type type() const { return m_type; }
 
 private:
+    /// @brief this monster's type
     Type        m_type;
+
+    /// movement speed
     double      m_moveSpeed;
+
+    /// left bound (hitbox)
     double      m_leftBound;
+
+    /// right bound (hitbox)
     double      m_rightBound;
+
+    /// source rect of top sprite
     SDL_Rect    m_sourceRectTop;
+
+    /// source rect of bottom sprite
     SDL_Rect    m_sourceRectBottom;
 
-    /// Nur Ghost: Boden-Y (Füße) bei Patrouille
+    /// Ghost only: Ground-Y for patrol
     double      m_groundY;
-    /// Nur Ghost: Chase-Timer (Sekunden), nach 5 s zurück zu Patrouille
+
+    /// Ghost only: Chase-timer (in seconds), default of 5s
     double      m_chaseTimer;
+    
+    /// Ghost only: fatigue-timer (in seconds), default of 5s
+    double      m_exhaustedTimer;
 };
 
 } // namespace jumper
