@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file LayerManager.cpp
+ * @brief Implementation of the LayerManager class for managing and rendering multiple
+ *        tile layers with different rendering priorities in the level
+ */
+
 #include "game/include/LayerManager.hpp"
 
 #include <iostream>

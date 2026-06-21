@@ -1,3 +1,9 @@
+/**
+ * @file Level.cpp
+ * @brief Implementation of the Level class as the central game engine with level logic,
+ *        monster management, physics simulation, collision detection and game loop
+ */
+
 /*
  *  Level.cpp
  *
@@ -59,13 +65,8 @@ Level::Level(MainWindow* mainWindow, std::string filename)
         int levelHeight = tileRep->height();
         int levelWidth = tileRep->width();
         
-        // Berechne die Kamera-Grenzen in Tile-Koordinaten
-        int cameraX = m_camera.x();  // Kamera X in World-Koordinaten (400)
-        int cameraWidth = m_camera.width();  // Kamera Breite (800)
-        int cameraRight = cameraX + cameraWidth;  // Rechte Grenze in World-Koordinaten (1200)
-        
-        // Konvertiere World-Koordinaten zu Tile-Koordinaten
-        // Linke Wand: Bei Tile 0 (linker Rand des Levels)
+        // Linke und rechte Wand: Level-Grenzen (nicht Kamera)
+        // Kamera scrollt nur vertikal – Spieler darf nicht aus dem Level laufen
         int leftTileX = 0;
         // Rechte Wand: Bei Kamera X + Breite (rechter Rand der Kamera)
         int rightTileX = cameraRight / tileWidth;
@@ -548,6 +549,9 @@ GoalState Level::checkAndUpdateGoalState() {
     // if we already won or lost, there's no need to check for anything anmore
     switch (m_goalState)
     {
+    case GOALSTATE_NONE:
+    case GOALSTATE_WINNABLE:
+        break;
     case GOALSTATE_GAME_OVER:
     case GOALSTATE_LEVEL_FINISHED:
         return m_goalState;

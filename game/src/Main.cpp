@@ -1,3 +1,9 @@
+/**
+ * @file Main.cpp
+ * @brief Main entry point for the standalone game executable, initializes SDL,
+ *        loads the level and starts the game loop without Qt GUI
+ */
+
 /*
  *  Main.cpp *
  *  Created on: Dec 08, 2017

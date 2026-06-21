@@ -1,3 +1,8 @@
+/**
+ * @file Vector.tcc
+ * @brief Template implementation for the Vector class
+ */
+
 /*
  *  Vector<T>.cpp
  *  Created on: Dec 08, 2017
@@ -48,7 +53,7 @@ Vector<T>::Vector(const Vector<T> & other)
 template<typename T>
 Vector<T>::~Vector<T>()
 {
-    // TODO Auto-generated destructor stub
+    // Auto-generated destructor stub
 }
 
 template<typename T>

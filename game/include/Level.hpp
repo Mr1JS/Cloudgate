@@ -1,3 +1,8 @@
+/**
+ * @file Level.hpp
+ * @brief Defines the Level class which represents a complete game level with actors, monsters and physics
+ */
+
 /*
  *  Level.hpp
  *

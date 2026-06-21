@@ -158,10 +158,11 @@ qt_add_qml_module(appCloudgate_game
     QML_FILES
         qml/Main.qml
         qml/StyledButton.qml
-        qml/SecondPage.qml
+        qml/LevelStarter.qml
         qml/LevelEditor.qml
         qml/Character.qml
         qml/LevelSelector.qml
+        qml/EndlessPage.qml
 
     SOURCES
         include/pages.h
@@ -180,6 +181,8 @@ qt_add_qml_module(appCloudgate_game
         src/LevelSelector.cpp
         include/ActorSelector.hpp
         src/ActorSelector.cpp
+        include/EndlessLevelGenerator.hpp
+        src/EndlessLevelGenerator.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -263,3 +266,52 @@ install(TARGETS appCloudgate_game
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# ============================================================================
+# Doxygen Documentation
+# ============================================================================
+option(BUILD_DOC "Build documentation with Doxygen" ON)
+
+if(BUILD_DOC)
+    find_package(Doxygen OPTIONAL_COMPONENTS dot)
+    
+    if(DOXYGEN_FOUND)
+        # Set input directories for documentation
+        set(DOXYGEN_INPUT_DIR "\"${CMAKE_CURRENT_SOURCE_DIR}/game\" \"${CMAKE_CURRENT_SOURCE_DIR}/include\" \"${CMAKE_CURRENT_SOURCE_DIR}/src\" \"${CMAKE_CURRENT_SOURCE_DIR}/qml\"")
+        set(DOXYGEN_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/docs")
+        
+        # Configure Doxyfile with project variables
+        configure_file(
+            ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+            ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+            @ONLY
+        )
+        
+        # Add custom target to generate documentation
+        add_custom_target(doc
+            COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM
+        )
+        
+        message(STATUS "Doxygen found! Generate docs with: cmake --build . --target doc")
+        message(STATUS "Documentation will be in: ${DOXYGEN_OUTPUT_DIR}/html/index.html")
+        
+        if(DOXYGEN_DOT_FOUND)
+            message(STATUS "Graphviz/dot found - class diagrams and call graphs will be generated")
+        else()
+            if(WIN32)
+                message(STATUS "Graphviz/dot not found - install with: choco install graphviz")
+            else()
+                message(STATUS "Graphviz/dot not found - install with: sudo apt install graphviz")
+            endif()
+        endif()
+    else()
+        if(WIN32)
+            message(WARNING "Doxygen not found - install with: choco install doxygen.install")
+        else()
+            message(WARNING "Doxygen not found - install with: sudo apt install doxygen graphviz")
+        endif()
+    endif()
+endif()

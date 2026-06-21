@@ -1,3 +1,9 @@
+/**
+ * @file NumberDigit.cpp
+ * @brief Implementation of the NumberDigit class for visual representation of single digits
+ *        for score display, timers and other numeric UI elements in the game
+ */
+
 #include "game/include/NumberDigit.hpp"
 
 namespace jumper

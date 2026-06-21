@@ -1,3 +1,8 @@
+/**
+ * @file MovingRenderable.hpp
+ * @brief Defines the MovingRenderable base class for renderable objects with velocity and movement
+ */
+
 /*
  *  MovingRenderable.hpp *
  *  Created on: Dec 08, 2017

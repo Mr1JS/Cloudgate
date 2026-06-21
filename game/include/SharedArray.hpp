@@ -1,3 +1,8 @@
+/**
+ * @file SharedArray.hpp
+ * @brief Defines the SharedArray template class for shared pointer-based array management
+ */
+
 /*
  *  SharedArray.hpp
  *

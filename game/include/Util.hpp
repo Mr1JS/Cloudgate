@@ -1,3 +1,8 @@
+/**
+ * @file Util.hpp
+ * @brief Defines utility functions for the game engine
+ */
+
 /*
  *  Util.hpp
  *  Created on: Dec 08, 2017

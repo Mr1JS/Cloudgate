@@ -1,3 +1,8 @@
+/**
+ * @file StaticRenderable.hpp
+ * @brief Defines the StaticRenderable class for non-moving renderable objects
+ */
+
 /*
  *  StaticRenderable.hpp
  *  Created on: Dec 08, 2017

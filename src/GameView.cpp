@@ -1,3 +1,9 @@
+/**
+ * @file GameView.cpp
+ * @brief Implementation of the GameView class for rendering SDL game content in Qt Quick,
+ *        handles keyboard input forwarding, frame updates and game-GUI integration
+ */
+
 #include "include/GameView.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Level.hpp"
@@ -280,8 +286,6 @@ void GameView::updateGame()
     // Update game with keyboard states
     m_gameWindow->update(keystates);
 
-    // TODO: GameController should be implemented somewhere here
-
     // Prüfe, ob Actor außerhalb des Kamera-Bereichs ist (Game Over)
     // WICHTIG: Nur prüfen, wenn das Spiel läuft
     if (m_running && m_gameWindow && m_gameWindow->level())
@@ -392,7 +396,7 @@ void GameView::keyPressEvent(QKeyEvent *event)
     std::lock_guard<std::recursive_mutex> lock(m_gameMutex);
     // ESC-Taste wird in QML behandelt (nicht an SDL weitergeben)
     if (event->key() == Qt::Key_Escape) {
-        // ESC wird in SecondPage.qml behandelt
+        // ESC wird in LevelStarter.qml behandelt
         QQuickPaintedItem::keyPressEvent(event);
         return;
     }

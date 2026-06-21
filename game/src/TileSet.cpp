@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file TileSet.cpp
+ * @brief Implementation of the TileSet class for loading, managing and rendering tilesets
+ *        with tileset graphics, tile properties and layer-based rendering
+ */
+
 #include "game/include/TileSet.hpp"
 
 #include "game/include/MainWindow.hpp"

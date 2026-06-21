@@ -1,3 +1,9 @@
+/**
+ * @file ActorSelector.cpp
+ * @brief Implementation of the ActorSelector class for managing actor sprite selection
+ *        in the level editor, loading actor images and providing selection interface
+ */
+
 #include "include/ActorSelector.hpp"
 #include <QDirIterator>
 #include <QFileInfo>

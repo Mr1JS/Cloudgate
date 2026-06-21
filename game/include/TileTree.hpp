@@ -1,3 +1,8 @@
+/**
+ * @file TileTree.hpp
+ * @brief Defines the TileTree template class for hierarchical tile data structures
+ */
+
 /*
  *  TileTree.hpp
  *  Created on: Dec 08, 2017

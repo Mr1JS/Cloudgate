@@ -1,3 +1,9 @@
+/**
+ * @file StateController.cpp
+ * @brief Implementation of the StateController class for managing game states
+ *        (menu, playing, pause, game over), score system and UI overlay rendering
+ */
+
 #include "game/include/StateController.hpp"
 
 #include <fstream>
@@ -141,7 +147,7 @@ void StateController::updateRuntime(unsigned int runtime)
     // TODO: this would need to be changed if RUNTIME_DIGITS < 6
     unsigned int min = m_runtime/1000/60;
     unsigned int sec = m_runtime/1000 - min*60;
-    unsigned int ms  = m_runtime - sec*1000;
+    unsigned int ms  = m_runtime      - sec*1000;
     unsigned int digit = 0;
     for (int i = RUNTIME_DIGITS-1; i >= 0; i--)
     {

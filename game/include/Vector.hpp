@@ -1,3 +1,8 @@
+/**
+ * @file Vector.hpp
+ * @brief Defines the Vector template class for 2D/3D vector operations
+ */
+
 /*
  *  Vector.hpp
  *  Created on: Dec 08, 2017

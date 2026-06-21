@@ -10,6 +10,12 @@
  *  Box2D-Integration.
  */
 
+/**
+ * @file Physics.cpp
+ * @brief Implementation of the Physics class with Box2D integration for realistic physics simulation,
+ *        collision detection, rigid body dynamics and contact listeners for game events
+ */
+
 #include "game/include/Physics.hpp"
 #include "game/include/Actor.hpp"
 #include "game/include/Level.hpp"
@@ -44,7 +50,7 @@ inline void getTileGridFromBody(b2Body* body, int& gx, int& gy)
 inline bool isNoWallContactType(const std::string& type)
 {
     return type == "collectible" || type == "red_potion" || type == "blue_potion"
-        || type == "green_potion" || type == "random" || type == "door";
+        || type == "green_potion" || type == "random" || type == "door" || type == "key";
 }
 
 } // anonymous namespace
@@ -107,6 +113,21 @@ void ContactListener::BeginContact(b2Contact* contact)
 
     // Collectible (Münze etc.): von Karte entfernen, Münzzähler erhöhen, Body später zerstören
     if (tileType == "collectible")
+    {
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+            {
+                m_level->getStateController()->addCoin();
+            }
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
+
+    // Key: aufsammeln, zählt als Münze für Schlüssel-Türen (GOAL_COINS mit value 1)
+    if (tileType == "key")
     {
         if (m_level)
         {
@@ -953,13 +974,14 @@ void Physics::enforceCameraBounds()
         return;
     }
 
-    const Camera& camera = m_level->getCamera();
-    int cameraRight = camera.x() + camera.width();
+    int tileW = m_tiles->tileWidth();
+    int levelW = m_tiles->width();
+    float levelRight = levelW * tileW;   // Rechte Level-Grenze (Worldborders)
     Vector2f pos = m_actor->worldPosition();
 
-    if (pos.x() + m_actor->w() > cameraRight)
+    if (pos.x() + m_actor->w() > levelRight)
     {
-        m_actor->setWorldPosition(Vector2f(cameraRight - m_actor->w(), pos.y()));
+        m_actor->setWorldPosition(Vector2f(levelRight - m_actor->w(), pos.y()));
         m_actor->velocity().setX(0);
         if (m_actorBody)
         {

@@ -1,3 +1,8 @@
+/**
+ * @file MainWindow.hpp
+ * @brief Defines the MainWindow class which manages the SDL window and rendering loop
+ */
+
 /*
  *  MainWindow.hpp *
  *  Created on: Dec 08, 2017
