@@ -71,17 +71,16 @@ int Camera::y() const
 
 void Camera::update(double dt)
 {
-    // Kamera scrollt langsam nach oben (Y-Position verringern)
+    // Camera scrolls slowly upward (decrease Y-position)
     
-    // Akkumuliere die Bewegung (für smooth scrolling bei kleinen Werten)
-    m_scrollAccumulator += m_scrollSpeed * dt;
+    float currentSpeed = m_scrollSpeed;
     
     // Wenn wir mindestens 1 Pixel bewegt haben, wende die Bewegung an
     if (m_scrollAccumulator >= 1.0)
     {
         int pixelsToMove = static_cast<int>(m_scrollAccumulator);
         m_position.setY(m_position.y() - pixelsToMove);
-        m_scrollAccumulator -= pixelsToMove;  // Behalte den Rest für den nächsten Frame
+        m_scrollAccumulator -= pixelsToMove;  // Keep the remainder for the next frame
     }
 }
 
