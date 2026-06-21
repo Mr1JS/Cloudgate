@@ -1,3 +1,8 @@
+/**
+ * @file Level.hpp
+ * @brief Defines the Level class which represents a complete game level with actors, monsters and physics
+ */
+
 /*
  *  Level.hpp
  *
@@ -18,11 +23,14 @@
 #include "MainWindow.hpp"
 #include "Camera.hpp"
 #include "TileSet.hpp"
+#include "Util.hpp"
 #include "LevelForces.hpp"
 #include "StateController.hpp"
 #include "Monster.hpp"
 
 #include <vector>
+#include <map>
+#include <list>
 
 namespace jumper
 {
@@ -89,6 +97,9 @@ public:
     /// Returns a pointer to the tile set representation
     TileSetRepresentation* tiles();
 
+    /// Returns a map with tile data read from RulesTiles.xml
+    std::map<int, TileInfo>* tileData();
+
     const Camera& getCamera();
 
     /// Checks if actor is outside camera bounds (for game over)
@@ -131,6 +142,9 @@ public:
     /// @param targetValue value to meet for goal type, if necessary
     void setGoalCondition(int type, int targetValue);
 
+    /// Aktueller Zielmodus (z.B. GOAL_COINS)
+    GoalType goalType() const { return m_goalType; }
+
     /// set res path to access RulesTiles.xml
     void setResPath(std::string path);
     
@@ -140,17 +154,17 @@ public:
     /// set scroll speed in camera
     void setCameraSettings(float scrollSpeed, float pos_y);
 
-    /// Entfernt Tile an (gx, gy) aus der Karte (z.B. gesammelte Münze)
+    /// removes Tile at (gx, gy) coordinates from map (e.g. a collected coin)
     void removeTileAt(int gx, int gy);
 
-    /// Liefert die Tile-Wert an (gx, gy), 0 = leer, sonst 1-basiert
+    /// Returns tile id at (gx, gy), 0 = empty, otherwise tileId from RulesTiles.xml +1
     int getTileAt(int gx, int gy) const;
 
-    /// Setzt Tile an (gx, gy), value = 0 leer, sonst 1-basierter Tile-Index
+    /// Set Tile at (gx, gy), value = 0 empty, otherwise tileId from RulesTiles.xml +1
     void setTileAt(int gx, int gy, int value);
 
-    /// Spawnt ein Monster (Ghost oder Snake) an (gx, gy). gy = Zeile des Bodens; Top-Tile bei gy-1.
-    /// Nutzt dieselbe Logik wie spawnMonsters() (Schlange: links/rechts, Geist: 5 s Verfolgung).
+    /// Spawns a monster (Ghost or Snake) at (gx, gy). gy = ground row; top tile: gy=-1.
+    /// Uses the same monster ai as spawnMonsters() (Snake: move left-right, Ghost: 5s pursuit).
     void spawnMonsterAt(int gx, int gy, Monster::Type type);
 
 private:
@@ -158,6 +172,7 @@ private:
     /// Updates the actor accordint to the given keyboard states
     void updateActor(const Uint8* keystates);
 
+    /// Spawn monsters, as defined in level definition
     void spawnMonsters();
 
     /// A SDL texture for the actor
@@ -175,6 +190,9 @@ private:
     /// A tile array
     TileSet*				m_tiles;
 
+    /// Tile-Definitionen (name, type, shape) aus RulesTiles.xml
+    std::map<int, TileInfo>* m_tileData;
+
     /// The physics engine
     Physics*                m_physics;
 
@@ -187,7 +205,7 @@ private:
     /// For managing level states such as hp, time elapsed and other things
     StateController*        m_stateController;
 
-    /// Monster-Liste für Update (Renderables werden von LayerManager verwaltet)
+    /// Monster-Liste for update() (Renderables are managed by LayerManager)
     std::vector<Monster*>   m_monsters;
 
     /// Type of goal requirement, e.g. time, coins, etc.
@@ -199,10 +217,18 @@ private:
     /// Whether player has met the goal requirements, or not, or failed, or finished the level
     GoalState               m_goalState;
 
+    std::list<std::pair<int, int>>          m_doors;
+
+    /// ids of door open tiles
+    std::pair<int, int>     m_door_open;
+
+    /// ids of door closed tiles
+    std::pair<int, int>     m_door_closed;
+
     /// set res path to access RulesTiles.xml
     std::string             m_resPath = "";
 
-    /// Space war im vorherigen Frame gedrückt (für Flanken-Erkennung beim Sprung)
+    /// Whether spacebar was pressed in previous frame (for not setting wantsToJump twice)
     bool                    m_prevSpacePressed = false;
 };
 

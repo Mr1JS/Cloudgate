@@ -1,3 +1,9 @@
+/**
+ * @file ActorSelector.cpp
+ * @brief Implementation of the ActorSelector class for managing actor sprite selection
+ *        in the level editor, loading actor images and providing selection interface
+ */
+
 #include "include/ActorSelector.hpp"
 #include <QDirIterator>
 #include <QFileInfo>
@@ -80,7 +86,7 @@ void ActorSelector::loadActors()
 // check and set last selected character to show when clicking Character button
 void ActorSelector::setStartActor()
 {
-    // get path of master level file
+    // get path of master_level file
     QDir appDir(QCoreApplication::applicationDirPath());
     appDir.cdUp();
     std::string absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml").toStdString();

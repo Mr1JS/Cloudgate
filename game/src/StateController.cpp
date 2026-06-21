@@ -1,3 +1,9 @@
+/**
+ * @file StateController.cpp
+ * @brief Implementation of the StateController class for managing game states
+ *        (menu, playing, pause, game over), score system and UI overlay rendering
+ */
+
 #include "game/include/StateController.hpp"
 
 #include <fstream>
@@ -8,7 +14,7 @@ namespace jumper
 {
 
 StateController::StateController(MainWindow* mainWindow, Level* level, std::string& filename)
-: m_hearts{}, m_runtimeDigits{}
+: m_hearts{}, m_runtimeDigits{} 
 {
     m_mainWindow    = mainWindow;
     m_level         = level;
@@ -21,6 +27,7 @@ StateController::StateController(MainWindow* mainWindow, Level* level, std::stri
     m_heartHeight   = 0;
     m_coins         = 0;
     m_superPotionUntilTicks = 0;
+    m_breakTilesUntilTicks = 0;
 }
 
 
@@ -30,12 +37,12 @@ void StateController::initHeartDisplay(SDL_Texture* heartTexture, int texWidth, 
     m_heartHeight = texHeight;
     for (int i = 0; i < MAX_HEARTS; i++)
     {
-        if (m_hearts[i])
+        if (m_hearts.size >= i && m_hearts[i])
         {
             std::cout << "Heart " << i << " already instanciated! Skipping." << std::endl;
             continue;
         }
-        m_hearts[i] = new SDLRenderable(m_mainWindow, heartTexture);
+        m_hearts.push_back(new SDLRenderable(m_mainWindow, heartTexture));
 
         m_level->addRenderable(m_hearts[i], layer);
     }
@@ -55,13 +62,19 @@ void StateController::resetHeartPosition()
     }
 }
 
-void StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, int frameWidth, int frameHeight, int layer)
+void StateController::initNumberDigits(SDL_Texture* digitTexture,
+                                        int numFrames, int frameWidth,
+                                        int frameHeight, int layer)
 {
     // init textures for the runtime display
     int x = 25;
     for (int i = 0; i < RUNTIME_DIGITS; i++)
     {
-        m_runtimeDigits[i] = new TimerDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_runtimeDigits.push_back(new NumberDigit(m_mainWindow,
+                                                  digitTexture,
+                                                  numFrames,
+                                                  frameWidth,
+                                                  frameHeight));
         
         m_runtimeDigits[i]->setWorldPosition(Vector2f(x, 25));
         
@@ -83,7 +96,7 @@ void StateController::initTimerDigits(SDL_Texture* digitTexture, int numFrames, 
     }
     for (int i = 0; i < COIN_DIGITS; i++)
     {
-        m_coinTextures[i] = new TimerDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight);
+        m_coinTextures.push_back(new NumberDigit(m_mainWindow, digitTexture, numFrames, frameWidth, frameHeight));
         m_coinTextures[i]->setWorldPosition(Vector2f(x, y));
         x -= 5 + frameWidth;
         m_level->addRenderable(m_coinTextures[i], layer);
@@ -111,7 +124,8 @@ void StateController::updateGameTime()
 
     unsigned int currentTimer = m_timer->elapsed();
     unsigned int runtimed = currentTimer - m_lastTimer;
-    if (runtimed > 100) {
+    if (runtimed > 100)
+    {
         unsigned int min = m_runtime/1000/60;
         unsigned int sec = m_runtime/1000 - min*60;
         unsigned int ms  = m_runtime - sec*1000;
@@ -133,23 +147,23 @@ void StateController::updateRuntime(unsigned int runtime)
     // TODO: this would need to be changed if RUNTIME_DIGITS < 6
     unsigned int min = m_runtime/1000/60;
     unsigned int sec = m_runtime/1000 - min*60;
-    unsigned int ms  = m_runtime - sec*1000;
+    unsigned int ms  = m_runtime      - sec*1000;
     unsigned int digit = 0;
     for (int i = RUNTIME_DIGITS-1; i >= 0; i--)
     {
         if (i > RUNTIME_DIGITS-3)
         {
-            digit = ms % 10;
+            digit = ms;
             ms /= 10;
         }
         else if (i > RUNTIME_DIGITS-5)
         {
-            digit = sec % 10;
+            digit = sec;
             sec /= 10;
         }
         else
         {
-            digit = min % 10;
+            digit = min;
             min /= 10;
         }
         m_runtimeDigits[i]->setValue(digit);
@@ -176,7 +190,7 @@ void StateController::decrementHp(int number)
     m_playerHp -= number;
     
     // Guard against negative HP
-    if(m_playerHp < 0)
+    if (m_playerHp < 0)
     {
         m_playerHp = 0;
         return;
@@ -205,11 +219,16 @@ void StateController::decrementHp(int number)
 
 void StateController::incrementHp(int number)
 {
-    if (number <= 0) return;
+    if (number <= 0)
+    {
+        return;
+    }
     int oldHp = m_playerHp;
     m_playerHp += number;
     if (m_playerHp > MAX_HEARTS)
+    {
         m_playerHp = MAX_HEARTS;
+    }
     for (int i = oldHp; i < m_playerHp && i < MAX_HEARTS; i++)
     {
         if (m_hearts[i])
@@ -237,7 +256,7 @@ void StateController::addCoin(int coinCount)
     int j = m_coins;
     for (int i = 0; i < COIN_DIGITS; i++)
     {
-        m_coinTextures[i]->setValue(j % 10);
+        m_coinTextures[i]->setValue(j);
         j /= 10;
     }
 }
@@ -255,6 +274,16 @@ void StateController::activateSuperPotion()
 bool StateController::isSuperPotionActive() const
 {
     return SDL_GetTicks() < m_superPotionUntilTicks;
+}
+
+void StateController::activateBreakTilesMode()
+{
+    m_breakTilesUntilTicks = SDL_GetTicks() + 5000;  // 5 Sekunden
+}
+
+bool StateController::isBreakTilesModeActive() const
+{
+    return SDL_GetTicks() < m_breakTilesUntilTicks;
 }
 
 StateController::~StateController()

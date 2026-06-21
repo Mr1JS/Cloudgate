@@ -1,6 +1,13 @@
+/**
+ * @file Character.qml
+ * @brief Character selection page UI for choosing and customizing the player character,
+ *        displays available actor sprites and handles character selection logic
+ */
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Cloudgate_game 1.0
 
 Page {
     id: characterPage

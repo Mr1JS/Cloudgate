@@ -1,3 +1,8 @@
+/**
+ * @file Hdf5Util.hpp
+ * @brief Utility functions for HDF5 file operations
+ */
+
 #ifndef IO_HDF5UTIL_HPP
 #define IO_HDF5UTIL_HPP
 

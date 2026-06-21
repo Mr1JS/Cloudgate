@@ -1,3 +1,9 @@
+/**
+ * @file ActorForces.cpp
+ * @brief Implementation of the ActorForces struct for managing forces like gravity,
+ *        jump force, acceleration and friction that affect player characters
+ */
+
 /*
  *  ActorForce.cpp
  *  Created on: Dec 08, 2017

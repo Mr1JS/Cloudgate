@@ -1,3 +1,9 @@
+/**
+ * @file LevelEditorController.cpp
+ * @brief Implementation of the LevelEditorController class for coordinating level editor operations,
+ *        manages tileset loading, actor placement, level saving/loading and editor state
+ */
+
 #include "include/LevelEditorController.hpp"
 #include "include/TilesetPalette.hpp"
 #include "include/LevelCanvas.hpp"
@@ -62,26 +68,17 @@ void LevelEditorController::loadTileset(const QString &path)
         m_palette->loadTileNames("res/tileDefinition/RulesTiles.xml");
         qDebug() << "[LevelEditorController] Tileset loaded into palette";
     }
-
+    // get absolute path and if path is empty use level_master.xml
     QString absoluteLevelPath = path;
-    if (absoluteLevelPath.isEmpty()) {
-        QDir appDir(QCoreApplication::applicationDirPath());
-        appDir.cdUp();
-        absoluteLevelPath = appDir.absoluteFilePath("res/level.xml");
-
-        if (!QFile::exists(absoluteLevelPath)) {
-            QDir currentDir = QDir::current();
-            absoluteLevelPath = currentDir.absoluteFilePath("res/level.xml");
-        }
-    } else if (!QDir::isAbsolutePath(absoluteLevelPath)) {
-        QDir appDir(QCoreApplication::applicationDirPath());
-        appDir.cdUp();
-        absoluteLevelPath = appDir.absoluteFilePath(absoluteLevelPath);
-
-        if (!QFile::exists(absoluteLevelPath)) {
-            QDir currentDir = QDir::current();
-            absoluteLevelPath = currentDir.absoluteFilePath(path);
-        }
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp();
+    if (absoluteLevelPath.isEmpty()) 
+    {
+        absoluteLevelPath = appDir.absoluteFilePath("res/level_master.xml");
+    }
+    else
+    {
+        absoluteLevelPath = appDir.absoluteFilePath(path);
     }
 
     // get full xml path
@@ -147,6 +144,15 @@ void LevelEditorController::loadTileset(const QString &path)
                                 m_tileOffset = v;
                             }
                         }
+                        else if (childName == "endIndex")
+                        {
+                            bool ok = false;
+                            int v = xml.readElementText().toInt(&ok);
+                            if (ok)
+                            {
+                                m_endIndex = v;
+                            }
+                        }
                     }
                 }
             
@@ -193,6 +199,7 @@ void LevelEditorController::loadTileset(const QString &path)
         QImage img = tilesetImage.convertToFormat(QImage::Format_ARGB32);
         int tol = 10;
         for (int y = 0; y < img.height(); y++)
+        {
             for (int x = 0; x < img.width(); x++)
             {
                 QRgb px = img.pixel(x, y);
@@ -201,6 +208,7 @@ void LevelEditorController::loadTileset(const QString &path)
                     img.setPixel(x, y, qRgba(0, 0, 0, 0));
                 }
             }
+        }
         tilesetImage = img;
 
         // get tiles
@@ -212,6 +220,7 @@ void LevelEditorController::loadTileset(const QString &path)
 
         int idx = 0;
         for (int row = 0; row < rows; row++)
+        {
             for (int col = 0; col < cols; col++)
             {
                 Tile t;
@@ -224,6 +233,7 @@ void LevelEditorController::loadTileset(const QString &path)
 
                 tiles.append(t);
             }
+        }
 
         qDebug() << "[LevelEditorController] Tiles extracted:" << tiles.size();
 
@@ -295,7 +305,7 @@ void LevelEditorController::saveLevel()
     }
 
     // default save location
-    QString defaultPath = QDir::currentPath() + "/res/level_master.xml";
+    QString defaultPath = QDir::currentPath() + "/../res/level_master.xml";
     qDebug() << "[LevelEditorController] Default path:" << defaultPath;
 
     QString file_name = QFileDialog::getSaveFileName(
@@ -347,12 +357,12 @@ void LevelEditorController::loadLevel()
         qWarning() << "[LevelEditorController] Canvas not registered!";
         return;
     }
-
+    QString defaultPath = QDir::currentPath() + "/../res/level_master.xml";
     // Open QFileDialog to get load path
     QString file_name = QFileDialog::getOpenFileName(
         nullptr,
         "Open Level",
-        "",
+        defaultPath,
         "Level Files (*.xml)");
 
     // If user cancelled
@@ -376,6 +386,44 @@ void LevelEditorController::loadLevel()
 
     emit levelLoaded(file_name);
     qDebug() << "[LevelEditorController] Level loaded from:" << file_name;
+}
+
+void LevelEditorController::loadBackground()
+{
+    qDebug() << "[LevelEditorController] Opening load dialog...";
+
+    if (!m_canvas)
+    {
+        qWarning() << "[LevelEditorController] Canvas not registered!";
+        return;
+    }
+    // starting point
+    QString defaultPath = QDir::currentPath() + "/../res/images/backgrounds/mountain.png";
+    // Open QFileDialog to get load path
+    QString file = QFileDialog::getOpenFileName(
+        nullptr,
+        "Choose Background",
+        defaultPath,
+        "Images (*.png *.jpg *.jpeg)");
+
+    // If user cancelled
+    if (file.isEmpty())
+    {
+        qDebug() << "[LevelEditorController] Load Background cancelled by user";
+        return;
+    }
+    // get relative path and check if its close enough to the right folder
+    int index = file.indexOf("res/images/backgrounds/");
+    if (index != -1) 
+    {
+        QString relativePath = file.mid(index);
+        m_canvas->setBackground(relativePath);
+    }
+    else
+    {
+        qDebug() << "[LevelEditorController]: path not allowed. Choose from res/images/backgrounds";
+    }
+
 }
 
 void LevelEditorController::selectTile(int tileIndex)
@@ -412,7 +460,21 @@ void LevelEditorController::toggleExtraTileset(bool enabled)
 void LevelEditorController::addRowsAbove(int rows)
 {
     if (!m_canvas || rows <= 0)
+    {
         return;
+    }
 
     m_canvas->addRowsAbove(rows);
+}
+
+
+// Remove Rows from canvas
+void LevelEditorController::removeRowsAbove(int rows)
+{
+    if (!m_canvas || rows <= 0)
+    {
+        return;
+    }
+
+    m_canvas->removeRowsAbove(rows);
 }

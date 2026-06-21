@@ -1,3 +1,8 @@
+/**
+ * @file LevelParser.hpp
+ * @brief Defines the LevelParser class for loading and parsing XML-based level definitions
+ */
+
 /*
  *  LevelParser.hpp
  *  Created on: Jan 07, 2018
@@ -34,6 +39,9 @@ class LevelParser
 public:
     using LevelHdf5IO = BaseHdf5IO<hdf5features::TextureIO, hdf5features::TileSetIO>;
 
+    /**
+     * Parse a level from the given file and set up the given level accordingly
+     */
     LevelParser(std::string file, Level* level, MainWindow* mw);
 
 private:

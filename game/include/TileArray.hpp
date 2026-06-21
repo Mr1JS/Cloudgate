@@ -1,3 +1,8 @@
+/**
+ * @file TileArray.hpp
+ * @brief Defines the TileArray class for managing 2D tile arrays in levels
+ */
+
 /*
  *  TileArray.hpp
  *  Created on: Dec 08, 2017

@@ -1,3 +1,9 @@
+/**
+ * @file Main.qml
+ * @brief Main application window and navigation controller for the game,
+ *        manages page switching between menu, character selection, level editor and gameplay
+ */
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
@@ -10,14 +16,28 @@ Window {
     maximumHeight: 800
     maximumWidth: 638
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("Cloudgate")
 
     StackView {
         id: stackView
         anchors.fill: parent
         initialItem: mainPage
-    }
+        property var mainPageInstance: null
 
+        Component.onCompleted: {
+            mainPageInstance = stackView.currentItem
+        }
+        // check if page turns back to main page and revert the size to standard
+        onCurrentItemChanged: {
+                if (stackView.currentItem === mainPageInstance) {
+
+                    window.minimumWidth = 638
+                    window.minimumHeight = 800
+                    window.maximumWidth = 638
+                    window.maximumHeight = 800
+                }
+            }
+    }
     Component {
         id: mainPage
         Page {
@@ -40,14 +60,25 @@ Window {
                     StyledButton {
                         text: "Start"
                         onClicked: {
-                            // Wechsle zur Spiel-Seite
                             stackView.push(Qt.resolvedUrl("LevelSelector.qml"))
+                            myMain.page_value = 0
+                        }
+                    }
+                    StyledButton {
+                        text: "Endless"
+                        onClicked: {
+                            stackView.push(Qt.resolvedUrl("EndlessPage.qml"))
                             myMain.page_value = 0
                         }
                     }
                     StyledButton {
                         text: "LevelEditor"
                         onClicked: {
+                            // change size for Leveleditor
+                            window.minimumWidth = 925
+                            window.minimumHeight = 900
+                            window.maximumWidth = 925
+                            window.maximumHeight = 900
                             stackView.push(Qt.resolvedUrl("LevelEditor.qml"))
                             myMain.page_value = 1
                         }

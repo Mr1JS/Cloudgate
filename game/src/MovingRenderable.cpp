@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file MovingRenderable.cpp
+ * @brief Implementation of the MovingRenderable base class for all moving objects
+ *        with velocity, acceleration and position-based movement
+ */
+
 #include "game/include/MovingRenderable.hpp"
 #include "game/include/MainWindow.hpp"
 #include "game/include/Util.hpp"
@@ -99,7 +105,7 @@ void MovingRenderable::move()
 
 void MovingRenderable::render()
 {
-    if(readyToRender())
+    if (readyToRender())
     {
         Vector<int> position = computeTargetPosition();
 

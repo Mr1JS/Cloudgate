@@ -8,6 +8,12 @@
  *  No unauthorized distribution.
  */
 
+/**
+ * @file LevelParser.cpp
+ * @brief Implementation of the LevelParser class for loading and parsing XML-based
+ *        level definitions with tile data, monster positions and level properties
+ */
+
 #include "game/include/LevelParser.hpp"
 
 #include "game/include/Actor.hpp"
@@ -103,8 +109,8 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
                 SDL_Surface* surface = io.TextureIO::load("textures", tilesetDataset);
                 SDL_Texture* tex = SDL_CreateTextureFromSurface(m_mainWindow->renderer(),      surface);
                 
-                // transparency of background
-                SDL_SetTextureAlphaMod(tex, 225); // 200-180 is good, but 255 looks best
+                // transparency of background (lower = more transparent, objects stand out more)
+                SDL_SetTextureAlphaMod(tex, 140);
 
                 SDL_FreeSurface(surface);
 
@@ -173,7 +179,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             }
 
             // Init digits in StateController
-            m_level->getStateController()->initTimerDigits(tex, numFrames, frameWidth, frameHeight, layer);
+            m_level->getStateController()->initNumberDigits(tex, numFrames, frameWidth, frameHeight, layer);
         }
 
         if (v.first == "actor")
@@ -198,7 +204,7 @@ LevelParser::LevelParser(std::string filename, Level* level, MainWindow* mw)
             float maxJumpHeight = v.second.get<float>("max_jump_height", 40.0f);
 
             startPos_Y = pos_y;
-            // TODO Jatin & Pascal: the textureDataSet muust be changed. it must be dependent on the
+        
             // Create new actor
             SDL_Surface* surface = io.TextureIO::load("textures", textureDataset);
             if (surface == nullptr)
