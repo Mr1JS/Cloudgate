@@ -373,7 +373,7 @@ int LevelCanvas::countCoins(const QMap<QPair<int, int>, int> &map)
 // Helper: save QImage RGBA8888 into a vector<uint8_t>
 // -----------------------------------------------
 static bool imageToRgbaBytes(const QImage &image, std::vector<unsigned char> &outBytes, int &H, int &W)
-{
+{ // TODO: is this needed? because I do not think that we have to save the colour too to h5. The prof did not do it. 
     if (image.isNull())
     {
         return false;
