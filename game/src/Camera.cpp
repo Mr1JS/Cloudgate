@@ -1,3 +1,9 @@
+/**
+ * @file Camera.cpp
+ * @brief Implementation of the Camera class for dynamic viewport management, scrolling,
+ *        player tracking and screen boundaries within the level
+ */
+
 /*
  *  Camera.cpp
  *
@@ -69,62 +75,8 @@ void Camera::update(double dt)
     
     float currentSpeed = m_scrollSpeed;
     
-    // Check if we are following an actor
-    if(m_actor != nullptr)
-    {
-        // Calculate the relative Y-position of the actor to the camera
-        // (in screen coordinates)
-        int actorWorldY = static_cast<int>(m_actor->worldPosition().y());
-        int actorScreenY = actorWorldY - m_position.y();
-        
-        // Calculate threshold at 50% of screen height
-        float thresholdHeight = m_height * 0.5f;
-        bool isAboveThreshold = actorScreenY < thresholdHeight;
-        
-        // Debug output every 60 frames
-        static int debugCounter = 0;
-        if(debugCounter++ % 60 == 0)
-        {
-            cout << "Camera: ActorScreenY=" << actorScreenY 
-                 << ", Threshold(50%)=" << thresholdHeight
-                 << ", BoostTime=" << m_boostTimeRemaining << "s" 
-                 << ", IsAbove=" << (isAboveThreshold ? "YES" : "NO") << endl;
-        }
-        
-        // Trigger boost whenever actor is in upper 50% and no boost is currently active
-        if(isAboveThreshold && m_boostTimeRemaining <= 0.0f)
-        {
-            m_boostTimeRemaining = m_boostDuration;
-            cout << ">>> BOOST TRIGGERED! Actor at " << actorScreenY << " pixels (threshold: " << thresholdHeight << ")" << endl;
-        }
-        
-        // Apply boost if active
-        if(m_boostTimeRemaining > 0.0f)
-        {
-            currentSpeed *= (1.0f + m_speedBoostFactor);
-            m_boostTimeRemaining -= dt;
-            
-            if(m_boostTimeRemaining <= 0.0f)
-            {
-                cout << ">>> BOOST ENDED, back to normal speed" << endl;
-            }
-        }
-    }
-    else
-    {
-        static bool warned = false;
-        if(!warned)
-        {
-            cout << "WARNING: No actor to follow!" << endl;
-            warned = true;
-        }
-    }
-    
-    // Accumulate the movement (for smooth scrolling with small values)
-    m_scrollAccumulator += currentSpeed * dt;
-    
-    // If we have moved at least 1 pixel, apply the movement
-    if(m_scrollAccumulator >= 1.0)
+    // Wenn wir mindestens 1 Pixel bewegt haben, wende die Bewegung an
+    if (m_scrollAccumulator >= 1.0)
     {
         int pixelsToMove = static_cast<int>(m_scrollAccumulator);
         m_position.setY(m_position.y() - pixelsToMove);

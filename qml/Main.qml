@@ -1,3 +1,9 @@
+/**
+ * @file Main.qml
+ * @brief Main application window and navigation controller for the game,
+ *        manages page switching between menu, character selection, level editor and gameplay
+ */
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic
@@ -54,8 +60,14 @@ Window {
                     StyledButton {
                         text: "Start"
                         onClicked: {
-                            // Wechsle zur Spiel-Seite
                             stackView.push(Qt.resolvedUrl("LevelSelector.qml"))
+                            myMain.page_value = 0
+                        }
+                    }
+                    StyledButton {
+                        text: "Endless"
+                        onClicked: {
+                            stackView.push(Qt.resolvedUrl("EndlessPage.qml"))
                             myMain.page_value = 0
                         }
                     }

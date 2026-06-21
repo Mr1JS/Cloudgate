@@ -1,3 +1,8 @@
+/**
+ * @file Camera.hpp
+ * @brief Defines the Camera class for viewport management and scrolling in the game
+ */
+
 /*
  *  Camera.hpp
  *
@@ -43,6 +48,7 @@ public:
      */
     void moveY(int pixels);
 
+    /// set camera y-position
     void setY(int pixels);
 
     Vector<int> getPosition() const;
@@ -74,31 +80,22 @@ public:
 private:
 
     /// Position of the camera
-    Vector<int> m_position;
+    Vector<int>         m_position;
 
     /// Height of the associated window
-    int m_width;
+    int                 m_width;
 
     /// Width of the associated window
-    int m_height;
+    int                 m_height;
 
     /// An actor to follow
-    MovingRenderable* m_actor;
+    MovingRenderable*   m_actor;
     
     /// Accumulator for smooth scrolling (stores fractional pixels)
-    double m_scrollAccumulator;
+    double              m_scrollAccumulator;
 
     /// speed of Camera scrolling up
-    float m_scrollSpeed = 8;
-    
-    /// Boost factor when actor is too fast (in upper 50% of screen)
-    float m_speedBoostFactor = 8.0f;
-    
-    /// Remaining time for speed boost (in seconds)
-    float m_boostTimeRemaining = 0.0f;
-    
-    /// Duration of speed boost (in seconds)
-    const float m_boostDuration = 1.0f;
+    float               m_scrollSpeed = 8;
 };
 
 } /* namespace jumper */

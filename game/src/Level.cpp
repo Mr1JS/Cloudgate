@@ -1,3 +1,9 @@
+/**
+ * @file Level.cpp
+ * @brief Implementation of the Level class as the central game engine with level logic,
+ *        monster management, physics simulation, collision detection and game loop
+ */
+
 /*
  *  Level.cpp
  *
@@ -52,43 +58,41 @@ Level::Level(MainWindow* mainWindow, std::string filename)
     LevelParser p(filename, this, m_mainWindow);
 
     // Füge Wand-Tiles links und rechts hinzu (als sichtbare Grenzen)
-    if(m_tiles && m_tiles->tiles())
+    if (m_tiles && m_tiles->tiles())
     {
         TileSetRepresentation* tileRep = m_tiles->tiles();
         int tileWidth = tileRep->tileWidth();
         int levelHeight = tileRep->height();
         int levelWidth = tileRep->width();
         
-        // Berechne die Kamera-Grenzen in Tile-Koordinaten
-        int cameraX = m_camera.x();  // Kamera X in World-Koordinaten (400)
-        int cameraWidth = m_camera.width();  // Kamera Breite (800)
-        int cameraRight = cameraX + cameraWidth;  // Rechte Grenze in World-Koordinaten (1200)
-        
-        // Konvertiere World-Koordinaten zu Tile-Koordinaten
-        // Linke Wand: Bei Tile 0 (linker Rand des Levels)
+        // Linke und rechte Wand: Level-Grenzen (nicht Kamera)
+        // Kamera scrollt nur vertikal – Spieler darf nicht aus dem Level laufen
         int leftTileX = 0;
         // Rechte Wand: Bei Kamera X + Breite (rechter Rand der Kamera)
         int rightTileX = cameraRight / tileWidth;
         
         // Stelle sicher, dass die rechte Wand innerhalb der Level-Breite ist
-        if(rightTileX >= levelWidth) rightTileX = levelWidth - 1;
+        if (rightTileX >= levelWidth)
+        {
+            rightTileX = levelWidth - 1;
+        }
         
         // Verwende Tile-ID 1 für die Wände (normalerweise ist 1 ein solides Tile)
         int wallTileId = 85;
         
         // Füge linke Wand hinzu (von unten nach oben)
-        if(leftTileX >= 0 && leftTileX < levelWidth)
+        if (leftTileX >= 0 && leftTileX < levelWidth)
         {
-            for(int y = 0; y < levelHeight; y++)
+            for (int y = 0; y < levelHeight; y++)
             {
                 tileRep->insert(leftTileX, y, wallTileId);
             }
         }
         
         // Füge rechte Wand hinzu (von unten nach oben)
-        if(rightTileX >= 0 && rightTileX < levelWidth)
+        if (rightTileX >= 0 && rightTileX < levelWidth)
         {
-            for(int y = 0; y < levelHeight; y++)
+            for (int y = 0; y < levelHeight; y++)
             {
                 tileRep->insert(rightTileX, y, wallTileId);
             }
@@ -102,7 +106,7 @@ Level::Level(MainWindow* mainWindow, std::string filename)
 //     m_actor->setWorldPosition(Vector<double>(800, 100));
 
 //      m_layers.addRenderable(m_actor, 4);
-    if(m_actor)
+    if (m_actor)
     {
         m_camera.setFocus(m_actor);
         m_physics = new Physics(m_actor, this);
@@ -111,7 +115,10 @@ Level::Level(MainWindow* mainWindow, std::string filename)
 
 void Level::spawnMonsters()
 {
-    if(!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture())
+    {
+        return;
+    }
 
     TileSetRepresentation* tileRep = m_tiles->tiles();
     int tw = m_tiles->tileWidth();
@@ -127,42 +134,54 @@ void Level::spawnMonsters()
     const int SNAKE_TOP_B = 136, SNAKE_BOTTOM_B = 137;
     const int monsterW = 32;
 
-    for(int gy = 0; gy < levelH - 1; ++gy)
+    for (int gy = 0; gy < levelH - 1; ++gy)
     {
-        for(int gx = 0; gx < levelW; ++gx)
+        for (int gx = 0; gx < levelW; ++gx)
         {
             int topTile = tileRep->get(gx, gy);
             int botTile = tileRep->get(gx, gy + 1);
             Monster::Type type;
             bool isMonster = false;
-            if((topTile == GHOST_TOP_A && botTile == GHOST_BOTTOM_A) ||
+            if ((topTile == GHOST_TOP_A && botTile == GHOST_BOTTOM_A) ||
                (topTile == GHOST_TOP_B && botTile == GHOST_BOTTOM_B))
             {
                 type = Monster::Type::Ghost;
                 isMonster = true;
             }
-            else if((topTile == SNAKE_TOP_A && botTile == SNAKE_BOTTOM_A) ||
+            else if ((topTile == SNAKE_TOP_A && botTile == SNAKE_BOTTOM_A) ||
                     (topTile == SNAKE_TOP_B && botTile == SNAKE_BOTTOM_B))
             {
                 type = Monster::Type::Snake;
                 isMonster = true;
             }
-            if(!isMonster) continue;
+
+            if (!isMonster)
+            {
+                continue;
+            }
 
             double wx = gx * tw;
             double wy = gy * th + TILE_Y_OFFSET;
 
             int platformRow = gy + 2;
             int gxLeft = gx, gxRight = gx;
-            if(platformRow < levelH)
+            if (platformRow < levelH)
             {
-                while(gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0) gxLeft--;
-                while(gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0) gxRight++;
+                while (gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0)
+                {
+                    gxLeft--;
+                }
+                while (gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0)
+                {
+                    gxRight++;
+                }
             }
             double leftBound = gxLeft * tw;
             double rightBound = (gxRight + 1) * tw - monsterW;
-            if(rightBound - leftBound < monsterW)
+            if (rightBound - leftBound < monsterW)
+            {
                 rightBound = leftBound + monsterW;
+            }
 
             tileRep->insert(gx, gy, 0);
             tileRep->insert(gx, gy + 1, 0);
@@ -178,7 +197,10 @@ void Level::spawnMonsters()
 
 void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
 {
-    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture()) return;
+    if (!m_tiles || !m_tiles->tiles() || !m_tiles->texture())
+    {
+        return;
+    }
 
     TileSetRepresentation* tileRep = m_tiles->tiles();
     int tw = m_tiles->tileWidth();
@@ -188,7 +210,10 @@ void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
     const int TILE_Y_OFFSET = 600;
     const int monsterW = 32;
 
-    if (gy < 1 || gx < 0 || gx >= levelW || gy >= levelH) return;
+    if (gy < 1 || gx < 0 || gx >= levelW || gy >= levelH)
+    {
+        return;
+    }
 
     double wx = gx * tw;
     double wy = (gy - 1) * th + TILE_Y_OFFSET;
@@ -197,13 +222,21 @@ void Level::spawnMonsterAt(int gx, int gy, Monster::Type type)
     int gxLeft = gx, gxRight = gx;
     if (platformRow < levelH)
     {
-        while (gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0) gxLeft--;
-        while (gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0) gxRight++;
+        while (gxLeft > 0 && tileRep->get(gxLeft - 1, platformRow) > 0)
+        {
+            gxLeft--;
+        }
+        while (gxRight < levelW - 1 && tileRep->get(gxRight + 1, platformRow) > 0)
+        {
+            gxRight++;
+        }
     }
     double leftBound = gxLeft * tw;
     double rightBound = (gxRight + 1) * tw - monsterW;
     if (rightBound - leftBound < monsterW)
+    {
         rightBound = leftBound + monsterW;
+    }
 
     Monster* m = new Monster(m_mainWindow, m_tiles->texture(), type, wx, wy,
                               leftBound, rightBound,
@@ -219,7 +252,7 @@ void Level::setForces(const LevelForces &f)
 
 void Level::addRenderable(SDLRenderable*  r, int layer)
 {
-    if(r)
+    if (r)
     {
         m_layers.addRenderable(r, layer);
     }
@@ -227,7 +260,7 @@ void Level::addRenderable(SDLRenderable*  r, int layer)
 
 void Level::addActor(Actor *actor, int layer)
 {
-    if(actor)
+    if (actor)
     {
         m_actor = actor;
         m_camera.setFocus(m_actor);
@@ -237,7 +270,7 @@ void Level::addActor(Actor *actor, int layer)
 
 void Level::addLevelTiles(TileSet *tiles, int layer)
 {
-    if(tiles)
+    if (tiles)
     {
         m_tiles = tiles;
         m_layers.addRenderable(tiles, layer);
@@ -265,15 +298,23 @@ void Level::removeTileAt(int gx, int gy)
     {
         TileSetRepresentation* rep = m_tiles->tiles();
         if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+        {
             rep->insert(gx, gy, 0);
+        }
     }
 }
 
 int Level::getTileAt(int gx, int gy) const
 {
-    if (!m_tiles || !m_tiles->tiles()) return 0;
+    if (!m_tiles || !m_tiles->tiles())
+    {
+        return 0;
+    }
     TileSetRepresentation* rep = m_tiles->tiles();
-    if (gx < 0 || gx >= rep->width() || gy < 0 || gy >= rep->height()) return 0;
+    if (gx < 0 || gx >= rep->width() || gy < 0 || gy >= rep->height())
+    {
+        return 0;
+    }
     return rep->get(gx, gy);
 }
 
@@ -283,20 +324,40 @@ void Level::setTileAt(int gx, int gy, int value)
     {
         TileSetRepresentation* rep = m_tiles->tiles();
         if (gx >= 0 && gx < rep->width() && gy >= 0 && gy < rep->height())
+        {
             rep->insert(gx, gy, value);
+        }
     }
 }
 
 void Level::update(const Uint8* keystates)
 {
-    // Update camera (automatisches Scrollen nach oben) – erst nach 5 Sekunden Verzögerung
+   // Update camera (automatisches Scrollen nach oben) – erst nach 5 Sekunden Verzögerung
     double dt = 1.0 / 60.0;
     if (!m_stateController->isPaused())
     {
         if (m_physics && m_physics->isCameraMovementEnabled())
+        {
             m_camera.update(dt);
+            // Wenn der Actor schneller nach oben ist als die Kamera: Kamera mitziehen
+            if (m_actor)
+            {
+                const int actorTopMargin = 40;
+                double actorTop = m_actor->worldPosition().y();
+                int cameraY = m_camera.y();
+                if (actorTop < cameraY + actorTopMargin)
+                {
+                    int newY = static_cast<int>(actorTop) - actorTopMargin;
+                    if (newY < 0)
+                    {
+                        newY = 0;
+                    }
+                    m_camera.setY(newY);
+                }
+            }
+        }
     
-        if(m_physics)
+        if (m_physics)
         {
             // Update actor according to given key states
             updateActor(keystates);
@@ -315,18 +376,21 @@ void Level::update(const Uint8* keystates)
             }
 
             // Monster-Kollision: Schaden + Knockback (0,6 s Unverwundbarkeit)
-            if(m_actor && m_physics->canTakeDamage())
+            if (m_actor && m_physics->canTakeDamage())
             {
                 double ax = m_actor->worldPosition().x(), ay = m_actor->worldPosition().y();
                 int aw = m_actor->w(), ah = m_actor->h();
-                for(Monster* mon : m_monsters)
+                for (Monster* mon : m_monsters)
                 {
                     double mx = mon->worldPosition().x(), my = mon->worldPosition().y();
                     int mw = mon->w(), mh = mon->h();
-                    if(ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
+                    if (ax < mx + mw && ax + aw > mx && ay < my + mh && ay + ah > my)
                     {
                         m_physics->setLastHazardDamageTicks(SDL_GetTicks());
-                        if(m_stateController) m_stateController->decrementHp(1);
+                        if (m_stateController)
+                        {
+                            m_stateController->decrementHp(1);
+                        }
                         double monCx = mx + mw / 2.0, monCy = my + mh / 2.0;
                         m_physics->applyKnockbackFromPosition(Vector2f(monCx, monCy));
                         break;
@@ -335,7 +399,7 @@ void Level::update(const Uint8* keystates)
             }
         }
 
-        for(Monster* m : m_monsters)
+        for (Monster* m : m_monsters)
         {
             m->update(dt, m_actor);
         }
@@ -369,7 +433,7 @@ void Level::update(const Uint8* keystates)
 
 TileSetRepresentation* Level::tiles()
 {
-    if(m_tiles)
+    if (m_tiles)
     {
         return m_tiles->tiles();
     }
@@ -378,25 +442,25 @@ TileSetRepresentation* Level::tiles()
 
 void Level::updateActor(const Uint8* keystates)
 {
-    if(m_actor)
+    if (m_actor)
     {
         m_actor->forces().setMoveForce(Vector2f(0.0, 0.0));
 
-        if(keystates[SDL_SCANCODE_LEFT ])
+        if (keystates[SDL_SCANCODE_LEFT ])
         {
             m_actor->forces().setMoveForce(Vector2f(-100, 0.0));
         }
-        if(keystates[SDL_SCANCODE_RIGHT])
+        if (keystates[SDL_SCANCODE_RIGHT])
         {
             m_actor->forces().setMoveForce(Vector2f(100.0, 0.0));
         }
 
-        if(keystates[SDL_SCANCODE_A])
+        if (keystates[SDL_SCANCODE_A])
         {
             (*m_actor) *= -1;
         }
 
-        if(keystates[SDL_SCANCODE_D])
+        if (keystates[SDL_SCANCODE_D])
         {
             (*m_actor) *= 1;
         }
@@ -427,7 +491,7 @@ const Camera& Level::getCamera()
 
 bool Level::isActorOutsideCamera() const
 {
-    if(!m_actor)
+    if (!m_actor)
     {
         return false;
     }
@@ -457,7 +521,7 @@ bool Level::isActorOutsideCamera() const
     // Dies sorgt dafür, dass Game Over sehr früh auslöst
     int gameOverThreshold = cameraY + (cameraHeight / 2);  // Mitte der Kamera
     
-    if(actorBottom >= gameOverThreshold)
+    if (actorBottom >= gameOverThreshold)
     {
         return true;  // Unterer Rand des Spielers berührt oder überschreitet unteren Rand der Kamera
     }
@@ -468,10 +532,10 @@ bool Level::isActorOutsideCamera() const
 bool Level::isGameOver() const
 {
     // Check if HP is 0 or below
-    if(m_stateController)
+    if (m_stateController)
     {
         int hp = m_stateController->getHp();
-        if(hp <= 0)
+        if (hp <= 0)
         {
             return true;
         }
@@ -485,6 +549,9 @@ GoalState Level::checkAndUpdateGoalState() {
     // if we already won or lost, there's no need to check for anything anmore
     switch (m_goalState)
     {
+    case GOALSTATE_NONE:
+    case GOALSTATE_WINNABLE:
+        break;
     case GOALSTATE_GAME_OVER:
     case GOALSTATE_LEVEL_FINISHED:
         return m_goalState;
@@ -545,7 +612,7 @@ void Level::setCameraSettings(float scrollSpeed, float pos_y)
 
 Level::~Level()
 {
-    if(m_physics)
+    if (m_physics)
     {
         delete m_physics;
     }

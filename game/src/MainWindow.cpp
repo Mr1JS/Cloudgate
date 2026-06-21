@@ -1,3 +1,9 @@
+/**
+ * @file MainWindow.cpp
+ * @brief Implementation of the MainWindow class for managing the SDL window,
+ *        renderer initialization, texture loading and basic rendering loop
+ */
+
 /*
  *  MainWindow.cpp *
  *  Created on: Dec 08, 2017
@@ -12,6 +18,7 @@
 
 #include <SDL_image.h>
 #include <iostream>
+#include <cstring>
 #include "game/include/MovingRenderable.hpp"
 #include "game/include/Camera.hpp"
 
@@ -28,6 +35,8 @@ namespace jumper
 
         /// Set pointer to NULL
         m_renderer = 0;
+        m_window = 0;
+        m_offscreenTarget = 0;
 
         /// Initialize SDL stuff
         initSDL();
@@ -98,9 +107,27 @@ namespace jumper
     {
         if (m_level && m_renderer)
         {
+            if (m_offscreenTarget)
+            {
+                if (SDL_SetRenderTarget(m_renderer, m_offscreenTarget) != 0)
+                {
+                    std::cout << "Failed to bind offscreen target, fallback to default target: "
+                              << SDL_GetError() << std::endl;
+                    SDL_DestroyTexture(m_offscreenTarget);
+                    m_offscreenTarget = 0;
+                    SDL_SetRenderTarget(m_renderer, NULL);
+                }
+            }
+            else
+            {
+                SDL_SetRenderTarget(m_renderer, NULL);
+            }
+
             SDL_RenderClear(m_renderer);
             m_level->render();
-            SDL_RenderPresent(m_renderer);
+            // In embedded/offscreen mode GameView reads back pixels directly
+            // from the current render target. Presenting here would invalidate
+            // the backbuffer before SDL_RenderReadPixels().
         }
     }
 
@@ -139,13 +166,54 @@ namespace jumper
         }
         else
         {
+            const char* videoDriver = SDL_GetCurrentVideoDriver();
+            bool preferSoftwareRenderer = false;
 
-            // Try hardware renderer, fallback to software if not available
-            m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-            
+#ifdef __linux__
+            // Embedded + hidden SDL windows are most stable with software
+            // rendering on Linux lab/compositor setups.
+            preferSoftwareRenderer = true;
+#endif
+
+            // Hidden offscreen windows + readback can be unreliable with some
+            // Wayland/compositor setups. Prefer software there.
+            if (videoDriver && std::strcmp(videoDriver, "wayland") == 0)
+            {
+                preferSoftwareRenderer = true;
+            }
+
+            // Manual override for debugging:
+            // JUMPER_SDL_SOFTWARE=1 -> force software
+            // JUMPER_SDL_SOFTWARE=0 -> allow accelerated first
+            const char* forceSoftware = SDL_getenv("JUMPER_SDL_SOFTWARE");
+            if (forceSoftware)
+            {
+                if (std::strcmp(forceSoftware, "1") == 0)
+                {
+                    preferSoftwareRenderer = true;
+                }
+                else if (std::strcmp(forceSoftware, "0") == 0)
+                {
+                    preferSoftwareRenderer = false;
+                }
+            }
+
+            if (!preferSoftwareRenderer)
+            {
+                m_renderer = SDL_CreateRenderer(
+                    m_window,
+                    -1,
+                    SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE
+                );
+            }
+
             if (m_renderer == NULL)
             {
-                std::cout << "Hardware renderer not available, using software renderer: " << SDL_GetError() << std::endl;
+                if (!preferSoftwareRenderer)
+                {
+                    std::cout << "Hardware renderer not available, using software renderer: "
+                              << SDL_GetError() << std::endl;
+                }
                 m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_SOFTWARE);
             }
 
@@ -155,6 +223,12 @@ namespace jumper
             }
             else
             {
+                std::cout << "SDL video driver: "
+                          << (videoDriver ? videoDriver : "unknown")
+                          << ", prefer software renderer: "
+                          << (preferSoftwareRenderer ? "yes" : "no")
+                          << std::endl;
+
                 SDL_RendererInfo info;
                 if (SDL_GetRendererInfo(m_renderer, &info) == 0)
                 {
@@ -180,6 +254,21 @@ namespace jumper
 
                 // Set background color for renderer
                 SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+
+                // Create explicit offscreen render target for stable readback.
+                m_offscreenTarget = SDL_CreateTexture(
+                    m_renderer,
+                    SDL_PIXELFORMAT_ARGB8888,
+                    SDL_TEXTUREACCESS_TARGET,
+                    m_width,
+                    m_height
+                );
+
+                if (!m_offscreenTarget)
+                {
+                    std::cout << "Offscreen target texture unavailable, using default target: "
+                              << SDL_GetError() << std::endl;
+                }
             }
         }
 
@@ -194,6 +283,11 @@ namespace jumper
     void MainWindow::quitSDL()
     {
         // Destroy window and renderer
+        if (m_offscreenTarget)
+        {
+            SDL_DestroyTexture(m_offscreenTarget);
+            m_offscreenTarget = 0;
+        }
 
         if (m_renderer)
         {

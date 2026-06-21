@@ -10,6 +10,12 @@
  *  Box2D-Integration.
  */
 
+/**
+ * @file Physics.cpp
+ * @brief Implementation of the Physics class with Box2D integration for realistic physics simulation,
+ *        collision detection, rigid body dynamics and contact listeners for game events
+ */
+
 #include "game/include/Physics.hpp"
 #include "game/include/Actor.hpp"
 #include "game/include/Level.hpp"
@@ -23,7 +29,8 @@
 #include <set>
 #include <vector>
 
-namespace {
+namespace
+{
 
 // Hilfsfunktionen und Konstanten (nur in dieser Datei sichtbar)
 
@@ -43,12 +50,13 @@ inline void getTileGridFromBody(b2Body* body, int& gx, int& gy)
 inline bool isNoWallContactType(const std::string& type)
 {
     return type == "collectible" || type == "red_potion" || type == "blue_potion"
-        || type == "green_potion" || type == "random" || type == "door";
+        || type == "green_potion" || type == "random" || type == "door" || type == "key";
 }
 
 } // anonymous namespace
 
-namespace jumper {
+namespace jumper
+{
 
 // --- ContactListener ---
 
@@ -105,6 +113,21 @@ void ContactListener::BeginContact(b2Contact* contact)
 
     // Collectible (Münze etc.): von Karte entfernen, Münzzähler erhöhen, Body später zerstören
     if (tileType == "collectible")
+    {
+        if (m_level)
+        {
+            m_level->removeTileAt(gx, gy);
+            if (m_level->getStateController())
+            {
+                m_level->getStateController()->addCoin();
+            }
+        }
+        m_physics->queueBodyForDestruction(tileBody);
+        return;
+    }
+
+    // Key: aufsammeln, zählt als Münze für Schlüssel-Türen (GOAL_COINS mit value 1)
+    if (tileType == "key")
     {
         if (m_level)
         {
@@ -193,11 +216,23 @@ void ContactListener::BeginContact(b2Contact* contact)
         int jumpdownId = m_physics->getTileIdByType("jumpdown");
         int redPotionId = m_physics->getTileIdByType("red_potion");
         int bluePotionId = m_physics->getTileIdByType("blue_potion");
-        if (jumpdownId >= 0) options.push_back(jumpdownId);
-        if (redPotionId >= 0) options.push_back(redPotionId);
-        if (bluePotionId >= 0) options.push_back(bluePotionId);
+        if (jumpdownId >= 0)
+        {
+            options.push_back(jumpdownId);
+        }
+        if (redPotionId >= 0)
+        {
+            options.push_back(redPotionId);
+        }
+        if (bluePotionId >= 0)
+        {
+            options.push_back(bluePotionId);
+        }
         std::vector<int> hazardIds = m_physics->getTileIdsByType("hazard");
-        for (int id : hazardIds) options.push_back(id);
+        for (int id : hazardIds)
+        {
+            options.push_back(id);
+        }
         bool canPlaceTwoTile = (gy >= 1);  // Platz für Top in gy-1, Bottom auf Box-Zelle gy
         if (canPlaceTwoTile)
         {
@@ -229,7 +264,9 @@ void ContactListener::BeginContact(b2Contact* contact)
     if (tileType == "hazard" || tileType == "enemy")
     {
         if (!m_physics->canTakeDamage())
+        {
             return;
+        }
 
         m_physics->setLastHazardDamageTicks(SDL_GetTicks());
         if (m_level && m_level->getStateController())
@@ -270,7 +307,9 @@ void ContactListener::BeginContact(b2Contact* contact)
             {
                 int jumpupId = m_physics->getTileIdByType("jumpup");
                 if (jumpupId >= 0)
+                {
                     m_level->setTileAt(gx, gy, jumpupId + 1);  // Level speichert 1-basiert
+                }
             }
         }
         else
@@ -318,7 +357,10 @@ void ContactListener::EndContact(b2Contact* contact)
     }
 
     int tileId = static_cast<int>(tileFixture->GetUserData().pointer);
-    if (tileId < 0) return;
+    if (tileId < 0)
+    {
+        return;
+    }
     std::string tileType = m_physics->getTileData(tileId).second;
 
     // Nur für feste Tiles entfernen (symmetrisch zu BeginContact)
@@ -356,7 +398,9 @@ Physics::Physics(Actor* actor, Level* level)
     // Tile-Formen aus RulesTiles.xml (für Halb- und Diagonal-Tiles)
     std::string resPath = m_level->getResPath();
     if (!resPath.empty() && resPath.back() != '/' && resPath.back() != '\\')
+    {
         resPath += "/";
+    }
     std::string rulesPath = resPath + "tileDefinition/RulesTiles.xml";
     m_tileData = jumper::ParseXMLData(rulesPath);
     if (m_tileData.empty())
@@ -463,7 +507,9 @@ void Physics::buildLevelBodies()
             std::string shapeType = "full";
             auto it = m_tileData.find(tileId);
             if (it != m_tileData.end())
+            {
                 shapeType = it->second.shape;
+            }
 
             b2Vec2 center;
             b2PolygonShape shape;
@@ -471,7 +517,9 @@ void Physics::buildLevelBodies()
             fixtureDef.friction = 0.05f;   // Keine Reibung an Tiles → Actor bleibt nicht an Kanten hängen
             fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
             if (it != m_tileData.end() && it->second.type == "door")
+            {
                 fixtureDef.isSensor = true;
+            }
 
             if (shapeType == "half_bottom")
             {
@@ -542,7 +590,9 @@ void Physics::buildLevelBodies()
 void Physics::queueBodyForDestruction(b2Body* body)
 {
     if (body)
+    {
         m_bodiesToDestroy.push_back(body);
+    }
 }
 
 void Physics::queueCreateBodyForTile(int gx, int gy)
@@ -553,16 +603,22 @@ void Physics::queueCreateBodyForTile(int gx, int gy)
 void Physics::createBodyForTile(int gx, int gy)
 {
     if (!m_tiles || !m_world)
+    {
         return;
+    }
     int tw = m_tiles->tileWidth();
     int th = m_tiles->tileHeight();
     int levelW = m_tiles->width();
     int levelH = m_tiles->height();
     if (gx < 0 || gx >= levelW || gy < 0 || gy >= levelH)
+    {
         return;
+    }
     int tileId = m_tiles->get(gx, gy) - 1;
     if (tileId < 0)
+    {
         return;
+    }
 
     const float hwM = (tw / 2.0f) / PIXELS_PER_METER;
     const float hhM = (th / 2.0f) / PIXELS_PER_METER;
@@ -572,7 +628,9 @@ void Physics::createBodyForTile(int gx, int gy)
     std::string shapeType = "full";
     auto it = m_tileData.find(tileId);
     if (it != m_tileData.end())
+    {
         shapeType = it->second.shape;
+    }
 
     b2Vec2 center;
     b2PolygonShape shape;
@@ -581,7 +639,9 @@ void Physics::createBodyForTile(int gx, int gy)
     fixtureDef.userData.pointer = static_cast<uintptr_t>(tileId);
     // Offene Tür soll passierbar sein: Sensor
     if (it != m_tileData.end() && it->second.type == "door")
+    {
         fixtureDef.isSensor = true;
+    }
 
     if (shapeType == "half_bottom")
     {
@@ -653,12 +713,16 @@ void Physics::update()
 
     // Bodies zerstören, die im Kontakt-Callback (z.B. Collectibles) markiert wurden
     for (b2Body* body : m_bodiesToDestroy)
+    {
         m_world->DestroyBody(body);
+    }
     m_bodiesToDestroy.clear();
 
     // Neue Bodies für ersetzte Tiles anlegen (z.B. random-Box → jumpdown/red_potion)
     for (const auto& p : m_tilesToCreateBodyFor)
+    {
         createBodyForTile(p.first, p.second);
+    }
     m_tilesToCreateBodyFor.clear();
 
     unsigned int currentTicks = SDL_GetTicks();
@@ -679,7 +743,9 @@ void Physics::update()
         float ReportFixture(b2Fixture* fixture, const b2Vec2&, const b2Vec2&, float) override
         {
             if (fixture->GetBody()->GetType() == b2_staticBody)
+            {
                 hit = true;
+            }
             return 0;
         }
     };
@@ -689,9 +755,13 @@ void Physics::update()
     m_world->RayCast(&cb, rayStart, rayEnd);
     bool onGround = cb.hit;
     if (!onGround && m_actor->onGround())
+    {
         m_coyoteTimeLeft = 0.12f;  // Coyote-Time nach Verlassen des Bodens
+    }
     if (onGround)
+    {
         m_coyoteTimeLeft = 0.0f;
+    }
     m_actor->setOnGround(onGround);
 
     // Spielereingabe anwenden (vor Step)
@@ -745,13 +815,27 @@ void Physics::update()
     m_lastTicks = SDL_GetTicks();
 }
 
+b2Body* Physics::getActorBody() const
+{
+    return m_actorBody;
+}
+
+unsigned int Physics::getLastHazardDamageTicks() const
+{
+    return m_lastHazardDamageTicks;
+}
+
 bool Physics::canTakeDamage() const
 {
     if (SDL_GetTicks() < m_invincibleUntilTicks)
+    {
         return false;
+    }
     // Super-Trank: 10 Sekunden Unverwundbarkeit
     if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+    {
         return false;
+    }
     return true;
 }
 
@@ -768,22 +852,45 @@ void Physics::setLastHazardDamageTicks(unsigned int t)
 void Physics::addWallContact(float normalX)
 {
     const int maxWallContacts = 2;
-    if (normalX > 0.35f && m_wallContactLeft < maxWallContacts) ++m_wallContactLeft;
-    else if (normalX < -0.35f && m_wallContactRight < maxWallContacts) ++m_wallContactRight;
+    if (normalX > 0.35f && m_wallContactLeft < maxWallContacts)
+    {
+        ++m_wallContactLeft;
+    }
+    else if (normalX < -0.35f && m_wallContactRight < maxWallContacts)
+    {
+        ++m_wallContactRight;
+    }
 }
 
 void Physics::removeWallContact(float normalX)
 {
-    if (normalX > 0.35f) { if (m_wallContactLeft > 0) --m_wallContactLeft; }
-    else if (normalX < -0.35f) { if (m_wallContactRight > 0) --m_wallContactRight; }
+    if (normalX > 0.35f)
+    {
+        if (m_wallContactLeft > 0)
+        {
+            --m_wallContactLeft;
+        }
+    }
+    else if (normalX < -0.35f)
+    {
+        if (m_wallContactRight > 0)
+        {
+            --m_wallContactRight;
+        }
+    }
 }
 
 void Physics::applyPlayerInput(double dt)
 {
-    if (!m_actorBody || !m_actor) return;
+    if (!m_actorBody || !m_actor)
+    {
+        return;
+    }
 
     if (SDL_GetTicks() < m_movementLockedUntilTicks)
+    {
         return;
+    }
 
     float moveX = m_actor->forces().moveForce().x() * static_cast<float>(dt) / PIXELS_PER_METER * 10.5f;
     b2Vec2 vel = m_actorBody->GetLinearVelocity();
@@ -798,7 +905,9 @@ void Physics::applyPlayerInput(double dt)
     float maxRun = m_actor->forces().maxRunVelocity() / PIXELS_PER_METER;
     // Super-Trank: 1.5x Geschwindigkeit
     if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+    {
         maxRun *= 1.5f;
+    }
     vel.x = b2Clamp(vel.x, -maxRun, maxRun);
 
     // Gegen Wand laufen unterbinden → verhindert Hängen und Zittern
@@ -808,16 +917,24 @@ void Physics::applyPlayerInput(double dt)
     if (m_wallContactLeft > 0 && vel.x < 0)
     {
         if (inputStrength > 50.0f && m_actor->forces().moveForce().x() > 0)
+        {
             m_wallContactLeft = 0;  // Spieler drückt nach rechts → Wand-Kontakt links ignorieren
+        }
         else
+        {
             vel.x = 0;
+        }
     }
     if (m_wallContactRight > 0 && vel.x > 0)
     {
         if (inputStrength > 50.0f && m_actor->forces().moveForce().x() < 0)
+        {
             m_wallContactRight = 0;  // Spieler drückt nach links → Wand-Kontakt rechts ignorieren
+        }
         else
+        {
             vel.x = 0;
+        }
     }
 
     m_actorBody->SetLinearVelocity(vel);
@@ -832,7 +949,9 @@ void Physics::applyPlayerInput(double dt)
         float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f;
         // Super-Trank: 1.5x Sprungkraft
         if (m_level && m_level->getStateController() && m_level->getStateController()->isSuperPotionActive())
+        {
             jumpImpulse *= 1.5f;
+        }
         m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
     }
 
@@ -840,32 +959,43 @@ void Physics::applyPlayerInput(double dt)
     vel = m_actorBody->GetLinearVelocity();
     float maxFall = m_actor->forces().maxFallVelocity() / PIXELS_PER_METER;
     float maxJump = static_cast<float>(m_actor->forces().maxJumpVelocity()) / PIXELS_PER_METER;
-    if (maxJump < 13.0f) maxJump = 13.0f;
+    if (maxJump < 13.0f)
+    {
+        maxJump = 13.0f;
+    }
     vel.y = b2Clamp(vel.y, -maxFall, maxJump);
     m_actorBody->SetLinearVelocity(vel);
 }
 
 void Physics::enforceCameraBounds()
 {
-    if (!m_level || !m_actor) return;
+    if (!m_level || !m_actor)
+    {
+        return;
+    }
 
-    const Camera& camera = m_level->getCamera();
-    int cameraRight = camera.x() + camera.width();
+    int tileW = m_tiles->tileWidth();
+    int levelW = m_tiles->width();
+    float levelRight = levelW * tileW;   // Rechte Level-Grenze (Worldborders)
     Vector2f pos = m_actor->worldPosition();
 
-    if (pos.x() + m_actor->w() > cameraRight)
+    if (pos.x() + m_actor->w() > levelRight)
     {
-        m_actor->setWorldPosition(Vector2f(cameraRight - m_actor->w(), pos.y()));
+        m_actor->setWorldPosition(Vector2f(levelRight - m_actor->w(), pos.y()));
         m_actor->velocity().setX(0);
         if (m_actorBody)
+        {
             m_actorBody->SetLinearVelocity(b2Vec2(0, m_actorBody->GetLinearVelocity().y));
+        }
     }
     if (pos.x() < 0)
     {
         m_actor->setWorldPosition(Vector2f(0, pos.y()));
         m_actor->velocity().setX(0);
         if (m_actorBody)
+        {
             m_actorBody->SetLinearVelocity(b2Vec2(0, m_actorBody->GetLinearVelocity().y));
+        }
     }
 
     if (m_actorBody)
@@ -880,7 +1010,9 @@ void Physics::enforceCameraBounds()
 void Physics::updateDoors()
 {
     if (!m_world || !m_actorBody || !m_actor || !m_tiles || !m_level)
+    {
         return;
+    }
 
     const int tileW = m_tiles->tileWidth();
     const int tileH = m_tiles->tileHeight();
@@ -888,44 +1020,59 @@ void Physics::updateDoors()
     const float ax = actorPos.x() + m_actor->w() / 2.0f;
     const float ay = actorPos.y() + m_actor->h() / 2.0f;
 
-    bool openDoorsByCoins = (m_level->goalType() == GOAL_COINS)
-        && (m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE);
+    bool levelWinnable = m_level->checkAndUpdateGoalState() == GOALSTATE_WINNABLE;
 
     std::set<std::pair<int, int>> doorsToOpen;
     for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
     {
         if (b->GetType() != b2_staticBody || b == m_actorBody)
+        {
             continue;
+        }
         int gx, gy;
         getTileGridFromBody(b, gx, gy);
         int tileId = m_tiles->get(gx, gy) - 1;
-        if (tileId < 0) continue;
-        if (getTileData(tileId).second != "closed_door") continue;
+        if (tileId < 0)
+        {
+            continue;
+        }
+        if (getTileData(tileId).second != "closed_door")
+        {
+            continue;
+        }
 
         int topGx, topGy;
         if (tileId == TILE_ID_CLOSED_DOOR_TOP)
-            { topGx = gx; topGy = gy; }
+        {
+            topGx = gx;
+            topGy = gy;
+        }
         else if (tileId == TILE_ID_CLOSED_DOOR_MID)
-            { topGx = gx; topGy = gy - 1; }
-        else
-            continue;
-        if (topGy < 0 || topGy + 1 >= m_tiles->height()) continue;
-
-        if (openDoorsByCoins)
-            doorsToOpen.insert({ topGx, topGy });
+        {
+            topGx = gx;
+            topGy = gy - 1;
+        }
         else
         {
-            float doorCenterX = topGx * tileW + tileW / 2.0f;
-            float doorCenterY = topGy * tileH + tileH + TILE_Y_OFFSET;
-            float dx = ax - doorCenterX, dy = ay - doorCenterY;
-            if (dx * dx + dy * dy <= DOOR_OPEN_DISTANCE * DOOR_OPEN_DISTANCE)
-                doorsToOpen.insert({ topGx, topGy });
+            continue;
+        }
+        if (topGy < 0 || topGy + 1 >= m_tiles->height())
+        {
+            continue;
+        }
+
+        if (levelWinnable)
+        {
+            doorsToOpen.insert({ topGx, topGy });
         }
     }
 
     const int openTopId = getTileIdByType("door");
     const int openMidId = openTopId + 1;
-    if (openTopId < 0 || openMidId < 0) return;
+    if (openTopId < 0 || openMidId < 0)
+    {
+        return;
+    }
 
     for (const auto& p : doorsToOpen)
     {
@@ -936,14 +1083,21 @@ void Physics::updateDoors()
         std::vector<b2Body*> toDestroy;
         for (b2Body* b = m_world->GetBodyList(); b != nullptr; b = b->GetNext())
         {
-            if (b->GetType() != b2_staticBody) continue;
+            if (b->GetType() != b2_staticBody)
+            {
+                continue;
+            }
             int bx, by;
             getTileGridFromBody(b, bx, by);
             if ((bx == topGx && by == topGy) || (bx == topGx && by == topGy + 1))
+            {
                 toDestroy.push_back(b);
+            }
         }
         for (b2Body* b : toDestroy)
+        {
             m_world->DestroyBody(b);
+        }
         createBodyForTile(topGx, topGy);
         createBodyForTile(topGx, topGy + 1);
     }
@@ -951,7 +1105,10 @@ void Physics::updateDoors()
 
 void Physics::applySpringLaunch(float factor)
 {
-    if (!m_actorBody || !m_actor) return;
+    if (!m_actorBody || !m_actor)
+    {
+        return;
+    }
     float jumpImpulse = -m_actor->forces().jumpForce().y() / PIXELS_PER_METER * 2.2f * factor;
     m_actorBody->ApplyLinearImpulseToCenter(b2Vec2(0, jumpImpulse), true);
     std::cout << "[Spring] applySpringLaunch factor=" << factor << " impulse=" << jumpImpulse << std::endl;
@@ -959,13 +1116,19 @@ void Physics::applySpringLaunch(float factor)
 
 void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& actorCenter)
 {
-    if (!m_actorBody) return;
+    if (!m_actorBody)
+    {
+        return;
+    }
 
     // Knockback in Richtung weg vom Gegner/Falle (entgegengesetzte Richtung zur Kollision)
     float dx = actorCenter.x - tileCenter.x;
     float dy = actorCenter.y - tileCenter.y;
     float len = std::sqrt(dx*dx + dy*dy);
-    if (len < 0.01f) len = 1.0f;
+    if (len < 0.01f)
+    {
+        len = 1.0f;
+    }
     float dirX = dx / len;
     float dirY = dy / len;
     float strength = (920.0f / 4.0f) / PIXELS_PER_METER;
@@ -974,7 +1137,10 @@ void Physics::handleHazardContact(int, const b2Vec2& tileCenter, const b2Vec2& a
 
 void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
 {
-    if (!m_actorBody || !m_actor) return;
+    if (!m_actorBody || !m_actor)
+    {
+        return;
+    }
 
     Vector2f actorCenter(m_actor->worldPosition().x() + m_actor->w() / 2.0f,
                          m_actor->worldPosition().y() + m_actor->h() / 2.0f);
@@ -985,7 +1151,10 @@ void Physics::applyKnockbackFromPosition(const Vector2f& otherCenter)
     float dx = actorBox.x - otherBox.x;
     float dy = actorBox.y - otherBox.y;
     float len = std::sqrt(dx*dx + dy*dy);
-    if (len < 0.01f) len = 1.0f;
+    if (len < 0.01f)
+    {
+        len = 1.0f;
+    }
     float dirX = dx / len;
     float dirY = dy / len;
     float strength = (920.0f / 2.0f) / PIXELS_PER_METER;
@@ -1004,8 +1173,12 @@ std::pair<std::string, std::string> Physics::getTileData(int tileId)
 int Physics::getTileIdByType(const std::string& type) const
 {
     for (const auto& p : m_tileData)
+    {
         if (p.second.type == type)
+        {
             return p.first;
+        }
+    }
     return -1;
 }
 
@@ -1013,8 +1186,12 @@ std::vector<int> Physics::getTileIdsByType(const std::string& type) const
 {
     std::vector<int> ids;
     for (const auto& p : m_tileData)
+    {
         if (p.second.type == type)
+        {
             ids.push_back(p.first);
+        }
+    }
     return ids;
 }
 

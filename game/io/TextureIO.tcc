@@ -1,3 +1,8 @@
+/**
+ * @file TextureIO.tcc
+ * @brief Template implementation for the TextureIO class
+ */
+
 #include <SDL_image.h>
 
 namespace jumper

@@ -1,3 +1,8 @@
+/**
+ * @file Actor.hpp
+ * @brief Defines the Actor class for movable game characters that interact and collide with other objects
+ */
+
 /*
  *  Actor.hpp
  *  Created on: Dec 08, 2017
@@ -40,12 +45,13 @@ public:
     /// Destructor
     virtual ~Actor();
 
-    /// Returns a collision object between two actors
+    /// Handles collision detection and response with another actor
     virtual void getCollision(Actor& other);
 
-    /// Renders the actors
+    /// Renders the actor sprite to screen
     virtual void render() override;
 
+    /// Sets the physical properties (forces, gravity, etc.) for this actor
     void setPhysics(ActorForces p);
 
     /**
@@ -74,7 +80,7 @@ public:
     bool jumping();
 
     /**
-     * Retruns the pixel position at which jumping was started
+     * Returns the pixel position at which jumping was started
      */
     int jumpStart();
 
@@ -84,16 +90,16 @@ public:
     /// Returns weather the actor wants to start to jump
     bool wantsToJump();
 
-    /// Setzt Blink-Status: blink = Invincibility (rötlich), superPotion = bläulich, breakTilesMode = grünlich
+    /// Set Blink-Status: blink = Invincibility (red), superPotion = blue, breakTilesMode = green
     void setBlinking(bool blink, bool superPotion = false, bool breakTilesMode = false);
 
 protected:
 
-    /// Retruns the time elapsed since the last call of this function
+    /// Returns the time elapsed since the last call of this function
     float getElapsedTime();
 
     /// True if the player touches ground
-    bool     			m_onGround;
+bool     			    m_onGround;
 
     /// True if the player is jumping
     bool     			m_jumping;
@@ -105,16 +111,21 @@ protected:
     int     			m_jumpStart;
 
     /// The physical properties of the player
-    ActorForces          m_forces;
+    ActorForces         m_forces;
 
-    /// Blink-Status (für Unverwundbarkeit)
-    bool                 m_blinking;
-    /// Super-Trank aktiv (bläuliches Blinken)
-    bool                 m_superPotionActive;
-    /// Green-Potion / Break-Tiles aktiv (grünes Blinken)
-    bool                 m_breakTilesModeActive;
+    /// Blink-Status (for Invincibility)
+    bool                m_blinking;
+
+    /// Super-Potion active (blinking blue)
+    bool                m_superPotionActive;
+    
+    /// Green-Potion / Break-Tiles active (blinking green)
+    bool                m_breakTilesModeActive;
+    
     /// Salto-Rotation in Grad (nur bei Super-Trank in der Luft)
-    double               m_saltoRotation;
+    double              m_saltoRotation;
+    
+    /// last time a salto was performed in ticks
     unsigned int        m_lastSaltoTicks;
 
 };
