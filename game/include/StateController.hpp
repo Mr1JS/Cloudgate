@@ -16,6 +16,7 @@
 #include "SDLRenderable.hpp"
 #include "NumberDigit.hpp"
 
+#include <list>
 #include <SDL.h>
 #include <QElapsedTimer>
 
